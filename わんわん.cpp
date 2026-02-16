@@ -1,6 +1,8 @@
 #include "DxLib.h"
 #include <math.h>
 
+/*　ーーーーーDxLibのデフォ：画面サイズ(640,480)ーーーーー　*/
+
 enum SceneType {
 	SCENE_TITLE,
 	SCENE_STAGE,
@@ -8,6 +10,12 @@ enum SceneType {
 	SCENE_QUIT_CONFIRM
 };
 
+namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書かねばならないが、これだと使用する関数内でusing namespace PlayArea;と異一度宣言すればその関数内限定で使えるようになるから便利ってこと
+	static constexpr int Left = 32;					      //！因みにconstexprだと実行する前からすでに分かっている定数ということらしい。constは引数とか実行時に取得するような定数らしい
+	static constexpr int Right = 416;			//32+384で384=128*3
+	static constexpr int Top = 16;
+	static constexpr int Bottom = 464;			//16+448で448=64*7で色々うれしいらしい、詳細はDiscord
+};
 
 class MenuManager {
 private:
@@ -37,7 +45,7 @@ public:
 
 class Player {
 public:
-	float x = 360.0f; float y = 400.0f;
+	float x = 320.0f; float y = 240.0f;
 	float move_v = 0;
 	static constexpr float vn = 5.0f;								//通常速度の定数
 	static constexpr float vs = 2.0f;								//低速の定数
@@ -72,6 +80,27 @@ public:
 
 
 };
+
+class Bullet {
+public:
+	float x = 0, y = 0, r = 0;
+	float vx = 0, vy = 0;
+
+	void Update(float in_vx, float in_vy, int in_r) {		//引数としてその弾の速度と半径を取得(inはintではなく引数の意)
+		vx = in_vx, vy = in_vy, r = in_r;				//毎フレーム引数は消去されてしまうので一度取得すれば良いように保持する。位置とかの場合は毎フレーム書き込まれたら動かないとか移動制限が生まれてしまうが、速度や半径などは基本弾では一定のため保存する。
+		
+		x += vx;
+		y += vy;
+		// if (vx != 0 && vy != 0)	sqrt(pow(vx ,2)+pow(vy, 2))  正規化は一旦保留
+	}
+	
+	void Draw() {
+		DrawCircle(x, y, r, GetColor(255, 255, 255), true);
+
+
+	}
+};
+
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	ChangeWindowMode(TRUE);
@@ -116,9 +145,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		case SCENE_STAGE:
 
-
+			using namespace PlayArea;											//これによりnamespaceのPlayArea内で定義したものがこの関数内限定で使用できるようになる
 			player.Update();
 			player.Draw();
+			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);		
 			if (CheckHitKey(KEY_INPUT_ESCAPE)) scene = SCENE_PAUSE;
 
 			break;
