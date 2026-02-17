@@ -30,10 +30,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		switch (scene) {
 		case SCENE_TITLE:
-			DrawString(360, 240, "Ç‰Ç¢Ç§ÇÒÇø", GetColor(255, 255, 255), true);
-			DrawString(360, 270, (TitleMenu.GetSelect() == 0 ? "> Start" : "Start"), GetColor(255, 255, 255));
-			DrawString(360, 300, (TitleMenu.GetSelect() == 1 ? "> Practice" : "Practice"), GetColor(255, 255, 255));
-			DrawString(360, 330, (TitleMenu.GetSelect() == 2 ? "> Quit" : "Quit"), GetColor(255, 255, 255));
+			DrawString(270, 240, "ìåï˚êåÅXñ≤", GetColor(255, 255, 255), true);
+			DrawString(270, 270, (TitleMenu.GetSelect() == 0 ? "> Start" : "Start"), GetColor(255, 255, 255));
+			DrawString(270, 300, (TitleMenu.GetSelect() == 1 ? "> Practice" : "Practice"), GetColor(255, 255, 255));
+			DrawString(270, 330, (TitleMenu.GetSelect() == 2 ? ">Replay" : "Replay"), GetColor(255, 255, 255));
+			DrawString(270, 360, (TitleMenu.GetSelect() == 3 ? "> Quit" : "Quit"), GetColor(255, 255, 255));
 
 			if (CheckHitKey(KEY_INPUT_UP)) {
 				TitleMenu.Prev();
@@ -48,6 +49,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (select == 0) scene = SCENE_STAGE;
 				if (select == 1) scene = SCENE_STAGE;
 				if (select == 2) scene = SCENE_QUIT_CONFIRM;
+				if (select == 3) scene = SCENE_QUIT_CONFIRM;
 				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_Z)) ProcessMessage();	//òAë≈ñhé~èàóù
 			}
 

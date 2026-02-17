@@ -6,6 +6,10 @@
 /*　↑　1.自分のヘッダ,2.プロジェクト内の他の自作ヘッダ,3.外部から持ってきたDxLib.h等のライブラリ,4.mathやvector等の標準ライブラリ　*/
 
 
+bool Bullet::GetFlag() {
+	return flag;
+}
+
 void Bullet::Shoot(float in_x, float in_y, float in_r, float in_vx, float in_vy) {		//ソースファイル側で関数の中身を書く時は必ずクラス名::をその関数の前に書く必要あり
 	x = in_x;
 	y = in_y;
