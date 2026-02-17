@@ -1,3 +1,7 @@
+#include "Common.h"
+#include "Bullet.h"
+#include "Player.h"
+#include "MenuManager.h"
 #include "DxLib.h"
 #include <math.h>
 
@@ -9,114 +13,6 @@ enum SceneType {
 	SCENE_PAUSE,
 	SCENE_QUIT_CONFIRM
 };
-
-namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書かねばならないが、これだと使用する関数内でusing namespace PlayArea;と異一度宣言すればその関数内限定で使えるようになるから便利ってこと
-	static constexpr int Left = 32;					      //！因みにconstexprだと実行する前からすでに分かっている定数ということらしい。constは引数とか実行時に取得するような定数らしい
-	static constexpr int Right = 416;			//32+384で384=128*3
-	static constexpr int Top = 16;
-	static constexpr int Bottom = 464;			//16+448で448=64*7で色々うれしいらしい、詳細はDiscord
-};
-
-
-class Bullet {
-public:
-	float x = 0, y = 0, r = 0;
-	float vx = 0, vy = 0;
-	bool flag = false;
-
-
-	void Shoot(float in_x, float in_y, float in_vx, float in_vy, int in_r) {		//発射する瞬間に弾の状態を表す引数を取得させる
-		x = in_x, y = in_y, r = in_r, vx = in_vx, vy = in_vy;					//引数を保存
-		flag = true;															//弾フラグを立てる
-	}
-
-	void Update() {
-		using namespace PlayArea;
-		if (!flag) return;											//flag != falseでスキップ
-		x += vx;
-		y += vy;
-		if (x < Left || x > Right || y > Bottom || y < Top) flag = false;
-		// if (vx != 0 && vy != 0)	sqrt(pow(vx ,2)+pow(vy, 2))  正規化は一旦保留
-	}
-
-	void Draw() {
-		if (!flag) return;						//flag != falseの時描画スキップ
-		DrawCircle(x, y, r, GetColor(255, 255, 255), true);
-	}
-};
-
-class Player {
-public:
-	float x = 320.0f; float y = 240.0f;
-	float move_v = 0;
-	static constexpr float vn = 5.0f;								//通常速度の定数
-	static constexpr float vs = 2.0f;								//低速の定数
-
-	void Update() {
-		using namespace PlayArea;
-
-		int vx = 0, vy = 0;
-		move_v = vn;												//毎フレームで通常速度に初期化することで低速状態を解除
-		if (CheckHitKey(KEY_INPUT_DOWN)) vy = 1;
-		if (CheckHitKey(KEY_INPUT_UP)) vy = -1;
-		if (CheckHitKey(KEY_INPUT_RIGHT)) vx = 1;
-		else if (CheckHitKey(KEY_INPUT_LEFT)) vx = -1;				//ここでelse ifにすることでRIGHTの方の判定を強くして妖々夢らしくする
-		if (CheckHitKey(KEY_INPUT_LSHIFT)) {
-			move_v = vs;											//低速
-		}
-
-
-		float speed = move_v;
-		if (vx != 0 && vy != 0) speed /= sqrt(2.0f);				//斜め移動の正規化
-
-		x += vx * speed;
-		y += vy * speed;
-
-		if (x < Left) x = Left;
-		if (x > Right) x = Right;
-		if (y < Top) y = Top;
-		if (y > Bottom) y = Bottom;
-	}
-
-	void Draw() {
-		DrawCircle(x, y, 15, GetColor(0, 255, 0), true);
-		if (move_v == vs) {
-			DrawCircle(x, y, 3, GetColor(255, 255, 255), true);
-			DrawCircle(x, y, 4, GetColor(255, 0, 0), false);
-		}
-	}
-
-
-};
-
-
-
-class MenuManager {
-private:
-	int cursor = 0;
-	int maxItem;
-
-public:
-	MenuManager(int itemNum) :maxItem(itemNum), cursor(0) {}		//コンストラクタ宣言
-
-	void Next() {
-		cursor = (cursor + 1) % maxItem;							//項目数で割った余り
-	}
-
-	void Prev() {
-		cursor = (cursor + maxItem - 1) % maxItem;
-	}
-
-	int GetSelect() const {
-		return cursor;												//現在の選択番号を戻り値として返す
-	}
-
-	void SetMaxItem(int num) {
-		maxItem = num;
-		cursor = 0;													//範囲外にならないように初期化
-	}
-};
-
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	ChangeWindowMode(TRUE);
