@@ -17,6 +17,80 @@ namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書かねばならない
 	static constexpr int Bottom = 464;			//16+448で448=64*7で色々うれしいらしい、詳細はDiscord
 };
 
+
+class Bullet {
+public:
+	float x = 0, y = 0, r = 0;
+	float vx = 0, vy = 0;
+	bool flag = false;
+
+
+	void Shoot(float in_x, float in_y, float in_vx, float in_vy, int in_r) {		//発射する瞬間に弾の状態を表す引数を取得させる
+		x = in_x, y = in_y, r = in_r, vx = in_vx, vy = in_vy;					//引数を保存
+		flag = true;															//弾フラグを立てる
+	}
+
+	void Update() {
+		using namespace PlayArea;
+		if (!flag) return;											//flag != falseでスキップ
+		x += vx;
+		y += vy;
+		if (x < Left || x > Right || y > Bottom || y < Top) flag = false;
+		// if (vx != 0 && vy != 0)	sqrt(pow(vx ,2)+pow(vy, 2))  正規化は一旦保留
+	}
+
+	void Draw() {
+		if (!flag) return;						//flag != falseの時描画スキップ
+		DrawCircle(x, y, r, GetColor(255, 255, 255), true);
+	}
+};
+
+class Player {
+public:
+	float x = 320.0f; float y = 240.0f;
+	float move_v = 0;
+	static constexpr float vn = 5.0f;								//通常速度の定数
+	static constexpr float vs = 2.0f;								//低速の定数
+
+	void Update() {
+		using namespace PlayArea;
+
+		int vx = 0, vy = 0;
+		move_v = vn;												//毎フレームで通常速度に初期化することで低速状態を解除
+		if (CheckHitKey(KEY_INPUT_DOWN)) vy = 1;
+		if (CheckHitKey(KEY_INPUT_UP)) vy = -1;
+		if (CheckHitKey(KEY_INPUT_RIGHT)) vx = 1;
+		else if (CheckHitKey(KEY_INPUT_LEFT)) vx = -1;				//ここでelse ifにすることでRIGHTの方の判定を強くして妖々夢らしくする
+		if (CheckHitKey(KEY_INPUT_LSHIFT)) {
+			move_v = vs;											//低速
+		}
+
+
+		float speed = move_v;
+		if (vx != 0 && vy != 0) speed /= sqrt(2.0f);				//斜め移動の正規化
+
+		x += vx * speed;
+		y += vy * speed;
+
+		if (x < Left) x = Left;
+		if (x > Right) x = Right;
+		if (y < Top) y = Top;
+		if (y > Bottom) y = Bottom;
+	}
+
+	void Draw() {
+		DrawCircle(x, y, 15, GetColor(0, 255, 0), true);
+		if (move_v == vs) {
+			DrawCircle(x, y, 3, GetColor(255, 255, 255), true);
+			DrawCircle(x, y, 4, GetColor(255, 0, 0), false);
+		}
+	}
+
+
+};
+
+
+
 class MenuManager {
 private:
 	int cursor = 0;
@@ -40,64 +114,6 @@ public:
 	void SetMaxItem(int num) {
 		maxItem = num;
 		cursor = 0;													//範囲外にならないように初期化
-	}
-};
-
-class Player {
-public:
-	float x = 320.0f; float y = 240.0f;
-	float move_v = 0;
-	static constexpr float vn = 5.0f;								//通常速度の定数
-	static constexpr float vs = 2.0f;								//低速の定数
-
-	void Update() {
-		int vx = 0, vy = 0;
-		move_v = vn;												//毎フレームで通常速度に初期化することで低速状態を解除
-		if (CheckHitKey(KEY_INPUT_DOWN)) vy = 1;
-		if (CheckHitKey(KEY_INPUT_UP)) vy = -1;
-		if (CheckHitKey(KEY_INPUT_RIGHT)) vx = 1;
-		else if (CheckHitKey(KEY_INPUT_LEFT)) vx = -1;				//ここでelse ifにすることでRIGHTの方の判定を強くして妖々夢らしくする
-		if (CheckHitKey(KEY_INPUT_LSHIFT)) {
-			move_v = vs;											//低速
-		}
-
-
-		float speed = move_v;
-		if (vx != 0 && vy != 0) speed /= sqrt(2.0f);				//斜め移動の正規化
-
-		x += vx * speed;
-		y += vy * speed;
-
-	}
-
-	void Draw() {
-		DrawCircle(x, y, 15, GetColor(0, 255, 0), true);
-		if (move_v == vs) {
-			DrawCircle(x, y, 3, GetColor(255, 255, 255), true);
-			DrawCircle(x, y, 4, GetColor(255, 0, 0), false);
-		}
-	}
-
-
-};
-
-class Bullet {
-public:
-	float x = 0, y = 0, r = 0;
-	float vx = 0, vy = 0;
-
-	void Update(float in_vx, float in_vy, int in_r) {		//引数としてその弾の速度と半径を取得(inはintではなく引数の意)
-		vx = in_vx, vy = in_vy, r = in_r;				//毎フレーム引数は消去されてしまうので一度取得すれば良いように保持する。位置とかの場合は毎フレーム書き込まれたら動かないとか移動制限が生まれてしまうが、速度や半径などは基本弾では一定のため保存する。
-		
-		x += vx;
-		y += vy;
-		// if (vx != 0 && vy != 0)	sqrt(pow(vx ,2)+pow(vy, 2))  正規化は一旦保留
-	}
-	
-	void Draw() {
-		DrawCircle(x, y, r, GetColor(255, 255, 255), true);
-
-
 	}
 };
 
