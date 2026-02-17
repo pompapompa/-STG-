@@ -29,42 +29,43 @@ void Player::Update() {
 	if (y < Top) y = Top;
 	if (y > Bottom) y = Bottom;
 
-	if (CheckHitKey(KEY_INPUT_Z) && shot_timer <= 0) {						//リールガンの発射判定
-		SetCount += L;														//上書きではなく追加することで前回の発射を消さず済む
-
-		SetTimer = LI;
-		shot_timer = sca;													//通常の長押し時のタイマーをセット
-	}
-	else {
-		if (shot_timer > scm) {
-			shot_timer = scm;												//離した時に連打チャージ必要カウントよりもtimerが大きかったらtimerを連打チャージ必要カウントへ
+	if ((CheckHitKey(KEY_INPUT_Z)|| CheckHitKey(KEY_INPUT_SPACE))&& shot_timer <= 0) {
+		for (int s = 0; s < SLOT_MAX; s++) {
+			if (slots[s].SetCount <= 0) { 
+				slots[s].SetCount = L;    // 5発撃つように指示
+				slots[s].SetTimer = 0;    // 即座に開始
+				break;					  // 1つ起動したら抜ける
+			}
 		}
+		shot_timer = sca;
+	}
+	else if (!CheckHitKey(KEY_INPUT_Z)) {
+		if (shot_timer > scm) shot_timer = scm;
 	}
 
-	if (SetCount > 0) {
-		if (SetTimer <= 0) {
-			int count = 0;
-			for (int i = 0; i < bmax; i++) {
-				if (bullets[i].GetFlag() == 0) {						//弾が空き箱なら
-
-					if (count == 0) {
-						bullets[i].Shoot(x - sox, y, sr, ssx, ssy);		//ShotOffset_X,Shot半径,ShotSpeed_X
-						count = 1;
-					}
-					else {												//片方を撃ったらカウントが1に成るから、1の時にもう片方を発射
-						bullets[i].Shoot(x + sox, y, sr, ssx, ssy);
-						SetCount--;
-						SetTimer = LI;									//再度、次の弾までの時間差をセット
-						break;											//自機の両端から打ったらbreakして次フレームへ回す
+	for (int s = 0; s < SLOT_MAX; s++) {
+		if (slots[s].SetCount > 0) {
+			if (slots[s].SetTimer <= 0) {
+				int c = 0;
+				for (int i = 0; i < bmax; i++) {
+					if (bullets[i].GetFlag() == 0) {
+						if (c == 0) {
+							bullets[i].Shoot(x - sox, y, sr, ssx, ssy);
+							c = 1;
+						}
+						else {
+							bullets[i].Shoot(x + sox, y, sr, ssx, ssy);
+							slots[s].SetCount--;           // このスロットの残弾を減らす
+							slots[s].SetTimer = LI;        // このスロット専用の間隔
+							break;
+						}
 					}
 				}
 			}
+			if (slots[s].SetTimer > 0) slots[s].SetTimer--;
 		}
 	}
 
-
-
-	if (SetTimer > 0) SetTimer--;									//リールガンの間隔タイマーをデクリメント
 	if (shot_timer > 0) shot_timer--;								//ショット自体のタイマーもデクリメント
 
 	for (int i = 0; i < bmax; i++) {
