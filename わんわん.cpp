@@ -60,9 +60,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
 		case SCENE_STAGE:
-
+			
 			using namespace PlayArea;											//‚±‚ê‚É‚æ‚ènamespace‚ÌPlayArea“à‚Å’è‹`‚µ‚½‚à‚Ì‚ª‚±‚ÌŠÖ”“àŒÀ’è‚Åg—p‚Å‚«‚é‚æ‚¤‚É‚È‚é
+
+			
+
 			player.Update();
+			for (int i = 0; i < 100; i++) {
+				enemy[i].Encount(Left + i*6, Top, 5, 10, 10);
+				enemy[i].Update();
+				enemy[i].Draw();
+			}
+
 			player.Draw();
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);		
 			if (CheckHitKey(KEY_INPUT_ESCAPE)) scene = SCENE_PAUSE;
