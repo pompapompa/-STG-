@@ -136,6 +136,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Bullet.cpp" />
+    <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="MenuManager.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="わんわん.cpp" />
@@ -143,6 +144,7 @@
   <ItemGroup>
     <ClInclude Include="Bullet.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="Enemy.h" />
     <ClInclude Include="MenuManager.h" />
     <ClInclude Include="Player.h" />
   </ItemGroup>

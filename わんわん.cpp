@@ -1,6 +1,7 @@
 #include "Common.h"
 #include "Bullet.h"
 #include "Player.h"
+#include "Enemy.h"
 #include "MenuManager.h"
 #include "DxLib.h"
 #include <math.h>
@@ -20,6 +21,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	SetDrawScreen(DX_SCREEN_BACK);
 
 	Player player;										//プレイヤークラスのインスタンス作製
+	Enemy enemy[100];									
 	MenuManager TitleMenu(4);							//引数が必要なクラスなのでインスタンスにも引数を与える
 	MenuManager PauseMenu(3);
 	MenuManager QuitMenu(2);
@@ -50,7 +52,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (select == 1) scene = SCENE_STAGE;
 				if (select == 2) scene = SCENE_QUIT_CONFIRM;
 				if (select == 3) scene = SCENE_QUIT_CONFIRM;
-				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_Z)) ProcessMessage();	//連打防止処理
+				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) ProcessMessage();	//連打防止処理
 			}
 
 			break;
