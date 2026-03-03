@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{c2567d60-2460-4fac-a29b-9eb89c4e2d23}</ProjectGuid>
-    <RootNamespace>わんわん</RootNamespace>
+    <ProjectGuid>{438a33e1-4e55-43f9-8266-c02e510230d4}</ProjectGuid>
+    <RootNamespace>東方酔妖々夢</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>東方酔々夢</ProjectName>
   </PropertyGroup>
@@ -138,9 +138,9 @@
   <ItemGroup>
     <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="Main.cpp" />
     <ClCompile Include="MenuManager.cpp" />
     <ClCompile Include="Player.cpp" />
-    <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Bullet.h" />
