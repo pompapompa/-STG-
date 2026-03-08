@@ -14,6 +14,8 @@ struct PlayerParameter {
 	float r;								//自機半径
 	float hr;								//hit半径
 	float hfr;								//hit半径の枠
+	float areaW;							//プレイ領域にめり込める自機からの距離x
+	float areaH;							//プレイ領域にめり込める自機からの距離y
 };
 
 struct ShotParameter {
@@ -42,7 +44,9 @@ private:
 		3.0f,								//vs:低速
 		15.0f,								//r:自機半径
 		3.0f,								//hr:当たり判定白い部分
-		4.0f								//hfr:当たり判定の枠の赤い部分
+		4.0f,								//hfr:当たり判定の枠の赤い部分
+		8.0f,								//areaW：プレイ領域にめり込める自機からの距離x
+		10.0f								//areaH：プレイ領域にめり込める自機からの距離y
 	};
 
 	static constexpr ShotParameter shot{

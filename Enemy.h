@@ -3,7 +3,7 @@
 
 
 class Enemy {
-public:
+protected:								//Bossから変数にアクセスできるようにする
 	float x = 0;
 	float y = 0;
 	float r = 0;
@@ -11,7 +11,13 @@ public:
 	float vy = 0;
 	bool flag = false;
 
-	void Encount(float in_x, float in_y, float r_in, float in_vx, float in_vy);
-	void Update();
-	void Draw();
+public:
+	virtual void Encount(float in_x, float in_y, float r_in, float in_vx, float in_vy);
+	virtual void Update();																		//後でボスが上書きできるようにする
+	virtual void Draw();
+
+	bool GetFlag() { return flag; }
+	float GetX() { return x; }
+	float GetY() { return y; }
+	float GetR() { return r; }
 };

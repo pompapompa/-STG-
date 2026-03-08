@@ -24,10 +24,10 @@ void Player::Update() {
 	x += vx * speed;
 	y += vy * speed;
 
-	if (x < Left) x = Left;
-	if (x > Right) x = Right;
-	if (y < Top) y = Top;
-	if (y > Bottom) y = Bottom;
+	if (x < Left + para.areaW) x = Left + para.areaW;			//x - para.areaW < Left‚Ì¶•Ó‚ðxˆù‚Ý‚É‚·‚é‚½‚ß‚ÉˆÚ€‚µ‚½
+	if (x > Right - para.areaW) x = Right - para.areaW;
+	if (y < Top + para.areaH) y = Top + para.areaH;				//x‚Æ“¯—l
+	if (y > Bottom - para.areaH) y = Bottom - para.areaH;
 
 	if ((CheckHitKey(KEY_INPUT_Z)|| CheckHitKey(KEY_INPUT_SPACE))&& shot_timer <= 0) {
 		for (int s = 0; s < SLOT_MAX; s++) {
