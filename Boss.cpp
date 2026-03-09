@@ -19,8 +19,8 @@ void Boss::Update() {
 	using namespace PlayArea;
 	if (!flag) return;
 	timer++;
-	x = (Left + (Right - Left)) / 2.0f;								//プレイ領域の左端からx軸についてのプレイ領域の真ん中の座標を足してプレイ領域の真ん中のx座標を出す。x,yがfloat型であるからfを付ける
-	y = (Top + (Bottom - Top)) / 4.0f;								//プレイ領域の上からy軸についてのプレイ領域の1/4の位置の座標を足してプレイ領域の上から1/4のy座標を出す。
+	x = Left + (Right - Left) / 2.0f;								//プレイ領域の左端からx軸についてのプレイ領域の真ん中の座標を足してプレイ領域の真ん中のx座標を出す。x,yがfloat型であるからfを付ける
+	y = Top + (Bottom - Top) / 4.0f;								//プレイ領域の上からy軸についてのプレイ領域の1/4の位置の座標を足してプレイ領域の上から1/4のy座標を出す。
 }
 
 void Boss::Draw() {

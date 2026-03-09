@@ -44,9 +44,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (ProcessMessage() != 0);
 			}
 		}
-		if (CheckHitKey(KEY_INPUT_F)) {
-			isWindow = !isWindow;
-		}
 
 
 
@@ -110,7 +107,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		break;
 
 		case(SCENE_CLEAR):
-			
+
 			DrawString(270, 240, "All Clear!!!", GetColor(0, 255, 0), false);
 			DrawString(200, 300, "èIóπÇ∑ÇÈÇ…ÇÕZÇ©EnterÉLÅ[ÇâüÇµÇƒâ∫Ç≥Ç¢", GetColor(0, 255, 0), false);
 
