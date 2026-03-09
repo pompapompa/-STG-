@@ -12,17 +12,21 @@
 enum SceneType {
 	SCENE_TITLE,
 	SCENE_STAGE,
+	SCENE_CLEAR,
 	SCENE_PAUSE,
 	SCENE_QUIT_CONFIRM
 };
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-	ChangeWindowMode(TRUE);
-	if (DxLib_Init() == -1) return -1;
-	SetDrawScreen(DX_SCREEN_BACK);
+	bool isWindow = true;								//ウィンドウかフルスクかの状態を保存するフラグ
+	ChangeWindowMode(TRUE);								//初期状態はウィンドウモード
+
+
+	SetDrawScreen(DX_SCREEN_BACK);						//裏描画
+	if (DxLib_Init() == -1) return -1;					//エラーが発生したら終了
 
 	Player player;										//プレイヤークラスのインスタンス作製
-	Enemy enemy[100];									
+	Enemy enemy[100];
 	Boss boss;
 	MenuManager TitleMenu(4);							//引数が必要なクラスなのでインスタンスにも引数を与える
 	MenuManager PauseMenu(3);
@@ -31,6 +35,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
 	while (ProcessMessage() == 0 && ClearDrawScreen() == 0) {						//メインループ
+
+
+		if (CheckHitKey(KEY_INPUT_F)) {
+			isWindow = !isWindow;							//trueとfalseの状態を交互に交換する
+			ChangeWindowMode(isWindow ? TRUE : FALSE);		//
+			while (CheckHitKey(KEY_INPUT_F)) {
+				if (ProcessMessage() != 0);
+			}
+		}
+		if (CheckHitKey(KEY_INPUT_F)) {
+			isWindow = !isWindow;
+		}
+
+
 
 		switch (scene) {
 		case SCENE_TITLE:
@@ -66,25 +84,41 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			using namespace PlayArea;											//これによりnamespaceのPlayArea内で定義したものがこの関数内限定で使用できるようになる
 
 
-
-			player.Update();
-
-			player.Draw();
-			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
-			if (CheckHitKey(KEY_INPUT_ESCAPE)) scene = SCENE_PAUSE;
-
-			using namespace PlayArea;
-			float X = Left + (Right - Left) / 2.0f;
-			float Y = Bottom + (Top - Bottom) / 4.0f;
 			if (!boss.GetFlag()) {
+				float X = Left + (Right - Left) / 2.0f;
+				float Y = Top + (Bottom - Top) / 4.0f;
 				boss.Spawn(X, Y);
 			}
 
+			player.Update();
 			boss.Update();
-			boss.Draw();
-		}															//case SCENE_STAGEの中身を囲うことで変数のスコープがその中限定となる
-			break;
 
+			bool isDead = boss.CheckCollision(player);				//自機弾とボスの位置等をUpdateで計算してから当たり判定を回して戻り値の倒したフラグをisDeadに格納
+
+			player.Draw();
+			boss.Draw();
+			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
+
+
+			if (isDead) {											//ボスを倒したフラグが返されたらタイトルに戻る
+				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) ProcessMessage();		//z,enterキーを長押し状態でCLEARに遷移してきた時に離したらそのままタイトルに行くのを防ぐ為の文
+				scene = SCENE_CLEAR;
+			}
+
+			if (CheckHitKey(KEY_INPUT_ESCAPE)) scene = SCENE_PAUSE;
+		}															//case SCENE_STAGEの中身を囲うことで変数のスコープがその中限定となる
+		break;
+
+		case(SCENE_CLEAR):
+			
+			DrawString(270, 240, "All Clear!!!", GetColor(0, 255, 0), false);
+			DrawString(200, 300, "終了するにはZかEnterキーを押して下さい", GetColor(0, 255, 0), false);
+
+			if (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) {
+				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) ProcessMessage();
+				scene = SCENE_TITLE;
+			}
+			break;
 
 
 		case(SCENE_PAUSE):

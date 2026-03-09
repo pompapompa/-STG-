@@ -43,8 +43,8 @@ private:
 		6.0f,								//vn:通常速度
 		3.0f,								//vs:低速
 		15.0f,								//r:自機半径
-		3.0f,								//hr:当たり判定白い部分
-		4.0f,								//hfr:当たり判定の枠の赤い部分
+		2.0f,								//hr:当たり判定白い部分
+		3.0f,								//hfr:当たり判定の枠の赤い部分
 		8.0f,								//areaW：プレイ領域にめり込める自機からの距離x
 		10.0f								//areaH：プレイ領域にめり込める自機からの距離y
 	};
@@ -65,13 +65,13 @@ private:
 	int shot_timer = 0;
 	float move_v = 0;
 
-	static constexpr int bmax = 500;		//弾配列の最大数
-
-
-	Bullet bullets[bmax];					//Bulletクラスのインスタンスを配列で宣言
-
 
 public:
+	static constexpr int bmax = 500;		//自機弾配列の最大数
+	Bullet bullets[bmax];					//Bulletクラスのインスタンスを配列で宣言
+
+	int GetBulletNum() const { return bmax; }
+
 	void Update();
 	void Draw();
 };
