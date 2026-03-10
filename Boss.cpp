@@ -19,8 +19,8 @@ void Boss::Update() {
 	using namespace PlayArea;
 	if (!flag) return;
 	timer++;
-	x = Left + (Right - Left) / 2.0f;								//プレイ領域の左端からx軸についてのプレイ領域の真ん中の座標を足してプレイ領域の真ん中のx座標を出す。x,yがfloat型であるからfを付ける
-	y = Top + (Bottom - Top) / 4.0f;								//プレイ領域の上からy軸についてのプレイ領域の1/4の位置の座標を足してプレイ領域の上から1/4のy座標を出す。
+	x = Left + (Right - Left) * para.SpawnRate_X;								//プレイ領域の左端からx軸についてのプレイ領域の真ん中の座標を足してプレイ領域の真ん中のx座標を出す。x,yがfloat型であるからfを付ける
+	y = Top + (Bottom - Top) * para.SpawnRate_Y;								//プレイ領域の上からy軸についてのプレイ領域の1/4の位置の座標を足してプレイ領域の上から1/4のy座標を出す。
 }
 
 void Boss::Draw() {
@@ -28,23 +28,20 @@ void Boss::Draw() {
 	DrawCircle(x, y, r, GetColor(255, 0, 0), true);
 
 	if (max_hp > 0) {
-		float hp_rate = (float)hp / max_hp;										//hpの比率計算
-
-		int segments = 512;														//分割数、512角形
-		int draw_limit = (int)(segments * hp_rate);								//残HP分の角を描画
-		float offset_angle = -DX_PI_F / 2.0f;									//DX_PI_FはπでFはfloat型を示す。-π/2して真上を始点とする。
-
+		float hp_rate = (float)hp / max_hp;										//hpの比率計算	
+		int draw_limit = (int)(para.GaugeSegments * hp_rate);					//残HP分の角を描画
+		
 		for (int i = 0; i < draw_limit; i++) {									//多角形の角数だけ繰り返す
-			float a1 = offset_angle - (DX_PI_F * 2.0f * i / segments);			//現在の点の角度
-			float a2 = offset_angle - (DX_PI_F * 2.0f * (i + 1) / segments);	//次点の角度
+			float a1 = para.StartAngle - (DX_PI_F * 2.0f * i / para.GaugeSegments);			//現在の点の角度
+			float a2 = para.StartAngle - (DX_PI_F * 2.0f * (i + 1) / para.GaugeSegments);	//次点の角度
 
-			int x1 = (int)(x + cos(a1) * (r + 15));								//現在の点のx座標
-			int y1 = (int)(y + sin(a1) * (r + 15));								//現在の点のy座標
-			int x2 = (int)(x + cos(a2) * (r + 15));								//次点のx
-			int y2 = (int)(y + sin(a2) * (r + 15));								//次点のy
+			int x1 = (int)(x + cos(a1) * (r + para.GaugeOffset_R));								//現在の点のx座標
+			int y1 = (int)(y + sin(a1) * (r + para.GaugeOffset_R));								//現在の点のy座標
+			int x2 = (int)(x + cos(a2) * (r + para.GaugeOffset_R));								//次点のx
+			int y2 = (int)(y + sin(a2) * (r + para.GaugeOffset_R));								//次点のy
 
 
-			DrawLine(x1, y1, x2, y2, GetColor(255, 255, 255), 5);				//体力ゲージの描画
+			DrawLine(x1, y1, x2, y2, GetColor(255, 255, 255), para.GaugeThickness);				//体力ゲージの描画
 		}
 	}
 }
