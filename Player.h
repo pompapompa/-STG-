@@ -40,6 +40,9 @@ private:
 	static constexpr int SLOT_MAX = 30;		// 同時に重なっても良いバーストの最大数
 	BurstSlot slots[SLOT_MAX];				// 構造体の配列をメンバ変数として持つ
 	
+	static constexpr float PlayerHomingPower = 0.18f;		//ホーミングの曲がりやすさの
+
+
 	static constexpr PlayerParameter para{	//ここで同時にインスタンス宣言も行っている
 		6.0f,								//vn:通常速度
 		3.0f,								//vs:低速

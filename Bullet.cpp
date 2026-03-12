@@ -14,7 +14,13 @@ void Bullet::Guide(float tx, float ty, float turnSpeed) {
     while (radgap > DX_PI_F) radgap -= DX_PI_F * 2.0f;
     while (radgap < -DX_PI_F) radgap += DX_PI_F * 2.0f;
 
-    float nextAngle = currentAngle + radgap * turnSpeed;
+    float turn = radgap * turnSpeed;
+
+    if(turn > maxTurnRad) turn = maxTurnRad;
+    if(turn < -maxTurnRad) turn = -maxTurnRad;
+
+    
+    float nextAngle = currentAngle + turn;
 
     float speed = sqrtf(vx * vx + vy * vy);
     vx = cosf(nextAngle) * speed;

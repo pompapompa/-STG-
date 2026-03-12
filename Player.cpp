@@ -52,8 +52,8 @@ void Player::Update(BulletManager* bm) {
 				bool isHoming = (move_v == para.vs);							//低速時ホーミング
 
 
-				bm->LaunchPlayerBullet(x - shot.sox, y, shot.sr, shot.ssx, shot.ssy, isHoming);
-				bm->LaunchPlayerBullet(x + shot.sox, y, shot.sr, shot.ssx, shot.ssy, isHoming);
+				bm->LaunchPlayerBullet(x - shot.sox, y, shot.sr, shot.ssx, shot.ssy, isHoming, PlayerHomingPower);		//ここでturnSpeedにPlayerHomingPowerを代入する。
+				bm->LaunchPlayerBullet(x + shot.sox, y, shot.sr, shot.ssx, shot.ssy, isHoming, PlayerHomingPower);		
 				
 				slots[s].SetCount--;
 				slots[s].SetTimer = shot.LI;
