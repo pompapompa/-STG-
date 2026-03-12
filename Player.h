@@ -67,7 +67,7 @@ private:
 
 
 public:
-	static constexpr int bmax = 1000;		//自機弾配列の最大数
+	static constexpr int bmax = 500;		//自機弾配列の最大数
 	Bullet bullets[bmax];					//Bulletクラスのインスタンスを配列で宣言
 
 	int GetBulletNum() const { return bmax; }
