@@ -7,9 +7,9 @@ private:
 	Bullet p_bullets[PlayerBMax];												//Bulletクラスのインスタンスを配列で宣言
 
 public:
-	void LaunchPlayerBullet(float x, float y, float sr, float ssx, float ssy);
+	void LaunchPlayerBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming);
 
-	void Update();
+	void Update(float playerX, float playerY, float bossX, float bossY, bool bossAlive);
 	void Draw();
 
 	int GetPlayerBulletMax() const { return PlayerBMax; }

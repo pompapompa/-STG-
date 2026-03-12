@@ -91,7 +91,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			player.Update(&bm);											//*付きのポインタ型であるので、Main.cppで渡す時は&(アンパサンド)を付けてアドレスとして渡す必要がある
 			boss.Update();
-			bm.Update();
+			bm.Update(player.GetX(), player.GetY(), boss.GetX(), boss.GetY(), boss.GetFlag());
 
 			bool isDead = boss.CheckCollision(player, bm);				//自機弾とボスの位置等をUpdateで計算してから当たり判定を回して戻り値の倒したフラグをisDeadに格納。参照で値を受け取るので上のbmとは違い、インスタンスをそのまま記述で良い
 

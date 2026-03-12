@@ -72,4 +72,9 @@ public:
 	void Draw();
 
 	int GetBulletNum(const BulletManager * bm) const;
+
+	bool GetFlag() const { return true; }			
+	float GetX() const { return x; }			//ホーミング用にx座標を取得する
+	float GetY() const { return y; }			//ホーミング用にy座標を取得する
+	float GetR() const { return para.r; }
 };

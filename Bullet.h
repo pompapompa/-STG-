@@ -7,6 +7,10 @@ private:
 
 
 public:
+	enum class OwnerType{ PLAYER, ENEMY };										//誰の弾かのタイプ分け
+	OwnerType owner;															//インスタンス宣言
+	bool isHoming = false;														//ホーミング弾フラグ
+
 	float x = 0;
 	float y = 0;
 	float r = 0;
@@ -21,16 +25,20 @@ public:
 		return flag;
 	}
 
-	void Shoot(float in_x, float in_y, float in_r, float in_vx, float in_vy, int in_type = 0) {  //発射する瞬間に弾の状態を表す引数を取得させる
+	void Shoot(float in_x, float in_y, float in_r, float in_vx, float in_vy, bool in_homing = false, OwnerType in_owner = OwnerType::PLAYER, int in_type = 0) {  //発射する瞬間に弾の状態を表す引数を取得させる
 		x = in_x;
 		y = in_y;
 		r = in_r;
 		vx = in_vx;
 		vy = in_vy;
+		isHoming = in_homing;
+		owner = in_owner;
 		type = in_type;
 
 		flag = true;
 	}
+
+	void Guide(float tx, float ty, float turnSpeed);
 		
 	void Update() {
 		if (!flag) return;			//flag!=trueでスキップ		

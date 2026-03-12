@@ -48,8 +48,12 @@ void Player::Update(BulletManager* bm) {
 	for (int s = 0; s < SLOT_MAX; s++) {														//画面上に同時に存在できるスロット数繰り返す
 		if (slots[s].SetCount > 0) {															//残り弾数があるスロットを見つける
 			if (slots[s].SetTimer <= 0) {
-				bm->LaunchPlayerBullet(x - shot.sox, y, shot.sr, shot.ssx, shot.ssy);
-				bm->LaunchPlayerBullet(x + shot.sox, y, shot.sr, shot.ssx, shot.ssy);
+
+				bool isHoming = (move_v == para.vs);							//低速時ホーミング
+
+
+				bm->LaunchPlayerBullet(x - shot.sox, y, shot.sr, shot.ssx, shot.ssy, isHoming);
+				bm->LaunchPlayerBullet(x + shot.sox, y, shot.sr, shot.ssx, shot.ssy, isHoming);
 				
 				slots[s].SetCount--;
 				slots[s].SetTimer = shot.LI;
