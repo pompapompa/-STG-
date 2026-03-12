@@ -1,10 +1,11 @@
+#include "DxLib.h"
 #include "Common.h"
+#include "BulletManager.h"
 #include "Bullet.h"
 #include "Player.h"
 #include "Enemy.h"
 #include "Boss.h"
 #include "MenuManager.h"
-#include "DxLib.h"
 #include <math.h>
 
 /*　ーーーーーDxLibのデフォ：画面サイズ(640,480)ーーーーー　*/
@@ -26,6 +27,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (DxLib_Init() == -1) return -1;					//エラーが発生したら終了
 
 	Player player;										//プレイヤークラスのインスタンス作製
+	BulletManager bm;
 	Enemy enemy[100];
 	Boss boss;
 	MenuManager TitleMenu(4);							//引数が必要なクラスなのでインスタンスにも引数を与える
@@ -87,13 +89,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				boss.Spawn(X, Y);
 			}
 
-			player.Update();
+			player.Update(&bm);											//*付きのポインタ型であるので、Main.cppで渡す時は&(アンパサンド)を付けてアドレスとして渡す必要がある
 			boss.Update();
+			bm.Update();
 
-			bool isDead = boss.CheckCollision(player);				//自機弾とボスの位置等をUpdateで計算してから当たり判定を回して戻り値の倒したフラグをisDeadに格納
+			bool isDead = boss.CheckCollision(player, bm);				//自機弾とボスの位置等をUpdateで計算してから当たり判定を回して戻り値の倒したフラグをisDeadに格納。参照で値を受け取るので上のbmとは違い、インスタンスをそのまま記述で良い
 
 			player.Draw();
 			boss.Draw();
+			bm.Draw();
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
 
 

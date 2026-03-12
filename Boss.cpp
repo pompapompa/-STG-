@@ -1,8 +1,9 @@
+#include "DxLib.h"
 #include "Boss.h"
 #include "Player.h"
+#include "BulletManager.h"
 #include "Collision.h"
 #include "Common.h"
-#include "DxLib.h"
 #include <math.h>
 
 
@@ -46,11 +47,11 @@ void Boss::Draw() {
 	}
 }
 
-bool Boss::CheckCollision(Player& player) {
+bool Boss::CheckCollision(Player& player, BulletManager& bm) {
 	if (!flag) return false;
 
-	for (int i = 0; i < player.GetBulletNum(); i++) {				//GetBulletNumは自機弾の最大数
-		auto& b = player.bullets[i];								//player.bullets[i]にbという名前を付けている
+	for (int i = 0; i < bm.GetPlayerBulletMax(); i++) {				//GetBulletNumは自機弾の最大数
+		auto& b = bm.GetPlayerBullet(i);							// BulletManagerにこのゲッターが必要
 		if (!b.flag) continue;										//その弾flagが立っていないなら以下の判定を飛ばす
 
 		if (Collision::CheckCircle(x, y, r, b.x, b.y, b.r)) {		//ボスのx,y,rと自機弾のx,y,rを引数とする

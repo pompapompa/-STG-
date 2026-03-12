@@ -1,15 +1,16 @@
-#include "Player.h"		//自分のヘッダを一番最初にインクルード
-#include "Bullet.h"		//使う部品
-#include "Common.h"		//共通設定
-#include "DxLib.h"		//ライブラリ
-#include <math.h>		//システムという順番が良いらしい
+#include "DxLib.h"			
+#include "Player.h"			//自分のヘッダを最初にインクルード
+#include "BulletManager.h"	//使う部品
+#include "Common.h"			//共通設定
+#include <math.h>			//システムという順番が良いらしい
 
 
-void Player::Update() {
+void Player::Update(BulletManager* bm) {
 	using namespace PlayArea;
 	int vx = 0;
 	int vy = 0;
 	move_v = para.vn;												//毎フレームで通常速度に初期化することで低速状態を解除
+	
 	if (CheckHitKey(KEY_INPUT_DOWN)) vy = 1;
 	if (CheckHitKey(KEY_INPUT_UP)) vy = -1;
 	if (CheckHitKey(KEY_INPUT_RIGHT)) vx = 1;
@@ -39,40 +40,24 @@ void Player::Update() {
 		}
 		shot_timer = shot.sca;					//1発目を発射したので2発目までのクールタイム(長押し時)をセットする。
 	}
-	
 	else if (!CheckHitKey(KEY_INPUT_Z) && !CheckHitKey(KEY_INPUT_SPACE)) {		//Z,Spaceキーが押されてない時。&&にしないとZとSpaceをどちらも押していないと正になってしまい、z長押しでも正になってしまうから。どちらも離しているときという条件を使うと考えている挙動が再現できる。
 		if (shot_timer > shot.scm) shot_timer = shot.scm;						//現在の残りクールタイムがsca(連打用)より長いならショットのクールタイム(連打用)をセットする。
 	}
-	
+
 
 	for (int s = 0; s < SLOT_MAX; s++) {														//画面上に同時に存在できるスロット数繰り返す
 		if (slots[s].SetCount > 0) {															//残り弾数があるスロットを見つける
-			if (slots[s].SetTimer <= 0) {														//セット内のクールタイムが0なら
-				int c = 0;																		//cを定義
-				for (int i = 0; i < bmax; i++) {												//最大弾数まで繰り返す
-					if (bullets[i].GetFlag() == 0) {											//フラグが立っていない弾があったら
-						if (c == 0) {															//cが0であるとき
-							bullets[i].Shoot(x - shot.sox, y, shot.sr, shot.ssx, shot.ssy);		//自機x座標よりsox分左から引数通りの弾を召喚
-							c = 1;																//cに1を代入
-						}
-						else {																	//cが0でないならば
-							bullets[i].Shoot(x + shot.sox, y, shot.sr, shot.ssx, shot.ssy);		//自機x座標よりsox分右から引数通りの弾を召喚
-							slots[s].SetCount--;												//このスロットの2ショット分を1発として残弾を減らす		
-							slots[s].SetTimer = shot.LI;										//セット内の1発ごとの発射間隔を
-							break;																//発射出来る弾を見つけて弾の発射処理自体が終わったら抜ける
-						}
-					}
-				}
+			if (slots[s].SetTimer <= 0) {
+				bm->LaunchPlayerBullet(x - shot.sox, y, shot.sr, shot.ssx, shot.ssy);
+				bm->LaunchPlayerBullet(x + shot.sox, y, shot.sr, shot.ssx, shot.ssy);
+				
+				slots[s].SetCount--;
+				slots[s].SetTimer = shot.LI;
 			}
-			if (slots[s].SetTimer > 0) slots[s].SetTimer--;										//セット内の次に撃つまでの間隔(SetTimer)が0より大きかったら、SetTimerをデクリメント
+			if (slots[s].SetTimer > 0) slots[s].SetTimer--;
 		}
 	}
-
-	if (shot_timer > 0) shot_timer--;															//ショット自体クールタイムのshot_timerもデクリメント
-
-	for (int i = 0; i < bmax; i++) {															//弾の最大数まで繰り返す
-		bullets[i].Update();																	//弾のUpdate
-	}
+	if (shot_timer > 0) shot_timer--;
 }
 
 
@@ -83,7 +68,13 @@ void Player::Draw() {
 		DrawCircle(x, y, para.hr, GetColor(255, 255, 255), true);
 		DrawCircle(x, y, para.hfr, GetColor(255, 0, 0), false);
 	}
-	for (int i = 0; i < bmax; i++) {
+
+	/*for (int i = 0; i < bmax; i++) {
 		bullets[i].Draw();								//弾の描画
 	}
+	*/
+}
+
+int Player::GetBulletNum(const BulletManager* bm) const {
+	return bm->GetPlayerBulletMax();
 }

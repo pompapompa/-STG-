@@ -42,6 +42,6 @@ public:
 	float GetHp() { return hp; }						
 	float GetHpRate() { return(max_hp > 0.0f) ? (hp / max_hp) : 0.0f; }		//残りhpを円弧のUIで表現する時用の比率
 
-	bool CheckCollision(class Player& player);								//冒頭でインクルードしなかったのは循環参照を防ぐため。それより、ここで前方宣言をする。
+	bool CheckCollision(class Player& player, class BulletManager& bm);								//冒頭でインクルードしなかったのは循環参照を防ぐため。それより、ここで前方宣言をする。
 
 };

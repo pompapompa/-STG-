@@ -1,8 +1,8 @@
+#include "DxLib.h"
 #include "Enemy.h"
 #include "Bullet.h"
 #include "Player.h"
 #include "Common.h"
-#include "DxLib.h"
 #include <math.h>
 
 void Enemy::Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy) {

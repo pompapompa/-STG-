@@ -1,7 +1,11 @@
 #pragma once
-#include "Bullet.h"
 
-/*初期値を知るためのものはpublicでいいが、ホーミングアミュレット等の毎フレームの引数を使って計算や更新するやつはprivateで外部から上書きされないようにする。*/
+/*初期値を知るためのものはpublicでいいが、ホーミングアミュレット等の毎フレームの引数を使って
+  計算や更新するやつはprivateで外部から上書きされないようにする。*/
+
+
+class BulletManager;						//前方宣言でマネージャーの存在だけ教える
+
 
 struct BurstSlot {
 	int	SetCount = 0;						//リールガンの1セットの残り弾数
@@ -32,11 +36,8 @@ struct ShotParameter {
 
 
 class Player {
-
 private:
-
 	static constexpr int SLOT_MAX = 30;		// 同時に重なっても良いバーストの最大数
-	
 	BurstSlot slots[SLOT_MAX];				// 構造体の配列をメンバ変数として持つ
 	
 	static constexpr PlayerParameter para{	//ここで同時にインスタンス宣言も行っている
@@ -67,11 +68,8 @@ private:
 
 
 public:
-	static constexpr int bmax = 500;		//自機弾配列の最大数
-	Bullet bullets[bmax];					//Bulletクラスのインスタンスを配列で宣言
-
-	int GetBulletNum() const { return bmax; }
-
-	void Update();
+	void Update(BulletManager* bm);
 	void Draw();
+
+	int GetBulletNum(const BulletManager * bm) const;
 };

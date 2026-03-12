@@ -10,6 +10,8 @@ public:
 	void LaunchPlayerBullet(float x, float y, float sr, float ssx, float ssy);
 
 	void Update();
-
 	void Draw();
+
+	int GetPlayerBulletMax() const { return PlayerBMax; }
+	Bullet& GetPlayerBullet(int index) { return p_bullets[index]; }
 };
