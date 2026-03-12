@@ -49,7 +49,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		switch (scene) {
 		case SCENE_TITLE:
-			DrawString(270, 240, "“Œ•ûŒX–²", GetColor(255, 255, 255), true);
+			DrawString(240, 210, "“Œ•ûŒX–²", GetColor(255, 255, 255), 20);
 			DrawString(270, 270, (TitleMenu.GetSelect() == 0 ? "> Start" : "Start"), GetColor(255, 255, 255));
 			DrawString(270, 300, (TitleMenu.GetSelect() == 1 ? "> Practice" : "Practice"), GetColor(255, 255, 255));
 			DrawString(270, 330, (TitleMenu.GetSelect() == 2 ? ">Replay" : "Replay"), GetColor(255, 255, 255));

@@ -15,7 +15,7 @@ void Player::Update() {
 	if (CheckHitKey(KEY_INPUT_RIGHT)) vx = 1;
 	else if (CheckHitKey(KEY_INPUT_LEFT)) vx = -1;				//ここでelse ifにすることでRIGHTの方の判定を強くして妖々夢らしくする
 	if (CheckHitKey(KEY_INPUT_LSHIFT)) {
-		move_v = para.vs;											//低速
+		move_v = para.vs;										//低速
 	}
 
 	float speed = move_v;
@@ -24,52 +24,54 @@ void Player::Update() {
 	x += vx * speed;
 	y += vy * speed;
 
-	if (x < Left + para.areaW) x = Left + para.areaW;			//x - para.areaW < Leftの左辺をx飲みにするために移項した
+	if (x < Left + para.areaW) x = Left + para.areaW;			//x - para.areaW < Leftの左辺をxのみにするために移項した
 	if (x > Right - para.areaW) x = Right - para.areaW;
 	if (y < Top + para.areaH) y = Top + para.areaH;				//xと同様
 	if (y > Bottom - para.areaH) y = Bottom - para.areaH;
 
-	if ((CheckHitKey(KEY_INPUT_Z)|| CheckHitKey(KEY_INPUT_SPACE))&& shot_timer <= 0) {
-		for (int s = 0; s < SLOT_MAX; s++) {
-			if (slots[s].SetCount <= 0) { 
-				slots[s].SetCount = shot.L;		// 5発撃つように指示
-				slots[s].SetTimer = 0;			// 即座に開始
-				break;							// 1つ起動したら抜ける
+	if ((CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_SPACE)) && shot_timer <= 0) {		//ZかSpaceキーを押した時
+		for (int s = 0; s < SLOT_MAX; s++) {	//画面上に同時に存在できるスロット数まで繰り返す。
+			if (slots[s].SetCount <= 0) {		//見つけたスロットの残り弾数が0だったら空きスロットということなので、これを探す。
+				slots[s].SetCount = shot.L;		//見つけたスロットの残り弾数に1セット内の総発射弾数Lを代入する。
+				slots[s].SetTimer = 0;			//押した瞬間にスロットの最初の弾が発射されるようにスロット内発射タイマーのカウントを0にする。
+				break;							//1つ空きスロットを見つけてセットできたらループを抜ける
 			}
 		}
-		shot_timer = shot.sca;
+		shot_timer = shot.sca;					//1発目を発射したので2発目までのクールタイム(長押し時)をセットする。
 	}
-	else if (!CheckHitKey(KEY_INPUT_Z)) {
-		if (shot_timer > shot.scm) shot_timer = shot.scm;
+	
+	else if (!CheckHitKey(KEY_INPUT_Z) && !CheckHitKey(KEY_INPUT_SPACE)) {		//Z,Spaceキーが押されてない時。&&にしないとZとSpaceをどちらも押していないと正になってしまい、z長押しでも正になってしまうから。どちらも離しているときという条件を使うと考えている挙動が再現できる。
+		if (shot_timer > shot.scm) shot_timer = shot.scm;						//現在の残りクールタイムがsca(連打用)より長いならショットのクールタイム(連打用)をセットする。
 	}
+	
 
-	for (int s = 0; s < SLOT_MAX; s++) {
-		if (slots[s].SetCount > 0) {
-			if (slots[s].SetTimer <= 0) {
-				int c = 0;
-				for (int i = 0; i < bmax; i++) {
-					if (bullets[i].GetFlag() == 0) {
-						if (c == 0) {
-							bullets[i].Shoot(x - shot.sox, y, shot.sr, shot.ssx, shot.ssy);
-							c = 1;
+	for (int s = 0; s < SLOT_MAX; s++) {														//画面上に同時に存在できるスロット数繰り返す
+		if (slots[s].SetCount > 0) {															//残り弾数があるスロットを見つける
+			if (slots[s].SetTimer <= 0) {														//セット内のクールタイムが0なら
+				int c = 0;																		//cを定義
+				for (int i = 0; i < bmax; i++) {												//最大弾数まで繰り返す
+					if (bullets[i].GetFlag() == 0) {											//フラグが立っていない弾があったら
+						if (c == 0) {															//cが0であるとき
+							bullets[i].Shoot(x - shot.sox, y, shot.sr, shot.ssx, shot.ssy);		//自機x座標よりsox分左から引数通りの弾を召喚
+							c = 1;																//cに1を代入
 						}
-						else {
-							bullets[i].Shoot(x + shot.sox, y, shot.sr, shot.ssx, shot.ssy);
-							slots[s].SetCount--;           // このスロットの残弾を減らす
-							slots[s].SetTimer = shot.LI;        // このスロット専用の間隔
-							break;
+						else {																	//cが0でないならば
+							bullets[i].Shoot(x + shot.sox, y, shot.sr, shot.ssx, shot.ssy);		//自機x座標よりsox分右から引数通りの弾を召喚
+							slots[s].SetCount--;												//このスロットの2ショット分を1発として残弾を減らす		
+							slots[s].SetTimer = shot.LI;										//セット内の1発ごとの発射間隔を
+							break;																//発射出来る弾を見つけて弾の発射処理自体が終わったら抜ける
 						}
 					}
 				}
 			}
-			if (slots[s].SetTimer > 0) slots[s].SetTimer--;
+			if (slots[s].SetTimer > 0) slots[s].SetTimer--;										//セット内の次に撃つまでの間隔(SetTimer)が0より大きかったら、SetTimerをデクリメント
 		}
 	}
 
-	if (shot_timer > 0) shot_timer--;								//ショット自体のタイマーもデクリメント
+	if (shot_timer > 0) shot_timer--;															//ショット自体クールタイムのshot_timerもデクリメント
 
-	for (int i = 0; i < bmax; i++) {
-		bullets[i].Update();												//弾のUpdate
+	for (int i = 0; i < bmax; i++) {															//弾の最大数まで繰り返す
+		bullets[i].Update();																	//弾のUpdate
 	}
 }
 

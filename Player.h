@@ -1,11 +1,11 @@
 #pragma once
 #include "Bullet.h"
 
-/*初期値を知るためのものはpublicでいいが、ホーミングアミュレット等の毎フレームの引数を使って計算や更新するやつはprivateで外部から上書きされないようにするとのこと。*/
+/*初期値を知るためのものはpublicでいいが、ホーミングアミュレット等の毎フレームの引数を使って計算や更新するやつはprivateで外部から上書きされないようにする。*/
 
 struct BurstSlot {
-	int	SetCount = 0;						//リールガンの1セットの残り弾数の箱
-	int SetTimer = 0;						//リールガンのセット内の次に撃つまでの間隔の箱
+	int	SetCount = 0;						//リールガンの1セットの残り弾数
+	int SetTimer = 0;						//リールガンのセット内の次に撃つまでの間隔
 };
 
 struct PlayerParameter {					
@@ -13,7 +13,7 @@ struct PlayerParameter {
 	float vs;
 	float r;								//自機半径
 	float hr;								//hit半径
-	float hfr;								//hit半径の枠
+	float hfr;								//hit半径の枠の半径
 	float areaW;							//プレイ領域にめり込める自機からの距離x
 	float areaH;							//プレイ領域にめり込める自機からの距離y
 };
@@ -67,7 +67,7 @@ private:
 
 
 public:
-	static constexpr int bmax = 500;		//自機弾配列の最大数
+	static constexpr int bmax = 1000;		//自機弾配列の最大数
 	Bullet bullets[bmax];					//Bulletクラスのインスタンスを配列で宣言
 
 	int GetBulletNum() const { return bmax; }
