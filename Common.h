@@ -28,10 +28,14 @@ struct HomingShotData {
 
 
 struct BossPhase {
-	int		phaseID;					//0:通常1,1:スペカ1枚目,2:通常2,3:スペカ2枚目…のようにする
+	int		phaseNum;					//0:通常1,1:スペカ1枚目,2:通常2,3:スペカ2枚目…のようにする
 	float	hpLimit;					//そのフェーズのHP
 	int		limitTime;					//そのフェーズの制限時間
 	int		interval;					//弾の発射間隔
 	int		bulletNum;					//弾数
 	float	bulletSpeed;				//弾速
+	float	rotSpeed;					//回転速度のベクトル(負なら回転方向が逆向きに成る)
+	bool	isDouble;					//trueなら逆回転の弾幕を追加
+	float	offsetAngle;				//逆回転側の初期角度のずれ具合
+	int		offsetTime;					//逆回転側の発射タイミングのフレーム差
 };

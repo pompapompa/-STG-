@@ -33,12 +33,25 @@ void Boss::Update(BulletManager* bm) {									//BulletManager‚ðŽg‚Á‚Ä’e‚ðŒ‚‚Â
 	if (phaseTimer % p.interval == 0) {
 		float step = (DX_PI_F * 2.0f) / p.bulletNum;
 		for (int i = 0; i < p.bulletNum; i++) {
-			float ang = step * i + (timer * 0.02f);								//timer‚É’è”‚ðŠ|‚¯‚é‚±‚Æ‚Å‰ñ“]‚³‚¹‚é‚±‚Æ‚ªo—ˆ‚é
+			float ang = step * i + (timer * p.rotSpeed);								//timer‚É’è”‚ðŠ|‚¯‚é‚±‚Æ‚Å‰ñ“]‚³‚¹‚é‚±‚Æ‚ªo—ˆ‚é
 			float vx = cosf(ang) * p.bulletSpeed;
 			float vy = sinf(ang) * p.bulletSpeed;
 			bm->LaunchEnemyBullet(x, y, 4.0f, vx, vy, false, 0.0f);
 		}
 	}
+
+	if (p.isDouble && (phaseTimer - p.offsetTime) >= 0) {													//p.isDouble‚ªtrue‚ÌŽž’Ç‰Á‚·‚é’e–‹
+		if ((phaseTimer - p.offsetTime) % p.interval == 0) {
+			float step = (DX_PI_F * 2.0f) / p.bulletNum;
+			for (int i = 0; i < p.bulletNum; i++) {
+				float ang_rev = step * i - (timer * p.rotSpeed) + p.offsetAngle;
+				float vx_rev = cosf(ang_rev) * p.bulletSpeed;
+				float vy_rev = sinf(ang_rev) * p.bulletSpeed;
+				bm->LaunchEnemyBullet(x, y, 4.0f, vx_rev, vy_rev, false, 0.0f);
+			}
+		}
+	}
+
 
 	if (hp <= 0) {																//ƒtƒF[ƒY‚Ìhp‚ª‚È‚­‚È‚Á‚½ê‡
 		currentIdx++;															//Œ»Ý‚ÌƒtƒF[ƒY‚ðŽŸ‚Ì’iŠK‚Ö

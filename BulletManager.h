@@ -4,7 +4,7 @@
 class BulletManager {
 private:
 	static constexpr int PlayerBMax = 1000;										//自機弾配列の最大数
-	static constexpr int EnemyBMax = 2000;										//敵弾配列の最大数
+	static constexpr int EnemyBMax = 5000;										//敵弾配列の最大数
 	
 	Bullet p_bullets[PlayerBMax];												//Bulletクラスのインスタンスを配列で宣言
 	Bullet e_bullets[EnemyBMax];												//敵弾用のインスタンス配列

@@ -31,10 +31,13 @@ private:
 	float phaseMaxHp;									//現在のフェーズの初期HP
 
 	static constexpr BossPhase phases[] = {				//通常こうげきとスペカのデータを配列で定義
-		{ 0, 500.0f,  3600, 30, 8,  2.0f },					//通1
-		{ 1, 1000.0f, 5400, 20, 16, 3.5f },					//スペカ1枚目
-		{ 2, 800.0f,  3600, 15, 12, 2.5f }					//通2
+	/*  {phaseNum, hpLimit, limitTime, interval, bulletNum, bulletSpeed, rotSpeed, isDouble, offsetAngle, offsetTime}  */
+		{ 0,	500.0f,		3600,	6,		8,		1.0f,	0.02f,	false,	0.0f,	0 },			//通1 
+		{ 1,	900.0f,		5400,	10,		18,		3.5f,	-0.05f,	false,	0.0f,	0 },			//スペカ1枚目
+		{ 2,	1000.0f,	6000,	8,		20,		5.0f,	0.02f,	true,	0.1f,	5 },			//通2  
+		{ 3,	600.0f,		3600,	3,		16,		2.0f,	0.10f,	true,	0.1f,	2 }				//スペカ2枚目
 	};
+
 	static constexpr int PHASE_MAX = sizeof(phases) / sizeof(BossPhase);
 
 	float hp;											//現在の体力
