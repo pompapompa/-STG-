@@ -5,12 +5,23 @@
 #include <math.h>			//システムという順番が良いらしい
 
 
+
+void Player::ActivateWeapon(BurstSlot* slots, int count) {
+	for (int i = 0; i < SLOT_MAX; i++) {
+		if (slots[i].SetCount <= 0) {							//弾がセットされていない弾を見つけたら
+			slots[i].SetCount = count;							//countをセットする
+			slots[i].SetTimer = 0;								//すぐに撃てるようにする
+			break;
+		}
+	}
+}
+
 void Player::Update(BulletManager* bm) {
 	using namespace PlayArea;
 	int vx = 0;
 	int vy = 0;
 	move_v = para.vn;												//毎フレームで通常速度に初期化することで低速状態を解除
-	
+
 	if (CheckHitKey(KEY_INPUT_DOWN)) vy = 1;
 	if (CheckHitKey(KEY_INPUT_UP)) vy = -1;
 	if (CheckHitKey(KEY_INPUT_RIGHT)) vx = 1;
@@ -20,7 +31,7 @@ void Player::Update(BulletManager* bm) {
 	}
 
 	float speed = move_v;
-	if (vx != 0 && vy != 0) speed /= sqrt(2.0f);				//斜め移動の正規化
+	if (vx != 0 && vy != 0) speed /= sqrtf(2.0f);				//斜め移動の正規化
 
 	x += vx * speed;
 	y += vy * speed;
@@ -30,38 +41,51 @@ void Player::Update(BulletManager* bm) {
 	if (y < Top + para.areaH) y = Top + para.areaH;				//xと同様
 	if (y > Bottom - para.areaH) y = Bottom - para.areaH;
 
-	if ((CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_SPACE)) && shot_timer <= 0) {		//ZかSpaceキーを押した時
-		for (int s = 0; s < SLOT_MAX; s++) {	//画面上に同時に存在できるスロット数まで繰り返す。
-			if (slots[s].SetCount <= 0) {		//見つけたスロットの残り弾数が0だったら空きスロットということなので、これを探す。
-				slots[s].SetCount = shot.L;		//見つけたスロットの残り弾数に1セット内の総発射弾数Lを代入する。
-				slots[s].SetTimer = 0;			//押した瞬間にスロットの最初の弾が発射されるようにスロット内発射タイマーのカウントを0にする。
-				break;							//1つ空きスロットを見つけてセットできたらループを抜ける
-			}
+
+	bool isPress = (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_SPACE));		//ショット発射ボタンを押しているか
+	bool isSlow = (move_v == para.vs);												//低速状態か
+
+	if (isPress && shot_timer <= 0) {							//発射ボタン押下されている状態且つショットクールタイムが0の場合
+		ActivateWeapon(MainSlot, MainShot.L);					//メインショット
+
+		if (isSlow) {											//低速状態の場合
+			ActivateWeapon(SubSlot, SubHoming.L);				//サブショット
 		}
-		shot_timer = shot.sca;					//1発目を発射したので2発目までのクールタイム(長押し時)をセットする。
+		shot_timer = sca;										//長押し時のクールタイム
 	}
-	else if (!CheckHitKey(KEY_INPUT_Z) && !CheckHitKey(KEY_INPUT_SPACE)) {		//Z,Spaceキーが押されてない時。&&にしないとZとSpaceをどちらも押していないと正になってしまい、z長押しでも正になってしまうから。どちらも離しているときという条件を使うと考えている挙動が再現できる。
-		if (shot_timer > shot.scm) shot_timer = shot.scm;						//現在の残りクールタイムがsca(連打用)より長いならショットのクールタイム(連打用)をセットする。
+	else if (!isPress && shot_timer > scm) {					//ショットボタンが離されて且つ連打時のクールタイムよりも現在のクールタイムが長い場合
+		shot_timer = scm;										//連打時のクールタイムに上書きする
 	}
 
 
 	for (int s = 0; s < SLOT_MAX; s++) {														//画面上に同時に存在できるスロット数繰り返す
-		if (slots[s].SetCount > 0) {															//残り弾数があるスロットを見つける
-			if (slots[s].SetTimer <= 0) {
-
-				bool isHoming = (move_v == para.vs);							//低速時ホーミング
+		if (MainSlot[s].SetCount > 0) {															//残り弾数があるスロットを見つける
+			if (MainSlot[s].SetTimer <= 0) {
 
 
-				bm->LaunchPlayerBullet(x - shot.sox, y, shot.sr, shot.ssx, shot.ssy, isHoming, PlayerHomingPower);		//ここでturnSpeedにPlayerHomingPowerを代入する。
-				bm->LaunchPlayerBullet(x + shot.sox, y, shot.sr, shot.ssx, shot.ssy, isHoming, PlayerHomingPower);		
-				
-				slots[s].SetCount--;
-				slots[s].SetTimer = shot.LI;
+				bm->LaunchPlayerBullet(x - MainShot.sox, y, MainShot.sr, MainShot.ssx, MainShot.ssy, false, 0.0f);		//ここでturnSpeedにPlayerHomingPowerを代入する。
+				bm->LaunchPlayerBullet(x + MainShot.sox, y, MainShot.sr, MainShot.ssx, MainShot.ssy, false, 0.0f);
+
+				MainSlot[s].SetCount--;
+				MainSlot[s].SetTimer = MainShot.LI;
 			}
-			if (slots[s].SetTimer > 0) slots[s].SetTimer--;
+			if (MainSlot[s].SetTimer > 0) MainSlot[s].SetTimer--;
 		}
 	}
-	if (shot_timer > 0) shot_timer--;
+
+	for (int s = 0; s < SLOT_MAX; s++) {
+		if (SubSlot[s].SetCount > 0) {
+			if (SubSlot[s].SetTimer <= 0) {
+				bm->LaunchPlayerBullet(x, y, SubHoming.sr, 0.0f, SubHoming.ssy, true, SubHoming.turn);	//ホーミングなのでフラグをtrueにして、turnの値を渡す
+
+				SubSlot[s].SetCount--;
+				SubSlot[s].SetTimer = SubHoming.LI;
+			}
+			if (SubSlot[s].SetTimer > 0) SubSlot[s].SetTimer--;
+		}
+	}
+
+	if (shot_timer > 0) shot_timer--;						//クールタイムが0でないならデクリメント
 }
 
 

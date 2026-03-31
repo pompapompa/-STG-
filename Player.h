@@ -1,4 +1,5 @@
 #pragma once
+#include "Common.h"
 
 /*初期値を知るためのものはpublicでいいが、ホーミングアミュレット等の毎フレームの引数を使って
   計算や更新するやつはprivateで外部から上書きされないようにする。*/
@@ -22,25 +23,18 @@ struct PlayerParameter {
 	float areaH;							//プレイ領域にめり込める自機からの距離y
 };
 
-struct ShotParameter {
-	int L;									//1セット内の総発射弾数
-	int LI;									//セット内の1発ごとの発射間隔のフレーム数
-	float sox;								//ShotOffSet_X
-	float ssx;								//ShotSpeed_X
-	float ssy;								//ShotSpeed_Y
-	float sr;								//Shot半径
-	int sca;								//ShotChargeAutomatic
-	int scm;								//ShotChargeManualtransmission
-};
+	
 
 
 
 class Player {
 private:
 	static constexpr int SLOT_MAX = 30;		// 同時に重なっても良いバーストの最大数
-	BurstSlot slots[SLOT_MAX];				// 構造体の配列をメンバ変数として持つ
-	
-	static constexpr float PlayerHomingPower = 0.18f;		//ホーミングの曲がりやすさの
+	BurstSlot MainSlot[SLOT_MAX];				//メインショット用スロット
+	BurstSlot SubSlot[SLOT_MAX];				//サブショット用スロット
+
+	static constexpr int sca = 20;								//ShotChargeAutomatic
+	static constexpr int scm = 10;								//ShotChargeManualtransmission
 
 
 	static constexpr PlayerParameter para{	//ここで同時にインスタンス宣言も行っている
@@ -53,21 +47,40 @@ private:
 		10.0f								//areaH：プレイ領域にめり込める自機からの距離y
 	};
 
-	static constexpr ShotParameter shot{
-		15,									//L:1セット内の総発射弾数
-		2,									//LI:セット内の1発ごとの発射間隔のフレーム数
-		10.0f,								//sox:自機中心から左右弾発射位置までの距離
-		0.0f,								//ssx:弾速_X
-		-10.0f,								//ssy:弾速_Y
-		3.0f,								//sr:弾半径
-		20,									//ssa:次のセット発射までのクールタイム/長押し用(オートマチック)
-		10									//scm:次のセット発射までのクールタイム/連打用(マニュアル)
+	static constexpr StraightShotData MainShot{
+		15,									//L：1セット内の総発射弾数
+		2,									//LI：セット内の1発ごとの発射間隔のフレーム数
+		10.0f,								//sox：ShotOffSet_X
+		0.0f,								//ssx：ShotSpeed_X
+		-10.0f,								//ssy：ShotSpeed_Y
+		3.0f								//sr：Shot半径
 	};
+
+	static constexpr HomingShotData SubHoming{
+		15,									//L：1セット内の総発射弾数
+		3,									//LI：セット内の1発ごとの発射間隔のフレーム数
+		-8.0f,								//ssy：ShotSpeed_Y
+		3.0f,								//sr：Shot半径
+		0.18f								//turn：ホーミングの曲がりやすさのパラメータ
+	};
+
+	static constexpr StraightShotData wideSpread{
+		10,									//L：1セット内の総発射弾数,
+		3,									//LI：セット内の1発ごとの発射間隔のフレーム数
+		20.0f,								//sox：ShotOffSet_X
+		2.0f,								//ssx：ShotSpeed_X
+		-9.0f,								//ssy：ShotSpeed_Y
+		3.0f								//sr：Shot半径
+	};
+
 
 	float x = 320.0f;
 	float y = 240.0f;
 	int shot_timer = 0;
 	float move_v = 0;
+
+
+	void ActivateWeapon(BurstSlot* slots, int count);		//指定したスロット配列の空きを探して弾をセットする。ヘルパー関数
 
 
 public:

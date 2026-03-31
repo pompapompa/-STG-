@@ -18,7 +18,7 @@ private:
 	
 	static constexpr BossParameter para{
 		30.0f,											//r：ボス半径
-		1000.0f,											//max_hp：ボスの最大体力
+		1000.0f,										//max_hp：ボスの最大体力
 		25.0f,											//GaugeOffset_R：体力ゲージの半径		
 		512,											//GaugeSegment：体力ゲージ円弧の分割数
 		5.0f,											//GaugeThickness：体力ゲージの線の太さ

@@ -6,3 +6,22 @@ namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書かねばならない
 	static constexpr int Top = 16;
 	static constexpr int Bottom = 464;			//16+448で448=64*7で色々うれしいらしい、詳細はDiscord
 };
+
+
+struct StraightShotData {
+	int L;								//1セット内の総発射弾数
+	int LI;								//セット内の1発ごとの発射間隔のフレーム数
+	float sox;							//ShotOffSet_X
+	float ssx;							//ShotSpeed_X
+	float ssy;							//ShotSpeed_Y
+	float sr;							//Shot半径
+};
+
+
+struct HomingShotData {
+	int L;								//1セット内の総発射弾数
+	int LI;								//セット内の1発ごとの発射間隔のフレーム数
+	float ssy;							//ShotSpeed_Y
+	float sr;							//Shot半径
+	float turn;							//旋回性能(PlayerHomingPowerに相当)
+};
