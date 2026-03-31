@@ -10,28 +10,57 @@
 void Boss::Spawn(float in_x, float in_y) {
 	Encount(in_x, in_y, para.r, 0.0f, 0.0f);
 
-	this->max_hp = para.max_hp;								//引数のin_hpをmax_hpへ代入し、hpにmax_hpを代入			
-	this->hp = this->max_hp;
+	currentIdx = 0;
+	this->hp = phases[currentIdx].hpLimit;								//そのフェーズのHPをthis->hpに入れる
+	this->phaseMaxHp = this->hp;										//フェーズの最大HPへthis->hpを代入
+
 	this->timer = 0;
+	this->phaseTimer = 0;
 	this->flag = true;
 }
 
-void Boss::Update() {
+void Boss::Update(BulletManager* bm) {									//BulletManagerを使って弾を撃つ
 	using namespace PlayArea;
 	if (!flag) return;
+
 	timer++;
+	phaseTimer++;
+
 	x = Left + (Right - Left) * para.SpawnRate_X;								//プレイ領域の左端からx軸についてのプレイ領域の真ん中の座標を足してプレイ領域の真ん中のx座標を出す。x,yがfloat型であるからfを付ける
 	y = Top + (Bottom - Top) * para.SpawnRate_Y;								//プレイ領域の上からy軸についてのプレイ領域の1/4の位置の座標を足してプレイ領域の上から1/4のy座標を出す。
+
+	const BossPhase& p = phases[currentIdx];
+	if (phaseTimer % p.interval == 0) {
+		float step = (DX_PI_F * 2.0f) / p.bulletNum;
+		for (int i = 0; i < p.bulletNum; i++) {
+			float ang = step * i + (timer * 0.02f);								//timerに定数を掛けることで回転させることが出来る
+			float vx = cosf(ang) * p.bulletSpeed;
+			float vy = sinf(ang) * p.bulletSpeed;
+			bm->LaunchEnemyBullet(x, y, 4.0f, vx, vy, false, 0.0f);
+		}
+	}
+
+	if (hp <= 0) {																//フェーズのhpがなくなった場合
+		currentIdx++;															//現在のフェーズを次の段階へ
+		if (currentIdx < PHASE_MAX) {											//フェーズが全て終わっていない場合
+			this->hp = phases[currentIdx].hpLimit;								//次のフェーズのhpへ更新
+			this->phaseMaxHp = this->hp;										//同様
+			this->phaseTimer = 0;												//フェーズタイマーの初期化
+		}
+		else {
+			flag = false;														//全スペカ終了でボスフラグを消す
+		}
+	}
 }
 
 void Boss::Draw() {
 	if (!flag)return;
 	DrawCircle(x, y, r, GetColor(255, 0, 0), true);
 
-	if (max_hp > 0) {
-		float hp_rate = (float)hp / max_hp;										//hpの比率計算	
+	if (phaseMaxHp > 0) {
+		float hp_rate = GetHpRate();										//hpの比率計算	
 		int draw_limit = (int)(para.GaugeSegments * hp_rate);					//残HP分の角を描画
-		
+
 		for (int i = 0; i < draw_limit; i++) {									//多角形の角数だけ繰り返す
 			float a1 = para.StartAngle - (DX_PI_F * 2.0f * i / para.GaugeSegments);			//現在の点の角度
 			float a2 = para.StartAngle - (DX_PI_F * 2.0f * (i + 1) / para.GaugeSegments);	//次点の角度
@@ -59,9 +88,8 @@ bool Boss::CheckCollision(Player& player, BulletManager& bm) {
 			b.flag = false;											//当たった弾フラグは消す
 		}
 	}
-	if (hp <= 0.0f) {												//ボスhpが0未満になった時にボスフラグを消す
-		flag = false;
+	if (hp <= 0.0f && currentIdx >= PHASE_MAX - 1) {				//ボスhpが0未満になって且つ全段階終了時にボスフラグを消す
 		return true;												//倒したフラグを立てる
 	}
-	return false;													//hp<=0.0fを通らなかったので倒したフラグは立たない
+	return false;
 }

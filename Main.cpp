@@ -43,7 +43,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			isWindow = !isWindow;							//trueとfalseの状態を交互に交換する
 			ChangeWindowMode(isWindow ? TRUE : FALSE);		//
 			while (CheckHitKey(KEY_INPUT_F)) {
-				if (ProcessMessage() != 0);
+				if (ProcessMessage() != 0) return -1;
 			}
 		}
 
@@ -54,7 +54,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawString(240, 210, "東方酔々夢", GetColor(255, 255, 255), 20);
 			DrawString(270, 270, (TitleMenu.GetSelect() == 0 ? "> Start" : "Start"), GetColor(255, 255, 255));
 			DrawString(270, 300, (TitleMenu.GetSelect() == 1 ? "> Practice" : "Practice"), GetColor(255, 255, 255));
-			DrawString(270, 330, (TitleMenu.GetSelect() == 2 ? ">Replay" : "Replay"), GetColor(255, 255, 255));
+			DrawString(270, 330, (TitleMenu.GetSelect() == 2 ? "> Replay" : "Replay"), GetColor(255, 255, 255));
 			DrawString(270, 360, (TitleMenu.GetSelect() == 3 ? "> Quit" : "Quit"), GetColor(255, 255, 255));
 
 			if (CheckHitKey(KEY_INPUT_UP)) {
@@ -90,7 +90,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 
 			player.Update(&bm);											//*付きのポインタ型であるので、Main.cppで渡す時は&(アンパサンド)を付けてアドレスとして渡す必要がある
-			boss.Update();
+			boss.Update(&bm);
 			bm.Update(player.GetX(), player.GetY(), boss.GetX(), boss.GetY(), boss.GetFlag());
 
 			bool isDead = boss.CheckCollision(player, bm);				//自機弾とボスの位置等をUpdateで計算してから当たり判定を回して戻り値の倒したフラグをisDeadに格納。参照で値を受け取るので上のbmとは違い、インスタンスをそのまま記述で良い
