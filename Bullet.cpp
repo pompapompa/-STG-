@@ -30,5 +30,6 @@ void Bullet::Guide(float tx, float ty, float turnSpeed) {
 
 void Bullet::Draw() {
 	if (!flag) return;
-	DrawCircle(x, y, r, GetColor(255, 255, 255), true);
+    DrawCircle((int)x, (int)y, (int)r, color, true);
+	DrawCircle((int)x, (int)y, (int)r, GetColor(255, 255, 255), true);
 }

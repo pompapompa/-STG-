@@ -94,6 +94,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			bm.Update(player.GetX(), player.GetY(), boss.GetX(), boss.GetY(), boss.GetFlag());
 
 			bool isDead = boss.CheckCollision(player, bm);				//自機弾とボスの位置等をUpdateで計算してから当たり判定を回して戻り値の倒したフラグをisDeadに格納。参照で値を受け取るので上のbmとは違い、インスタンスをそのまま記述で良い
+			
+			bool isPlayerHit = false;
+			if (!player.IsInvincible()) {
+				isPlayerHit = bm.CheckPlayerCollision(player.GetX(), player.GetY(), player.GetHitR());
+			}
+
+			if (isPlayerHit) {
+				player.SetInVincible(player.GetInvincibleTime());
+			}
 
 			player.Draw();
 			boss.Draw();

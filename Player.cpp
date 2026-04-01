@@ -42,6 +42,10 @@ void Player::Update(BulletManager* bm) {
 	if (y > Bottom - para.areaH) y = Bottom - para.areaH;
 
 
+	if (invincibleTimer > 0) {
+		invincibleTimer--;										//無敵時間の変数が0超過ならデクリメント
+	}
+
 	bool isPress = (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_SPACE));		//ショット発射ボタンを押しているか
 	bool isSlow = (move_v == para.vs);												//低速状態か
 
@@ -91,16 +95,16 @@ void Player::Update(BulletManager* bm) {
 
 
 void Player::Draw() {
+
+	if (IsInvincible() && (invincibleTimer % para.blinkCycle < para.blinkThreshold)) {		
+		return;												//無敵判定がtrue且つ無敵時間全体を周期で割ってそれがblinkThresholdよりも小さい時に描画処理をreturnでスキップすることで点滅させる
+	}
+
 	DrawCircle(x, y, para.r, GetColor(0, 255, 0), true);
 	if (move_v == para.vs) {
 		DrawCircle(x, y, para.hr, GetColor(255, 255, 255), true);
 		DrawCircle(x, y, para.hfr, GetColor(255, 0, 0), false);
 	}
-
-	/*for (int i = 0; i < bmax; i++) {
-		bullets[i].Draw();								//弾の描画
-	}
-	*/
 }
 
 int Player::GetBulletNum(const BulletManager* bm) const {

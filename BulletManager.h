@@ -19,4 +19,9 @@ public:
 
 	int GetPlayerBulletMax() const { return PlayerBMax; }
 	Bullet& GetPlayerBullet(int index) { return p_bullets[index]; }
+
+
+	bool CheckPlayerCollision(float px, float py, float pr);
+
 };
+

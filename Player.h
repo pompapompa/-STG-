@@ -21,6 +21,9 @@ struct PlayerParameter {
 	float hfr;								//hit半径の枠の半径
 	float areaW;							//プレイ領域にめり込める自機からの距離x
 	float areaH;							//プレイ領域にめり込める自機からの距離y
+	int	  invincibleTime;					//被弾時の無敵時間
+	int   blinkCycle;						//点滅の周期
+	int   blinkThreshold;					//消える時間(この数値以下のときは消灯)
 };
 
 	
@@ -44,7 +47,10 @@ private:
 		2.0f,								//hr:当たり判定白い部分
 		3.0f,								//hfr:当たり判定の枠の赤い部分
 		8.0f,								//areaW：プレイ領域にめり込める自機からの距離x
-		10.0f								//areaH：プレイ領域にめり込める自機からの距離y
+		10.0f,								//areaH：プレイ領域にめり込める自機からの距離y
+		120,								//invincibleTime：被弾時の無敵時間
+		10,									//blinkCycle；点滅の周期
+		7									//blinkThreshold；消える時間
 	};
 
 	static constexpr StraightShotData MainShot{
@@ -77,6 +83,7 @@ private:
 	float x = 320.0f;
 	float y = 240.0f;
 	int shot_timer = 0;
+	int invincibleTimer = 0;				//0<Timerなら無敵
 	float move_v = 0;
 
 
@@ -89,8 +96,16 @@ public:
 
 	int GetBulletNum(const BulletManager * bm) const;
 
-	bool GetFlag() const { return true; }			
+	bool GetFlag() const { return true; }	
+
+	bool IsInvincible() const { return invincibleTimer > 0; }			//現在無敵かどうかの判定
+	void SetInVincible(int frame) { invincibleTimer = frame; }			//無敵時間(フレーム)をセット
+
+	/*　　↓はprivateに書いた物を安全に読み込み専用でインスタンスから値のみ取得する　　*/
 	float GetX() const { return x; }			//ホーミング用にx座標を取得する
 	float GetY() const { return y; }			//ホーミング用にy座標を取得する
-	float GetR() const { return para.r; }
+	float GetR() const { return para.r; }		//描画とかする用にr値を取得する
+	float GetHitR() const { return para.hr; }	//敵弾と自機の当たり判定用に当たり判定の半径の値を取得する
+	int GetInvincibleTime() const { return para.invincibleTime; }	//無敵時間のコンパイル時定数をparaより取得
+	int GetBlinkCycle() const { return para.blinkCycle; }			//点滅の周期
 };
