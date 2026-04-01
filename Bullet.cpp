@@ -30,6 +30,13 @@ void Bullet::Guide(float tx, float ty, float turnSpeed) {
 
 void Bullet::Draw() {
 	if (!flag) return;
-    DrawCircle((int)x, (int)y, (int)r, color, true);
-	DrawCircle((int)x, (int)y, (int)r, GetColor(255, 255, 255), true);
+
+    if (owner == OwnerType::ENEMY) {
+        DrawCircle((int)x, (int)y, (int)r, BulletColor::Get(BulletColor::Type::WHITE), true);
+        DrawCircle((int)x, (int)y, (int)r, BulletColor::Get(BulletColor::Type::BLUE), false);
+    }
+    else {
+        DrawCircle((int)x, (int)y, (int)r, BulletColor::Get(BulletColor::Type::RED), true);
+        DrawCircle((int)x, (int)y, (int)r, BulletColor::Get(BulletColor::Type::WHITE), false);
+    }
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include "DxLib.h"
 
 namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書かねばならないが、これだと使用する関数内でusing namespace PlayArea;と一度宣言すればその関数内限定で使えるようになるから便利ってこと
 	static constexpr int Left = 32;					      //！因みにconstexprだと実行する前からすでに分かっている定数ということらしい。constは引数とか実行時に取得するような定数らしい
@@ -38,4 +39,31 @@ struct BossPhase {
 	bool	isDouble;					//trueなら逆回転の弾幕を追加
 	float	offsetAngle;				//逆回転側の初期角度のずれ具合
 	int		offsetTime;					//逆回転側の発射タイミングのフレーム差
+};
+
+
+struct BulletColor {
+	enum class Type {
+		BLACK,							//0
+		RED,							//1
+		GREEN,							//2
+		BLUE,							//3
+		YELLOW,							//4
+		MAGENTA,						//5
+		CYAN,							//6
+		WHITE							//7
+	};
+
+	static unsigned int Get(Type type) {
+		switch (type) {
+		case Type::BLACK:		return GetColor(0, 0, 0);
+		case Type::RED:			return GetColor(255,   0,   0);
+		case Type::GREEN:		return GetColor(  0, 255,   0);
+		case Type::BLUE:		return GetColor(  0,   0, 255);
+		case Type::YELLOW:		return GetColor(255, 255,   0);
+		case Type::MAGENTA:		return GetColor(255,   0, 255);
+		case Type::CYAN:		return GetColor(  0, 255, 255);
+		default:				return GetColor(255, 255, 255);
+		}
+	}
 };
