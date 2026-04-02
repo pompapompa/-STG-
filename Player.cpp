@@ -6,15 +6,16 @@
 
 
 
-void Player::ActivateWeapon(BurstSlot* slots, int count) {
+void Player::ActivateWeapon(BurstController* slots, int count) {
 	for (int i = 0; i < SLOT_MAX; i++) {
-		if (slots[i].SetCount <= 0) {							//弾がセットされていない弾を見つけたら
-			slots[i].SetCount = count;							//countをセットする
-			slots[i].SetTimer = 0;								//すぐに撃てるようにする
+		if (!slots[i].IsActive()) {
+			slots[i].Activate(count);
 			break;
 		}
 	}
 }
+
+
 
 void Player::Update(BulletManager* bm) {
 	using namespace PlayArea;
@@ -63,40 +64,25 @@ void Player::Update(BulletManager* bm) {
 
 
 	for (int s = 0; s < SLOT_MAX; s++) {														//画面上に同時に存在できるスロット数繰り返す
-		if (MainSlot[s].SetCount > 0) {															//残り弾数があるスロットを見つける
-			if (MainSlot[s].SetTimer <= 0) {
-
-
-				bm->LaunchPlayerBullet(x - MainShot.sox, y, MainShot.sr, MainShot.ssx, MainShot.ssy, false, 0.0f);		//ここでturnSpeedにPlayerHomingPowerを代入する。
-				bm->LaunchPlayerBullet(x + MainShot.sox, y, MainShot.sr, MainShot.ssx, MainShot.ssy, false, 0.0f);
-
-				MainSlot[s].SetCount--;
-				MainSlot[s].SetTimer = MainShot.LI;
-			}
-			if (MainSlot[s].SetTimer > 0) MainSlot[s].SetTimer--;
+		if (MainSlot[s].Tick(MainShot.LI)) {
+			bm->LaunchPlayerBullet(x - MainShot.sox, y, MainShot.sr, MainShot.ssx, MainShot.ssy, false, 0.0f);		//ここでturnSpeedにPlayerHomingPowerを代入する。
+			bm->LaunchPlayerBullet(x + MainShot.sox, y, MainShot.sr, MainShot.ssx, MainShot.ssy, false, 0.0f);
 		}
 	}
 
 	for (int s = 0; s < SLOT_MAX; s++) {
-		if (SubSlot[s].SetCount > 0) {
-			if (SubSlot[s].SetTimer <= 0) {
-				bm->LaunchPlayerBullet(x, y, SubHoming.sr, 0.0f, SubHoming.ssy, true, SubHoming.turn);	//ホーミングなのでフラグをtrueにして、turnの値を渡す
-
-				SubSlot[s].SetCount--;
-				SubSlot[s].SetTimer = SubHoming.LI;
-			}
-			if (SubSlot[s].SetTimer > 0) SubSlot[s].SetTimer--;
+		if (SubSlot[s].Tick(SubHoming.LI)) {
+			bm->LaunchPlayerBullet(x, y, SubHoming.sr, 0.0f, SubHoming.ssy, true, SubHoming.turn);
 		}
 	}
 
-	if (shot_timer > 0) shot_timer--;						//クールタイムが0でないならデクリメント
+	if (shot_timer > 0) shot_timer--;
 }
-
 
 
 void Player::Draw() {
 
-	if (IsInvincible() && (invincibleTimer % para.blinkCycle < para.blinkThreshold)) {		
+	if (IsInvincible() && (invincibleTimer % para.blinkCycle < para.blinkThreshold)) {
 		return;												//無敵判定がtrue且つ無敵時間全体を周期で割ってそれがblinkThresholdよりも小さい時に描画処理をreturnでスキップすることで点滅させる
 	}
 

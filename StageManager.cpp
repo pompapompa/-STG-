@@ -1,6 +1,7 @@
 #include "StageManager.h"
 #include "Common.h"
 #include "DxLib.h"
+#include "BurstController.h"
 
 /*@[[[[[DxLib‚ÌƒfƒtƒHF‰æ–ÊƒTƒCƒY(640,480)[[[[[@*/
 
@@ -12,10 +13,12 @@ static constexpr int top = Top + StageManager::upMargin;			//—d¸‚ªo‚Ä‚­‚é‚Éƒ
 
 static constexpr EnemySpawn Stage1Timeline[] = {
 	/*	frame,	x,		y,		vx,		vy,		r,		hp,		type@	count		interval  */
-	{	60,		Left, 	top,	1.0f,	0.0f,	15.0f,	10,		0,		5,			20	},
+	{	60,		Left, 	top,	2.0f,	0.0f,	15.0f,	10,		0,		5,			20	},
 	{	180,	Right,  top,	-2.5f,	0.0f,	15.0f,	10,		0,		7,			15	},
-	{	300,	Left,	top,	2.5f,	0.0f,	15.0f,	10,		0,		7,			15	},
-	{	420,	Right,  top,	-5.0f,	0.0f,	15.0f,	50,		0,		10,			10	}
+	{	240,	Left,	top,	2.5f,	0.0f,	15.0f,	10,		0,		5,			15	},
+	{	240,	Right,	top,	-2.5f,	0.0f,	15.0f,	10,		0,		5,			15	},
+	{	360,	Left,   top,	5.0f,	0.0f,	15.0f,	15,		0,		10,			10	},
+	{	360,	Right,  top,	-5.0f,	0.0f,	15.0f,	15,		0,		10,			10	}
 };
 
 
@@ -24,38 +27,38 @@ static constexpr EnemySpawn Stage1Timeline[] = {
 static constexpr int SPAWN_COUNT = sizeof(Stage1Timeline) / sizeof(EnemySpawn);	//ƒf[ƒ^‚ÌŒÂ”‚ğŒvZ
 
 void StageManager::Update(BulletManager* bm) {
-	static int remainToSpawn = 0;				//c‚è‰½‘Ìo‚·‚©
-	static int nextSpawnTimer = 0;				//Ÿ‚Ì—d¸oŒ‚‚Ü‚Å‚Ì‘Ò‚¿ŠÔ
-	static int currentDataIdx = 0;				//‚Ç‚Ìƒ^ƒCƒ€ƒ‰ƒCƒ“ƒf[ƒ^‚ğg—p‚µ‚Ä‚¢‚é‚©•Û‘¶
-
+	
 	stageTimer++;								//ŠÔ‚ği‚ß‚é
 
 	if (state == StageState::DOCHU) {
 		for (int i = 0; i < SPAWN_COUNT; i++) {
 			if (Stage1Timeline[i].frame == stageTimer) {				//EnemySpawn‚Ìframe‚ÆŒo‰ßŠÔ‚ªˆê’v‚µ‚½ê‡
-				remainToSpawn = Stage1Timeline[i].count;				//‰½‘Ì1—ñ‚ÅoŒ‚‚·‚é‚©
-				nextSpawnTimer = 0;										//Å‰‚Ì1‘Ì–Ú‚Í‘¦À‚ÉoŒ‚‚·‚é‚½‚ß0
-				currentDataIdx = i;										//‚Ç‚Ì—d¸‚ğoŒ‚‚³‚¹‚é‚©‚ğŠi”[
-			}
-		}
-
-		if (remainToSpawn > 0) {										//c‚è—d¸”‚ª0‚Å‚È‚¢ê‡
-			nextSpawnTimer--;											//‘Ò‚¿ŠÔ‚ğƒfƒNƒŠƒƒ“ƒg
-			if (nextSpawnTimer <= 0) {									//oŒ‚‚Ü‚Å‚Ìc‚èŠÔ‚ª0ˆÈ‰º‚Ìê‡
-				for (int j = 0; j < Enemy::EnemyMax; j++) {				//
-					if (!fairies[j].GetFlag()) {
-						auto& data = Stage1Timeline[currentDataIdx];		//Ši”[‚µ‚½—d¸‚ÌŒŸ‘Ì”Ô†‚ğEncountŠÖ”‚Ég—p
-						fairies[j].Encount(data.x, data.y, data.r, data.vx, data.vy, data.hp);
-
-						remainToSpawn--;									//c‚è‚Ì—d¸”‚ğƒfƒNƒŠƒƒ“ƒg
-						nextSpawnTimer = data.interval;						//‘à—ñ“à‚ÌŸ‚Ì—d¸‚ğoŒ‚‚·‚é‚Ü‚Å‚ÌŠÔŠu
+				for (int s = 0; s < MAX_SPAWN_SLOT; s++) {
+					if (!SpawnSlots[s].IsActive()) {
+						SpawnSlots[s].Activate(Stage1Timeline[i].count, i);		//ˆø”‚Åi‚ğ“n‚µ‚Ä‚Ç‚ê‚ğg‚¤‚©Šo‚¦‚³‚¹‚é
 						break;
 					}
 				}
 			}
 		}
+		for (int s = 0; s < MAX_SPAWN_SLOT; s++) {
+			if (SpawnSlots[s].IsActive()) {
+				int dataIdx = SpawnSlots[s].GetDataIdx();
 
-		if (stageTimer >= 520) {
+				if (SpawnSlots[s].Tick(Stage1Timeline[dataIdx].interval)) {
+					for (int j = 0; j < Enemy::EnemyMax; j++) {
+						if (!fairies[j].GetFlag()) {
+							auto& d = Stage1Timeline[dataIdx];
+							fairies[j].Encount(d.x, d.y, d.r, d.vx, d.vy, d.hp);
+							break;
+						}
+					}
+				}
+			}
+		}
+
+
+		if (stageTimer >= 600) {
 			state = StageState::BOSS_BATTLE;		//ƒXƒe[ƒWó‘Ô‚ğƒ{ƒXí‚ÖˆÚs
 
 
@@ -103,6 +106,10 @@ void StageManager::Init(BulletManager* bm) {							//ƒXƒe[ƒW‚Ìó‘Ô‚ğ‘S‚ÄƒŠƒZƒbƒ
 
 	for (int i = 0; i < 100; i++) {
 		fairies[i].SetFlag(false);					//—d¸ƒtƒ‰ƒO‚àÜ‚é
+	}
+
+	for (int i = 0; i < MAX_SPAWN_SLOT; i++) {
+		SpawnSlots[i].Reset();
 	}
 
 	bm->ClearAllBullets();

@@ -3,6 +3,7 @@
 #include "Enemy.h"
 #include "Player.h"
 #include "BulletManager.h"
+#include "BurstController.h"
 
 
 enum class StageState {
@@ -37,7 +38,8 @@ private:
 
 public:
 	static constexpr int upMargin = 80;			//妖精が出てくる時に上からどれくらい開けて出現するか
-
+	static constexpr int MAX_SPAWN_SLOT = 10;	//同時出現可能隊数
+	BurstController SpawnSlots[MAX_SPAWN_SLOT];		//出現予約スロット
 
 	StageManager() : stageTimer(0),state(StageState::DOCHU){}	//コンストラクタというクラスの初期化専用関数で、クラスと同じ名前にして、戻り値の型を記述しない。クラスが生まれた瞬間stageTimerを0に、stateをDOCHUに設定する役割
 

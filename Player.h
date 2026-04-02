@@ -1,17 +1,12 @@
 #pragma once
 #include "Common.h"
+#include "BurstController.h"
 
 /*初期値を知るためのものはpublicでいいが、ホーミングアミュレット等の毎フレームの引数を使って
   計算や更新するやつはprivateで外部から上書きされないようにする。*/
 
 
 class BulletManager;						//前方宣言でマネージャーの存在だけ教える
-
-
-struct BurstSlot {
-	int	SetCount = 0;						//リールガンの1セットの残り弾数
-	int SetTimer = 0;						//リールガンのセット内の次に撃つまでの間隔
-};
 
 struct PlayerParameter {					
 	float vn;				
@@ -26,15 +21,12 @@ struct PlayerParameter {
 	int   blinkThreshold;					//消える時間(この数値以下のときは消灯)
 };
 
-	
-
-
 
 class Player {
 private:
 	static constexpr int SLOT_MAX = 30;		// 同時に重なっても良いバーストの最大数
-	BurstSlot MainSlot[SLOT_MAX];				//メインショット用スロット
-	BurstSlot SubSlot[SLOT_MAX];				//サブショット用スロット
+	BurstController MainSlot[SLOT_MAX];				//メインショット用スロット
+	BurstController SubSlot[SLOT_MAX];				//サブショット用スロット
 
 	static constexpr int sca = 20;								//ShotChargeAutomatic
 	static constexpr int scm = 10;								//ShotChargeManualtransmission
@@ -87,7 +79,7 @@ private:
 	float move_v = 0;
 
 
-	void ActivateWeapon(BurstSlot* slots, int count);		//指定したスロット配列の空きを探して弾をセットする。ヘルパー関数
+	void ActivateWeapon(BurstController* slots, int count);		//指定したスロット配列の空きを探して弾をセットする。ヘルパー関数
 
 
 public:
