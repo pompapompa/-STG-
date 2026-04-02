@@ -19,8 +19,10 @@ struct EnemySpawn {
 	float x, y;					//出現位置
 	float vx, vy;				//移動速度
 	float r;					//半径
-	int hp;						//体力
+	int	  hp;						//体力
 	int   type;					//妖精の種類
+	int   count;				//隊列の数				
+	int   interval;				//出撃間隔(フレーム)
 };
 
 class StageManager {
@@ -34,6 +36,9 @@ private:
 
 
 public:
+	static constexpr int upMargin = 80;			//妖精が出てくる時に上からどれくらい開けて出現するか
+
+
 	StageManager() : stageTimer(0),state(StageState::DOCHU){}	//コンストラクタというクラスの初期化専用関数で、クラスと同じ名前にして、戻り値の型を記述しない。クラスが生まれた瞬間stageTimerを0に、stateをDOCHUに設定する役割
 
 	void Update(BulletManager* bm);			//弾を出すタイミングとかで必要になるので住所を知っておく。(&bmは場所を教える。*bmはその場所の情報を受け取る箱のようなもの)

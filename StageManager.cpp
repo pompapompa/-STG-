@@ -7,12 +7,15 @@
 
 using namespace PlayArea;
 
+static constexpr int top = Top + StageManager::upMargin;			//妖精が出てくる時にプレイ領域の上からどれくらい開けて出現するか
+
+
 static constexpr EnemySpawn Stage1Timeline[] = {
-	/*	frame,	x,		y,		vx,		vy,		r,		hp,		type　*/
-	{	60,		Left, 	Top,	1.0f,	1.0f,	15.0f,	10,		0},
-	{	120,	Left,   Top,	1.5f,	2.0f,	15.0f,	10,		0},
-	{	120,	Right,  Top,	-1.5f,	2.0f,	15.0f,	10,		0},
-	{	240,	Right,  Top,	-1.0f,	5.0f,	15.0f,	50,		0}
+	/*	frame,	x,		y,		vx,		vy,		r,		hp,		type　	count		interval  */
+	{	60,		Left, 	top,	1.0f,	0.0f,	15.0f,	10,		0,		5,			20	},
+	{	180,	Right,  top,	-2.5f,	0.0f,	15.0f,	10,		0,		7,			15	},
+	{	300,	Left,	top,	2.5f,	0.0f,	15.0f,	10,		0,		7,			15	},
+	{	420,	Right,  top,	-5.0f,	0.0f,	15.0f,	50,		0,		10,			10	}
 };
 
 
@@ -30,7 +33,7 @@ void StageManager::Update(BulletManager* bm) {
 	if (state == StageState::DOCHU) {
 		for (int i = 0; i < SPAWN_COUNT; i++) {
 			if (Stage1Timeline[i].frame == stageTimer) {				//EnemySpawnのframeと経過時間が一致した場合
-				remainToSpawn = 5;										//何体1列で出撃するか
+				remainToSpawn = Stage1Timeline[i].count;				//何体1列で出撃するか
 				nextSpawnTimer = 0;										//最初の1体目は即座に出撃するため0
 				currentDataIdx = i;										//どの妖精を出撃させるかを格納
 			}
@@ -45,7 +48,7 @@ void StageManager::Update(BulletManager* bm) {
 						fairies[j].Encount(data.x, data.y, data.r, data.vx, data.vy, data.hp);
 
 						remainToSpawn--;									//残りの妖精数をデクリメント
-						nextSpawnTimer = 12;
+						nextSpawnTimer = data.interval;						//隊列内の次の妖精を出撃するまでの間隔
 						break;
 					}
 				}
