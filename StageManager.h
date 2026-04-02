@@ -19,6 +19,7 @@ struct EnemySpawn {
 	float x, y;					//oŒ»ˆÊ’u
 	float vx, vy;				//ˆÚ“®‘¬“x
 	float r;					//”¼Œa
+	int hp;						//‘Ì—Í
 	int   type;					//—d¸‚Ìí—Ş
 };
 

@@ -8,11 +8,11 @@
 using namespace PlayArea;
 
 static constexpr EnemySpawn Stage1Timeline[] = {
-	/*	frame,	x,		y,		vx,		vy,		r,		typeÅ@*/
-	{	60,		Left, 	Top,	1.0f,	1.0f,	15.0f,	0},
-	{	120,	Left,   Top,	1.5f,	2.0f,	15.0f,	0},
-	{	120,	Right,  Top,	-1.5f,	2.0f,	15.0f,	0},
-	{	240,	Right,  Top,	-1.0f,	5.0f,	15.0f,	0}
+	/*	frame,	x,		y,		vx,		vy,		r,		hp,		typeÅ@*/
+	{	60,		Left, 	Top,	1.0f,	1.0f,	15.0f,	10,		0},
+	{	120,	Left,   Top,	1.5f,	2.0f,	15.0f,	10,		0},
+	{	120,	Right,  Top,	-1.5f,	2.0f,	15.0f,	10,		0},
+	{	240,	Right,  Top,	-1.0f,	5.0f,	15.0f,	50,		0}
 };
 
 
@@ -27,7 +27,7 @@ void StageManager::Update(BulletManager* bm) {
 				for (int j = 0; j < 100; j++) {
 					if (!fairies[j].GetFlag()) {
 						fairies[j].Encount(
-							Stage1Timeline[i].x, Stage1Timeline[i].y, Stage1Timeline[i].r, Stage1Timeline[i].vx, Stage1Timeline[i].vy	//Encountä÷êîÇ…à¯êîÇìnÇ∑
+							Stage1Timeline[i].x, Stage1Timeline[i].y, Stage1Timeline[i].r, Stage1Timeline[i].vx, Stage1Timeline[i].vy, Stage1Timeline[i].hp	//Encountä÷êîÇ…à¯êîÇìnÇ∑
 						);
 						break;
 					}
@@ -50,6 +50,7 @@ void StageManager::Update(BulletManager* bm) {
 	for (int i = 0; i < 100; i++) {
 		if (fairies[i].GetFlag()) {
 			fairies[i].Update();					//ÉtÉâÉOÇ™óßÇ¡ÇƒÇ¢ÇÈódê∏Çå©Ç¬ÇØÇΩÇÁçXêVÇµÇƒìÆÇ©Ç∑
+			
 		}
 	}
 
@@ -64,6 +65,7 @@ void StageManager::Draw(BulletManager* bm) {		//íeÇ∆Ç©ÇÃï`âÊ
 
 	for (int i = 0; i < 100; i++) {
 		if (fairies[i].GetFlag()) {
+			fairies[i].CheckCollision(bm);
 			fairies[i].Draw();						//ÉtÉâÉOÇ™óßÇ¡ÇƒÇ¢ÇÈódê∏Çï`âÊ
 		}
 	}
