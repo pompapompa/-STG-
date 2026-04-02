@@ -13,6 +13,7 @@ protected:								//Bossから変数にアクセスできるようにする
 	float vy = 0;
 	int hp = 0;
 	bool flag = false;
+	
 
 public:
 	virtual void Encount(float in_x, float in_y, float r_in, float in_vx, float in_vy, int in_hp);
@@ -27,4 +28,5 @@ public:
 	float GetX() { return x; }
 	float GetY() { return y; }
 	float GetR() { return r; }
+	static constexpr int EnemyMax = 100;
 };

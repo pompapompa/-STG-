@@ -1,6 +1,8 @@
 #pragma once
 #include "Bullet.h"
 
+class Enemy;																	//‘O•ûéŒ¾
+
 class BulletManager {
 private:
 	static constexpr int PlayerBMax = 1000;										//©‹@’e”z—ñ‚ÌÅ‘å”
@@ -14,7 +16,7 @@ public:
 
 	void LaunchEnemyBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming, float turnSpeed);		//“G’e”­Ë—pŠÖ”
 
-	void Update(float playerX, float playerY, float bossX, float bossY, bool bossAlive);
+	void Update(float playerX, float playerY, float bossX, float bossY, bool bossAlive, Enemy* fairies);
 	void Draw();
 	
 

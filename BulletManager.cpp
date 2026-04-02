@@ -1,6 +1,9 @@
 #include "BulletManager.h"
+#include <cfloat>
+#include "Distance.h"
 #include "Collision.h"
 #include "Bullet.h"
+#include "Enemy.h"
 
 
 void BulletManager::LaunchPlayerBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming, float turnSpeed) {
@@ -22,14 +25,43 @@ void BulletManager::LaunchEnemyBullet(float x, float y, float sr, float ssx, flo
 }
 
 
-void BulletManager::Update(float playerX, float playerY, float bossX, float bossY, bool bossAlive) {
+void BulletManager::Update(float playerX, float playerY, float bossX, float bossY, bool bossAlive, Enemy* fairies) {
 	for (int i = 0; i < PlayerBMax; i++) {
 		if (!p_bullets[i].GetFlag()) continue;
 
 		if (p_bullets[i].isHoming) {
 			if (p_bullets[i].owner == Bullet::OwnerType::PLAYER) {				//OwnerTypeはBulletクラス内で定義しているので、BulletクラスのOwnerTypeであることを明示する。
-				if (bossAlive) {
-					p_bullets[i].Guide(bossX, bossY, p_bullets[i].turnSpeed);						//OwnerTypeでPLAYERがなので自機が出す弾はボスを狙うからボス座標を引数とする。
+				
+				float targetX = -1.0f;
+				float targetY = -1.0f;
+				float minDistSq = FLT_MAX;										//FLT_MAXはfloat型が出せる最大の数字を出す
+				bool isTargetFound = false;
+				
+				
+				if (bossAlive) {																	//ボスのフラグが立ってる場合
+					minDistSq = Distance::BetweenSq(bossX, bossY, p_bullets[i].x, p_bullets[i].y);	//ボスと自機弾間の距離を代入
+					targetX = bossX;
+					targetY = bossY;
+					isTargetFound = true;															//ボスのフラグが立っているので当然見つけた判定にする
+				}
+
+				if (fairies != nullptr) {															//ヌルポインタ(妖精のデータが空っぽの状態で住所を渡してくる)時に無理矢理覗くとアクセス違反でエラーが起きるので、そうでない場合
+					for (int j = 0; j < Enemy::EnemyMax; j++) {
+						if (fairies[j].GetFlag()) {
+							float distSq = Distance::BetweenSq(fairies[j].GetX(), fairies[j].GetY(), p_bullets[i].x, p_bullets[i].y);		//distSqに自機と妖精の距離を代入
+							
+							if (distSq < minDistSq) {												//自機に妖精の方がボスより近い場合
+								minDistSq = distSq;													//一番近い距離変数に妖精の距離を代入
+								targetX = fairies[j].GetX();										
+								targetY = fairies[j].GetY();										//ホーミングのターゲット位置も妖精のものに更新
+								isTargetFound = true;		
+							}
+						}
+					}
+				}
+
+				if (isTargetFound) {
+					p_bullets[i].Guide(targetX, targetY, p_bullets[i].turnSpeed);					//isTargetFoundが上のでtrueになったらホーミングのGuideに引数を渡す
 				}
 
 			}

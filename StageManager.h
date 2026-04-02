@@ -42,4 +42,5 @@ public:
 
 	Player& GetPlayer() { return player; }		//&は参照渡しで、privateに隔離されてるインスタンスそのものへのアクセス権を引き出している。窓口の様なもの
 	Boss& GetBoss() { return boss; }
+	Enemy* GetFairies() { return fairies; }
 };

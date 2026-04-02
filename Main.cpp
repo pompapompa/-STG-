@@ -97,7 +97,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				stageManager.GetPlayer().GetY(),
 				stageManager.GetBoss().GetX(),
 				stageManager.GetBoss().GetY(),
-				stageManager.GetBoss().GetFlag()			//stageManager‚©‚çplayer‚ÆBoss‚ğØ‚è‚Ä‚«‚ÄÀ•W‚ğ“n‚·
+				stageManager.GetBoss().GetFlag(),			//stageManager‚©‚çplayer‚ÆBoss‚ğØ‚è‚Ä‚«‚ÄÀ•W‚ğ“n‚·
+				stageManager.GetFairies()
 			);
 
 			bool isDead = stageManager.GetBoss().CheckCollision(stageManager.GetPlayer(), bm);
