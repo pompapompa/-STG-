@@ -16,28 +16,46 @@ static constexpr EnemySpawn Stage1Timeline[] = {
 };
 
 
+
+
 static constexpr int SPAWN_COUNT = sizeof(Stage1Timeline) / sizeof(EnemySpawn);	//データの個数を計算
 
 void StageManager::Update(BulletManager* bm) {
-	stageTimer++;			//時間を進める
+	static int remainToSpawn = 0;				//残り何体出すか
+	static int nextSpawnTimer = 0;				//次の妖精出撃までの待ち時間
+	static int currentDataIdx = 0;				//どのタイムラインデータを使用しているか保存
+
+	stageTimer++;								//時間を進める
 
 	if (state == StageState::DOCHU) {
 		for (int i = 0; i < SPAWN_COUNT; i++) {
-			if (Stage1Timeline[i].frame == stageTimer) {
-				for (int j = 0; j < 100; j++) {
+			if (Stage1Timeline[i].frame == stageTimer) {				//EnemySpawnのframeと経過時間が一致した場合
+				remainToSpawn = 5;										//何体1列で出撃するか
+				nextSpawnTimer = 0;										//最初の1体目は即座に出撃するため0
+				currentDataIdx = i;										//どの妖精を出撃させるかを格納
+			}
+		}
+
+		if (remainToSpawn > 0) {										//残り妖精数が0でない場合
+			nextSpawnTimer--;											//待ち時間をデクリメント
+			if (nextSpawnTimer <= 0) {									//出撃までの残り時間が0以下の場合
+				for (int j = 0; j < Enemy::EnemyMax; j++) {				//
 					if (!fairies[j].GetFlag()) {
-						fairies[j].Encount(
-							Stage1Timeline[i].x, Stage1Timeline[i].y, Stage1Timeline[i].r, Stage1Timeline[i].vx, Stage1Timeline[i].vy, Stage1Timeline[i].hp	//Encount関数に引数を渡す
-						);
+						auto& data = Stage1Timeline[currentDataIdx];		//格納した妖精の検体番号をEncount関数に使用
+						fairies[j].Encount(data.x, data.y, data.r, data.vx, data.vy, data.hp);
+
+						remainToSpawn--;									//残りの妖精数をデクリメント
+						nextSpawnTimer = 12;
 						break;
 					}
 				}
 			}
 		}
+
 		if (stageTimer >= 520) {
 			state = StageState::BOSS_BATTLE;		//ステージ状態をボス戦へ移行
-		
-			
+
+
 
 			float X = Left + (Right - Left) / 2.0f;
 			float Y = Top + (Bottom - Top) / 4.0f;
@@ -47,10 +65,10 @@ void StageManager::Update(BulletManager* bm) {
 
 	player.Update(bm);								//ヘッダでもらったbmを渡して自機が弾を撃てるようにする
 
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < Enemy::EnemyMax; i++) {
 		if (fairies[i].GetFlag()) {
 			fairies[i].Update();					//フラグが立っている妖精を見つけたら更新して動かす
-			
+
 		}
 	}
 
@@ -61,9 +79,9 @@ void StageManager::Update(BulletManager* bm) {
 
 void StageManager::Draw(BulletManager* bm) {		//弾とかの描画
 	player.Draw();									//自機の描画
-	
 
-	for (int i = 0; i < 100; i++) {
+
+	for (int i = 0; i < Enemy::EnemyMax; i++) {
 		if (fairies[i].GetFlag()) {
 			fairies[i].CheckCollision(bm);
 			fairies[i].Draw();						//フラグが立っている妖精を描画
