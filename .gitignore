@@ -370,3 +370,4 @@ x64/
 *.user
 *.aps
 *.ipch
+/Log.txt
