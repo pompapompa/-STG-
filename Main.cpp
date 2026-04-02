@@ -1,5 +1,6 @@
 #include "DxLib.h"
 #include "Common.h"
+#include "StageManager.h"
 #include "BulletManager.h"
 #include "Bullet.h"
 #include "Player.h"
@@ -7,6 +8,7 @@
 #include "Boss.h"
 #include "MenuManager.h"
 #include <math.h>
+
 
 /*　ーーーーーDxLibのデフォ：画面サイズ(640,480)ーーーーー　*/
 
@@ -26,14 +28,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	SetDrawScreen(DX_SCREEN_BACK);						//裏描画
 	if (DxLib_Init() == -1) return -1;					//エラーが発生したら終了
 
-	Player player;										//プレイヤークラスのインスタンス作製
 	BulletManager bm;
-	Enemy enemy[100];
-	Boss boss;
 	MenuManager TitleMenu(4);							//引数が必要なクラスなのでインスタンスにも引数を与える
 	MenuManager PauseMenu(3);
 	MenuManager QuitMenu(2);
 	SceneType scene = SCENE_TITLE;						//場面を初期化(タイトル)
+	StageManager stageManager;
 
 
 	while (ProcessMessage() == 0 && ClearDrawScreen() == 0) {						//メインループ
@@ -41,7 +41,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		if (CheckHitKey(KEY_INPUT_F)) {
 			isWindow = !isWindow;							//trueとfalseの状態を交互に交換する
-			ChangeWindowMode(isWindow ? TRUE : FALSE);		//
+			ChangeWindowMode(isWindow ? TRUE : FALSE);		
 			while (CheckHitKey(KEY_INPUT_F)) {
 				if (ProcessMessage() != 0) return -1;
 			}
@@ -69,8 +69,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 			if (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) {
 				int select = TitleMenu.GetSelect();											//上で計算し終わって決定する直前のmenu_cursorを利用
-				if (select == 0) scene = SCENE_STAGE;
-				if (select == 1) scene = SCENE_STAGE;
+				if (select == 0) {
+					stageManager.Init(&bm);
+					scene = SCENE_STAGE;
+				}
+				if (select == 1) {
+					stageManager.Init(&bm);
+					scene = SCENE_STAGE;
+				}
 				if (select == 2) scene = SCENE_QUIT_CONFIRM;
 				if (select == 3) scene = SCENE_QUIT_CONFIRM;
 				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) ProcessMessage();	//連打防止処理
@@ -84,31 +90,35 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		{
 			using namespace PlayArea;											//これによりnamespaceのPlayArea内で定義したものがこの関数内限定で使用できるようになる
 
+			stageManager.Update(&bm);
 
-			if (!boss.GetFlag()) {
-				float X = Left + (Right - Left) / 2.0f;
-				float Y = Top + (Bottom - Top) / 4.0f;
-				boss.Spawn(X, Y);
-			}
+			bm.Update(
+				stageManager.GetPlayer().GetX(),
+				stageManager.GetPlayer().GetY(),
+				stageManager.GetBoss().GetX(),
+				stageManager.GetBoss().GetY(),
+				stageManager.GetBoss().GetFlag()			//stageManagerからplayerとBossを借りてきて座標を渡す
+			);
 
-			player.Update(&bm);											//*付きのポインタ型であるので、Main.cppで渡す時は&(アンパサンド)を付けてアドレスとして渡す必要がある
-			boss.Update(&bm);
-			bm.Update(player.GetX(), player.GetY(), boss.GetX(), boss.GetY(), boss.GetFlag());
+			bool isDead = stageManager.GetBoss().CheckCollision(stageManager.GetPlayer(), bm);
 
-			bool isDead = boss.CheckCollision(player, bm);				//自機弾とボスの位置等をUpdateで計算してから当たり判定を回して戻り値の倒したフラグをisDeadに格納。参照で値を受け取るので上のbmとは違い、インスタンスをそのまま記述で良い
-			
 			bool isPlayerHit = false;
-			if (!player.IsInvincible()) {
-				isPlayerHit = bm.CheckPlayerCollision(player.GetX(), player.GetY(), player.GetHitR());
+			if (!stageManager.GetPlayer().IsInvincible()) {
+				isPlayerHit = bm.CheckPlayerCollision(
+					stageManager.GetPlayer().GetX(),
+					stageManager.GetPlayer().GetY(),
+					stageManager.GetPlayer().GetHitR()
+				);
 			}
 
 			if (isPlayerHit) {
-				player.SetInVincible(player.GetInvincibleTime());
+				stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());
 			}
 
-			player.Draw();
-			boss.Draw();
 			bm.Draw();
+			stageManager.Draw(&bm);			//ステージ全体の流れを管理するためBulletManagerを使用するかもしれないので場所を教えておく
+			bm.Draw();
+
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
 
 

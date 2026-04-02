@@ -58,5 +58,9 @@ public:
 		
 	}
 
-	void Draw();															
+	void Draw();					
+
+	void SetFlag(bool f) {
+		flag = f;
+	}
 };

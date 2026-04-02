@@ -15,6 +15,9 @@ public:
 	virtual void Encount(float in_x, float in_y, float r_in, float in_vx, float in_vy);
 	virtual void Update();																		//Œã‚Åƒ{ƒX‚ªã‘‚«‚Å‚«‚é‚æ‚¤‚É‚·‚é
 	virtual void Draw();
+	void SetFlag(bool f) {
+		flag = f;
+	}
 
 	bool GetFlag() { return flag; }
 	float GetX() { return x; }

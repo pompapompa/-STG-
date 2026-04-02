@@ -16,6 +16,8 @@ public:
 
 	void Update(float playerX, float playerY, float bossX, float bossY, bool bossAlive);
 	void Draw();
+	
+
 
 	int GetPlayerBulletMax() const { return PlayerBMax; }
 	Bullet& GetPlayerBullet(int index) { return p_bullets[index]; }
@@ -23,5 +25,15 @@ public:
 
 	bool CheckPlayerCollision(float px, float py, float pr);
 
-};
+	
 
+	void ClearAllBullets() {
+		for (int i = 0; i < PlayerBMax; i++) {
+			p_bullets[i].SetFlag(false);
+		}
+		for (int i = 0; i < EnemyBMax; i++) {
+			e_bullets[i].SetFlag(false);
+		}
+	}
+
+};

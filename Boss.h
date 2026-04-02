@@ -56,4 +56,7 @@ public:
 
 	bool CheckCollision(class Player& player, class BulletManager& bm);				//冒頭でインクルードしなかったのは循環参照を防ぐため。それより、ここで前方宣言をする。
 
+	void Reset() {
+		flag = false;
+	}
 };

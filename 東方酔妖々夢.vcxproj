@@ -143,6 +143,7 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MenuManager.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="StageManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Boss.h" />
@@ -153,6 +154,7 @@
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="MenuManager.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="StageManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
