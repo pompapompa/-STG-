@@ -6,6 +6,15 @@ namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書かねばならない
 	static constexpr int Right = 416;			//32+384で384=128*3
 	static constexpr int Top = 16;
 	static constexpr int Bottom = 464;			//16+448で448=64*7で色々うれしいらしい、詳細はDiscord
+	
+	static constexpr int CenterX = Left + (Right - Left) / 2;
+	static constexpr int CenterY = Top + (Bottom - Top) / 2;
+
+
+	static constexpr int DefaultPlayerX = CenterX;
+	static constexpr int DefaultPlayerY = CenterY + (CenterY / 2);
+	static constexpr int DefaultBossX = CenterX;
+	static constexpr int DefaultBossY = CenterY - (CenterY / 2);
 };
 
 
