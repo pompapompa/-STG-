@@ -15,6 +15,12 @@ int MenuManager::GetSelect() {
 	return cursor;
 }
 
+void MenuManager::SetSelect(int num) {			//“n‚µ‚½”CˆÓ‚Ìˆø”‚Ì”Ô†‚ÉƒJ[ƒ\ƒ‹‚ğƒZƒbƒg‚·‚éŠÖ”
+	if (num >= 0 && num < maxItem) {		//”Ô†‚ª0ˆÈãŠ‚ÂÅ‘å‚Ì”Ô†–¢–‚Ìê‡ˆ—‚ğŠJn
+		cursor = num;						//cursor‚É”CˆÓ‚Ìˆø”‚Ì”Ô†‚ğ‘ã“ü
+	}
+}
+
 void MenuManager::SetMaxItem(int num) {
 	maxItem = num;
 	cursor = 0;

@@ -81,6 +81,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (select == 3) scene = SCENE_QUIT_CONFIRM;
 				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) ProcessMessage();	//òAë≈ñhé~èàóù
 			}
+			if (CheckHitKey(KEY_INPUT_ESCAPE)) {
+				TitleMenu.SetSelect(3);
+				while (CheckHitKey(KEY_INPUT_ESCAPE) != 0) ProcessMessage();
+			}
 
 			break;
 
@@ -157,6 +161,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				PauseMenu.Next();
 				while (CheckHitKey(KEY_INPUT_DOWN) != 0) ProcessMessage();
 			}
+
+
 			if (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) {
 				int select = PauseMenu.GetSelect();
 				if (select == 0) scene = SCENE_STAGE;
@@ -165,7 +171,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					scene = SCENE_STAGE;
 				}
 				if (select == 2) scene = SCENE_TITLE;
-				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) ProcessMessage();
+				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) ProcessMessage();			
+			}
+
+			if (CheckHitKey(KEY_INPUT_R)) {
+				stageManager.Init(&bm);
+				scene = SCENE_STAGE;
+				while (CheckHitKey(KEY_INPUT_R) != 0) ProcessMessage();
+			}
+
+			if (CheckHitKey(KEY_INPUT_Q)) {
+				scene = SCENE_TITLE;
+				while (CheckHitKey(KEY_INPUT_Q) != 0) ProcessMessage();
 			}
 			break;
 

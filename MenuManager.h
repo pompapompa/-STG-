@@ -11,5 +11,6 @@ public:
 	void Next();
 	void Prev();
 	int GetSelect();
+	void SetSelect(int num);
 	void SetMaxItem(int num);
 };
