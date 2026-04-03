@@ -20,10 +20,13 @@ struct EnemySpawn {
 	float x, y;					//oŒ»ˆÊ’u
 	float vx, vy;				//ˆÚ“®‘¬“x
 	float r;					//”¼Œa
-	int	  hp;						//‘Ì—Í
+	int	  hp;					//‘Ì—Í
 	int   type;					//—d¸‚Ìí—Ş
 	int   count;				//‘à—ñ‚Ì”				
 	int   interval;				//oŒ‚ŠÔŠu(ƒtƒŒ[ƒ€)
+	float ShotRadius;			//“G’e”¼Œa
+	float ShotSpeed;			//’e‘¬
+	int ShotInterval;			//”­ËŠÔŠu
 };
 
 class StageManager {

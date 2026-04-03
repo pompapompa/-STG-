@@ -12,13 +12,13 @@ static constexpr int top = Top + StageManager::upMargin;			//ódê∏Ç™èoÇƒÇ≠ÇÈéûÇ…É
 
 
 static constexpr EnemySpawn Stage1Timeline[] = {
-	/*	frame,	x,		y,		vx,		vy,		r,		hp,		typeÅ@	count		interval  */
-	{	60,		Left, 	top,	2.0f,	0.0f,	15.0f,	10,		0,		5,			20	},
-	{	180,	Right,  top,	-2.5f,	0.0f,	15.0f,	10,		0,		7,			15	},
-	{	240,	Left,	top,	2.5f,	0.0f,	15.0f,	10,		0,		5,			15	},
-	{	240,	Right,	top,	-2.5f,	0.0f,	15.0f,	10,		0,		5,			15	},
-	{	360,	Left,   top,	5.0f,	0.0f,	15.0f,	15,		0,		10,			10	},
-	{	360,	Right,  top,	-5.0f,	0.0f,	15.0f,	15,		0,		10,			10	}
+	/*	frame,	x,		y,		vx,		vy,		r,		hp,		typeÅ@	count	interval	ShotRadius		ShotSpeed	ShotInterval*/
+	{	60,		Left, 	top,	2.0f,	0.0f,	15.0f,	10,		0,		5,			20,			5.0f,			5.0f,		3			},
+	{	180,	Right,  top,	-2.5f,	0.0f,	15.0f,	10,		0,		7,			15,			5.0f,			5.0f,		3			},
+	{	240,	Left,	top,	2.5f,	0.0f,	15.0f,	10,		0,		5,			15,			20.0f,			5.0f,		5			},
+	{	240,	Right,	top,	-2.5f,	0.0f,	15.0f,	10,		0,		5,			15,			20.0f,			5.0f,		5			},
+	{	360,	Left,   top,	5.0f,	0.0f,	15.0f,	15,		0,		10,			10,			10.0f,			5.0f,		1			},
+	{	360,	Right,  top,	-5.0f,	0.0f,	15.0f,	15,		0,		10,			10,			10.0f,			5.0f,		1			}
 };
 
 
@@ -49,7 +49,7 @@ void StageManager::Update(BulletManager* bm) {
 					for (int j = 0; j < Enemy::EnemyMax; j++) {
 						if (!fairies[j].GetFlag()) {
 							auto& d = Stage1Timeline[dataIdx];
-							fairies[j].Encount(d.x, d.y, d.r, d.vx, d.vy, d.hp);
+							fairies[j].Encount(d.x, d.y, d.r, d.vx, d.vy, d.hp,d.ShotRadius,d.ShotSpeed, d.ShotInterval);
 							break;
 						}
 					}

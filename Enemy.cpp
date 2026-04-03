@@ -7,14 +7,20 @@
 #include "Collision.h"
 #include <math.h>
 
-void Enemy::Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy, int in_hp) {
+
+void Enemy::Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy, int in_hp, float in_sr, float in_ss, int in_si) {
 	x = in_x;								
 	y = in_y;
 	r = in_r;
 	vx = in_vx;
-	vy = in_vy;				//引数を保存する
+	vy = in_vy;					
 	hp = in_hp;
-	flag = true;			//フラグを立てる
+	sr = in_sr;
+	shotSpeed = in_ss;
+	shotInterval = in_si;		//引数を保存する
+
+
+	flag = true;				//フラグを立てる
 }
 
 void Enemy::Update(const Player &player, BulletManager *bm) {	//playerからはパラメータを参照するだけなので書き換えないconstと参照の&で、bmは書き換えたりするので*を使う
@@ -24,8 +30,8 @@ void Enemy::Update(const Player &player, BulletManager *bm) {	//playerからはパラ
 	y += vy;
 	if (Left - r > x || Right + r<x || Top - r>y || Bottom + r < y) flag = false;		//画面外に行ったら消える
 	
-	if (ShotTimer % 60 == 0) {
-		BulletPattern::AimedShot(x, y, 4.0f, 10.0f, player, bm);
+	if (ShotTimer !=0 && ShotTimer % shotInterval == 0) {				
+		BulletPattern::AimedShot(x, y, sr, shotSpeed, player, bm);
 	}
 	ShotTimer++;
 }
