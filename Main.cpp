@@ -160,7 +160,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) {
 				int select = PauseMenu.GetSelect();
 				if (select == 0) scene = SCENE_STAGE;
-				if (select == 1) scene = SCENE_STAGE;
+				if (select == 1) {
+					stageManager.Init(&bm);									//Ç‚ÇËíºÇµÇ»ÇÃÇ≈ÉäÉZÉbÉgèàóù
+					scene = SCENE_STAGE;
+				}
 				if (select == 2) scene = SCENE_TITLE;
 				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) ProcessMessage();
 			}
