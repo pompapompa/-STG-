@@ -5,8 +5,10 @@
 /*初期値を知るためのものはpublicでいいが、ホーミングアミュレット等の毎フレームの引数を使って
   計算や更新するやつはprivateで外部から上書きされないようにする。*/
 
-
 class BulletManager;						//前方宣言でマネージャーの存在だけ教える
+
+
+using namespace PlayArea;			
 
 struct PlayerParameter {					
 	float vn;				
@@ -71,9 +73,9 @@ private:
 		3.0f								//sr：Shot半径
 	};
 
+	float x = PlayArea::DefaultPlayerX;
+	float y = PlayArea::DefaultPlayerY;
 
-	float x = 320.0f;
-	float y = 240.0f;
 	int shot_timer = 0;
 	int invincibleTimer = 0;				//0<Timerなら無敵
 	float move_v = 0;
@@ -84,6 +86,7 @@ private:
 
 public:
 	void Update(BulletManager* bm);
+	void Reset();
 	void Draw();
 
 	int GetBulletNum(const BulletManager * bm) const;

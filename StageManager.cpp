@@ -110,6 +110,9 @@ void StageManager::Draw(BulletManager* bm) {		//弾とかの描画
 void StageManager::Init(BulletManager* bm) {							//ステージの状態を全てリセットする関数
 	stageTimer = 0;
 	state = StageState::DOCHU;
+
+	player.Reset();
+
 	boss.Reset();									//ボスフラグを折る
 
 	for (int i = 0; i < 100; i++) {

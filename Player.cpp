@@ -80,6 +80,19 @@ void Player::Update(BulletManager* bm) {
 }
 
 
+void Player::Reset() {
+	x = (float)PlayArea::DefaultPlayerX;				//自機x座標初期化
+	y = (float)PlayArea::DefaultPlayerY;				//自機y座標初期化
+
+	for (int i = 0; i < SLOT_MAX; i++) {
+		MainSlot[i].Reset();							//スロット内の残り弾数やら次までの残り時間を初期化
+		SubSlot[i].Reset();								//上と同様
+	}
+	shot_timer = 0;										//ショットのクールタイムも初期化
+
+}
+
+
 void Player::Draw() {
 
 	if (IsInvincible() && (invincibleTimer % para.blinkCycle < para.blinkThreshold)) {

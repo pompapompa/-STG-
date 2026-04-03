@@ -26,8 +26,9 @@ void Boss::Update(BulletManager* bm) {									//BulletManagerを使って弾を撃つ
 	timer++;
 	phaseTimer++;
 
-	x = Left + (Right - Left) * para.SpawnRate_X;								//プレイ領域の左端からx軸についてのプレイ領域の真ん中の座標を足してプレイ領域の真ん中のx座標を出す。x,yがfloat型であるからfを付ける
-	y = Top + (Bottom - Top) * para.SpawnRate_Y;								//プレイ領域の上からy軸についてのプレイ領域の1/4の位置の座標を足してプレイ領域の上から1/4のy座標を出す。
+
+	x = PlayArea::DefaultBossX;
+	y = PlayArea::DefaultBossY;
 
 	const BossPhase& p = phases[currentIdx];
 	if (phaseTimer % p.interval == 0) {
