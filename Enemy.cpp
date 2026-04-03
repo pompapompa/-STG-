@@ -17,11 +17,17 @@ void Enemy::Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy
 	flag = true;			//フラグを立てる
 }
 
-void Enemy::Update() {
+void Enemy::Update(const Player &player, BulletManager *bm) {	//playerからはパラメータを参照するだけなので書き換えないconstと参照の&で、bmは書き換えたりするので*を使う
 	using namespace PlayArea;
+	using namespace BulletPattern;
 	x += vx;
 	y += vy;
 	if (Left - r > x || Right + r<x || Top - r>y || Bottom + r < y) flag = false;		//画面外に行ったら消える
+	
+	if (ShotTimer % 60 == 0) {
+		BulletPattern::AimedShot(x, y, 4.0f, 10.0f, player, bm);
+	}
+	ShotTimer++;
 }
 
 void Enemy::Draw() {

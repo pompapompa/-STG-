@@ -73,7 +73,7 @@ void StageManager::Update(BulletManager* bm) {
 
 	for (int i = 0; i < Enemy::EnemyMax; i++) {
 		if (fairies[i].GetFlag()) {
-			fairies[i].Update();					//フラグが立っている妖精を見つけたら更新して動かす
+			fairies[i].Update(player, bm);					//フラグが立っている妖精を見つけたら更新して動かす
 
 		}
 	}
