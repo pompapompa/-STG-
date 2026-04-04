@@ -53,8 +53,8 @@ void Player::Update(BulletManager* bm) {
 	if (isPress && shot_timer <= 0) {							//発射ボタン押下されている状態且つショットクールタイムが0の場合
 		ActivateWeapon(MainSlot, MainShot.L);					//メインショット
 
-		if (isSlow) {											//低速状態の場合
-			ActivateWeapon(SubSlot, SubHoming.L);				//サブショット
+		if (!isSlow) {											//低速状態ではない場合
+			ActivateWeapon(SubSlot, SubHoming.L);				//サブショット(ホーミング弾追加)
 		}
 		shot_timer = sca;										//長押し時のクールタイム
 	}

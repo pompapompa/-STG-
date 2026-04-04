@@ -13,12 +13,12 @@ static constexpr int top = Top + StageManager::upMargin;			//—d¸‚ªo‚Ä‚­‚é‚Éƒ
 
 static constexpr EnemySpawn Stage1Timeline[] = {
 	/*	frame,	x,		y,		vx,		vy,		r,		hp,		type@	count	interval	ShotRadius		ShotSpeed	ShotInterval*/
-	{	60,		Left, 	top,	2.0f,	0.0f,	15.0f,	10,		0,		5,			20,			5.0f,			5.0f,		3			},
-	{	180,	Right,  top,	-2.5f,	0.0f,	15.0f,	10,		0,		7,			15,			5.0f,			5.0f,		3			},
-	{	240,	Left,	top,	2.5f,	0.0f,	15.0f,	10,		0,		5,			15,			20.0f,			5.0f,		5			},
-	{	240,	Right,	top,	-2.5f,	0.0f,	15.0f,	10,		0,		5,			15,			20.0f,			5.0f,		5			},
-	{	360,	Left,   top,	5.0f,	0.0f,	15.0f,	15,		0,		10,			10,			10.0f,			5.0f,		1			},
-	{	360,	Right,  top,	-5.0f,	0.0f,	15.0f,	15,		0,		10,			10,			10.0f,			5.0f,		1			}
+	{	60,		Left, 	top,	1.0f,	0.0f,	15.0f,	10,		0,		7,			20,			7.0f,			5.0f,		18			},
+	{	180,	Right,  top,	-1.5f,	0.0f,	15.0f,	10,		0,		7,			15,			5.0f,			7.0f,		24			},
+	{	240,	Left,	top,	1.5f,	0.0f,	15.0f,	10,		0,		8,			15,			20.0f,			8.0f,		30			},
+	{	240,	Right,	top,	-1.5f,	0.0f,	15.0f,	10,		0,		8,			15,			20.0f,			8.0f,		30			},
+	{	360,	Left,   top,	2.0f,	0.0f,	15.0f,	15,		0,		10,			10,			10.0f,			6.0f,		24			},
+	{	360,	Right,  top,	-2.0f,	0.0f,	15.0f,	15,		0,		10,			10,			7.0f,			6.0f,		24			}
 };
 
 
@@ -58,7 +58,7 @@ void StageManager::Update(BulletManager* bm) {
 		}
 
 
-		if (stageTimer >= 600) {
+		if (stageTimer >= 780) {
 			state = StageState::BOSS_BATTLE;		//ƒXƒe[ƒWó‘Ô‚ğƒ{ƒXí‚ÖˆÚs
 
 
