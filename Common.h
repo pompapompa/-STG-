@@ -43,10 +43,9 @@ struct BossPhase {
 	int		phaseNum;					//0:通常1,1:スペカ1枚目,2:通常2,3:スペカ2枚目…のようにする
 	float	hpLimit;					//そのフェーズのHP
 	int		limitTime;					//そのフェーズの制限時間
-	BulletPattern::ShotConfig shotConf;	//弾パラメータ
-	bool	isDouble;					//trueなら逆回転の弾幕を追加
-	float	offsetAngle;				//逆回転側の初期角度のずれ具合
-	int		offsetTime;					//逆回転側の発射タイミングのフレーム差
+	int shotCount;
+	BulletPattern::ShotConfig shots[3];	//弾パラメータ
+	
 };
 
 

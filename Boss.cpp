@@ -32,25 +32,22 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 	y = PlayArea::DefaultBossY;
 
 	const BossPhase& p = phases[currentIdx];
-	if (p.shotConf.type == PT::RotateAll) {
-		if (phaseTimer % p.shotConf.interval == 0) {
-			float baseAngleDeg = (timer * p.shotConf.rotSpeed) * 180.0f / DX_PI_F;
-			BulletPattern::NWayShot(x, y, p.shotConf.radius, p.shotConf.speed, p.shotConf.way, p.shotConf.totalAngle, baseAngleDeg, bm);
-		}
+	
+	
+	for (int i = 0; i < p.shotCount; i++) {
+		const auto& conf = p.shots[i];
 
-		if (p.isDouble && (phaseTimer - p.offsetTime) >= 0) {													//p.isDoubleがtrueの時追加する弾幕
-			if ((phaseTimer - p.offsetTime) % p.shotConf.interval == 0) {
-				float baseAngleDegRev = (-timer * p.shotConf.rotSpeed + p.offsetAngle) * 180.0f / DX_PI_F;
-				BulletPattern::NWayShot(x, y, p.shotConf.radius, p.shotConf.speed, p.shotConf.way, 360.0f, baseAngleDegRev, bm);
+		if (phaseTimer % conf.interval == 0) {
+			if (conf.type == PT::RotateAll) {
+				float baseAngleDeg = (timer * conf.rotSpeed) * 180.0f / DX_PI_F;
+				BulletPattern::NWayShot(x, y, conf.radius, conf.speed, conf.way, conf.totalAngle, baseAngleDeg, bm);
+			}
+			else {
+				BulletPattern::ExecShot(x, y, conf, player, bm);
 			}
 		}
 	}
-	else {
-		if (phaseTimer % p.shotConf.interval == 0) {
-			BulletPattern::ExecShot(x, y, p.shotConf, player, bm);
-		}
-	}
-
+	
 
 	if (hp <= 0) {																//フェーズのhpがなくなった場合
 		currentIdx++;															//現在のフェーズを次の段階へ

@@ -18,18 +18,26 @@ static constexpr int top = Top + StageManager::upMargin;			//ódê∏Ç™èoÇƒÇ≠ÇÈéûÇ…É
 static constexpr EnemySpawn Stage1Timeline[] = {
 	/*	frame,	x,		y,		vx,		vy,		r,		hp,		count	interval,	
 		{	type,			sr,		ss,		si,		way,	çLÇ™ÇËäp,	âÒì]ë¨ìx}																	}}*/
-	{	60,		Left, 	top,	1.0f,	0.0f,	15.0f,	10,		7,			20,
+	{	60,		Left, 	top,	2.0f,	0.0f,	15.0f,	10,		7,			20,
 		{	PT::Aimed,		7.0f,	5.0f,	18,		1,		0.0f,		0.0f}},
-	{	120,	Right,  top,	-1.5f,	0.0f,	15.0f,	10,		7,			15,
+
+	{	120,	Right,  top,	-2.0f,	0.0f,	15.0f,	10,		7,			15,
 		{	PT::Aimed,		5.0f,	5.0f,	24,		1,		0.0f,		0.0f}},
-	{	180,	Left,	top,	1.5f,	0.0f,	15.0f,	10,		8,			15,
-		{	PT::Aimed,		20.0f,	8.0f,	30,		1,		0.0f,		0.0f}},
-	{	180,	Right,	top,	-1.5f,	0.0f,	15.0f,	10,		8,			15,
-		{	PT::Aimed,		20.0f,	8.0f,	30,		1,		0.0f,		0.0f}},
-	{	400,	Left,	top,	2.0f,	0.0f,	15.0f,	15,		10,			10,
-		{	PT::NWay,		15.0f,	5.0f,	30,		20,		180.0f,		0.0f}},
-	{	800,	CenterX,top,	-2.0f,	0.0f,	15.0f,	15,		10,			10,
-		{	PT::RotateAll,	5.0f,	8.0f,	30,		20,		0.0f,		0.5f}}
+
+	{	180,	Left,	top,	2.0f,	0.0f,	15.0f,	10,		8,			15,
+		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f}},
+
+	{	180,	Right,	top,	-2.0f,	0.0f,	15.0f,	10,		8,			15,
+		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f}},
+
+	{	400,	Left,	top,	3.0f,	0.0f,	15.0f,	15,		10,			10,
+		{	PT::NWay,		10.0f,	5.0f,	30,		20,		180.0f,		0.0f}},
+
+	{	400,	Right,	top,	3.0f,	0.0f,	15.0f,	15,		10,			10,
+		{	PT::NWay,		10.0f,	5.0f,	30,		20,		180.0f,		0.0f}},
+
+	{	600,	CenterX,top,	-1.5f,	0.0f,	15.0f,	15,		10,			10,
+		{	PT::RotateAll,	5.0f,	8.0f,	24,		20,		0.0f,		0.5f}}
 };
 
 

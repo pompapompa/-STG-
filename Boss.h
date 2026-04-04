@@ -35,13 +35,37 @@ private:
 	
 
 	static constexpr BossPhase phases[] = {				//通常こうげきとスペカのデータを配列で定義
-	/*  {phaseNum, hpLimit, limitTime,{type,			sr,		ss,		si, way, 広角, 回転速度}, isDouble, offsetAngle, offsetTime} */
-									
-			{ 0,	500.0f,		3600,{PT::RotateAll,	4.0f,	0.5f,	6,	8,	360.0f,	0.22f},		false,		0.0f,		0},						//通1
-			{ 1,	900.0f,		5400,{PT::RotateAll,	4.0f,	3.5f,	10,	18,	360.0f,	0.02f},		false,		0.0f,		0},						//スペカ1枚目 
-			{ 2,	700.0f,		6000,{PT::RotateAll,	4.0f,	5.0f,	8,	20,	360.0f,	0.02f},		true,		0.1f,		5},						//通2																//スペカ1枚目
-			{ 3,	1000.0f,	3600,{PT::RotateAll,	4.0f,	3.0f,	5,	18,	360.0f,	0.10f},		true,		0.1f,		2},						//スペカ2枚目					
-			{ 4,	1500.0f,	3600,{PT::NWay,			4.0f,	10.0f,	3,	15,	180.0f,	0.5f},		false,		0.0f,		0},
+	/*  {phaseNum, hpLimit, limitTime,弾幕数,{{type,	sr,		ss,		si,		way,	広角,		回転速度}{}{}}} */
+	
+			/*	通1　*/
+			{ 0,	500.0f,		3600,	1,		{
+									{PT::RotateAll,		4.0f,	0.5f,	6,		8,		360.0f,		0.22f}
+			}},																
+			
+			/*　スペカ1枚目　*/
+			{ 1,	900.0f,		5400,	1,		{
+									{PT::RotateAll,		4.0f,	3.5f,	10,		18,		360.0f,		0.02f}
+			}},																 
+	  
+			/*　天上天下の照國　*/
+			{ 2,	700.0f,		6000,	3,		{
+									{PT::RotateAll,		4.0f,	5.0f,	8,		16,		360.0f,		5.0f},
+									{PT::RotateAll,		4.0f,	5.0f,	8,		16,		360.0f,		-5.0f},
+									{PT::RotateAll,		3.0f,	2.0f,	48,		64,		360.0f,		0.0f}
+			}},																												
+			
+			/*　スペカ2枚目　*/
+			{ 3,	1000.0f,	3600,	2,		{
+									{PT::RotateAll,		3.0f,	2.0f,	5,		24,		360.0f,		0.50f},
+									{PT::RotateAll,		3.0f,	2.0f,	5,		24,		360.0f,		-0.50f}
+			}},																					
+			
+			/*　ラストスペル　*/
+			{ 4,	1500.0f,	3600,	3,		{
+									{PT::NWay,			4.0f,	10.0f,	3,		12,		180.0f,		0.5f},
+									{PT::RotateAll,		6.0f,	4.0,	7,		18,		360.0f,		400.10f},
+									{PT::RotateAll,		6.0f,	4.0f,	7,		18,		360.0f,		-400.10f},
+			}},																
 	};
 
 	static constexpr int PHASE_MAX = sizeof(phases) / sizeof(phases[0]);
