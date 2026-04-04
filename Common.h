@@ -1,5 +1,7 @@
 #pragma once
+#include "BulletPattern.h"
 #include "DxLib.h"
+
 
 namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書かねばならないが、これだと使用する関数内でusing namespace PlayArea;と一度宣言すればその関数内限定で使えるようになるから便利ってこと
 	static constexpr int Left = 32;					      //！因みにconstexprだと実行する前からすでに分かっている定数ということらしい。constは引数とか実行時に取得するような定数らしい
@@ -41,10 +43,7 @@ struct BossPhase {
 	int		phaseNum;					//0:通常1,1:スペカ1枚目,2:通常2,3:スペカ2枚目…のようにする
 	float	hpLimit;					//そのフェーズのHP
 	int		limitTime;					//そのフェーズの制限時間
-	int		interval;					//弾の発射間隔
-	int		bulletNum;					//弾数
-	float	bulletSpeed;				//弾速
-	float	rotSpeed;					//回転速度のベクトル(負なら回転方向が逆向きに成る)
+	BulletPattern::ShotConfig shotConf;	//弾パラメータ
 	bool	isDouble;					//trueなら逆回転の弾幕を追加
 	float	offsetAngle;				//逆回転側の初期角度のずれ具合
 	int		offsetTime;					//逆回転側の発射タイミングのフレーム差

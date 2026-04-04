@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "BulletManager.h"
 #include "BurstController.h"
+#include "BulletPattern.h"
 
 
 enum class StageState {
@@ -16,17 +17,14 @@ enum class StageState {
 };
 
 struct EnemySpawn {
-	int   frame;				//開始から何フレーム目に出すか
-	float x, y;					//出現位置
-	float vx, vy;				//移動速度
-	float r;					//半径
-	int	  hp;					//体力
-	int   type;					//妖精の種類
-	int   count;				//隊列の数				
-	int   interval;				//出撃間隔(フレーム)
-	float ShotRadius;			//敵弾半径
-	float ShotSpeed;			//弾速
-	int ShotInterval;			//発射間隔
+	int   frame;							//開始から何フレーム目に出すか
+	float x, y;								//出現位置
+	float vx, vy;							//移動速度
+	float r;								//半径
+	int	  hp;								//体力
+	int   count;							//隊列の数				
+	int   interval;							//出撃間隔(フレーム)
+	BulletPattern::ShotConfig shotConf;		//弾のパラメータ
 };
 
 class StageManager {

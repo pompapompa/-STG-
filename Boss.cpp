@@ -8,7 +8,8 @@
 
 
 void Boss::Spawn(float in_x, float in_y) {
-	Encount(in_x, in_y, para.r, 0.0f, 0.0f, 0, 0.0f, 0.0f, 0);							//hpの引数はボスの場合hpロジックが独自の為ダミーの0を入力している。その後上書きされる為何でも良い。
+	BulletPattern::ShotConfig dummyConf;
+	Encount(in_x, in_y, para.r, 0.0f, 0.0f, 0, dummyConf);							//hpの引数はボスの場合hpロジックが独自の為ダミーの0を入力している。その後上書きされる為何でも良い。
 
 	currentIdx = 0;
 	this->hp = phases[currentIdx].hpLimit;								//そのフェーズのHPをthis->hpに入れる
@@ -19,7 +20,7 @@ void Boss::Spawn(float in_x, float in_y) {
 	this->flag = true;
 }
 
-void Boss::Update(BulletManager* bm) {									//BulletManagerを使って弾を撃つ
+void Boss::Update(const Player& player, BulletManager* bm) {									//BulletManagerを使って弾を撃つ
 	using namespace PlayArea;
 	if (!flag) return;
 
@@ -31,25 +32,22 @@ void Boss::Update(BulletManager* bm) {									//BulletManagerを使って弾を撃つ
 	y = PlayArea::DefaultBossY;
 
 	const BossPhase& p = phases[currentIdx];
-	if (phaseTimer % p.interval == 0) {
-		float step = (DX_PI_F * 2.0f) / p.bulletNum;
-		for (int i = 0; i < p.bulletNum; i++) {
-			float ang = step * i + (timer * p.rotSpeed);								//timerに定数を掛けることで回転させることが出来る
-			float vx = cosf(ang) * p.bulletSpeed;
-			float vy = sinf(ang) * p.bulletSpeed;
-			bm->LaunchEnemyBullet(x, y, 4.0f, vx, vy, false, 0.0f);
+	if (p.shotConf.type == PT::RotateAll) {
+		if (phaseTimer % p.shotConf.interval == 0) {
+			float baseAngleDeg = (timer * p.shotConf.rotSpeed) * 180.0f / DX_PI_F;
+			BulletPattern::NWayShot(x, y, p.shotConf.radius, p.shotConf.speed, p.shotConf.way, p.shotConf.totalAngle, baseAngleDeg, bm);
+		}
+
+		if (p.isDouble && (phaseTimer - p.offsetTime) >= 0) {													//p.isDoubleがtrueの時追加する弾幕
+			if ((phaseTimer - p.offsetTime) % p.shotConf.interval == 0) {
+				float baseAngleDegRev = (-timer * p.shotConf.rotSpeed + p.offsetAngle) * 180.0f / DX_PI_F;
+				BulletPattern::NWayShot(x, y, p.shotConf.radius, p.shotConf.speed, p.shotConf.way, 360.0f, baseAngleDegRev, bm);
+			}
 		}
 	}
-
-	if (p.isDouble && (phaseTimer - p.offsetTime) >= 0) {													//p.isDoubleがtrueの時追加する弾幕
-		if ((phaseTimer - p.offsetTime) % p.interval == 0) {
-			float step = (DX_PI_F * 2.0f) / p.bulletNum;
-			for (int i = 0; i < p.bulletNum; i++) {
-				float ang_rev = step * i - (timer * p.rotSpeed) + p.offsetAngle;
-				float vx_rev = cosf(ang_rev) * p.bulletSpeed;
-				float vy_rev = sinf(ang_rev) * p.bulletSpeed;
-				bm->LaunchEnemyBullet(x, y, 4.0f, vx_rev, vy_rev, false, 0.0f);
-			}
+	else {
+		if (phaseTimer % p.shotConf.interval == 0) {
+			BulletPattern::ExecShot(x, y, p.shotConf, player, bm);
 		}
 	}
 

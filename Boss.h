@@ -3,6 +3,8 @@
 #include "DxLib.h"
 #include "Common.h"
 
+using namespace BulletPattern;
+
 struct BossParameter {
 	float r;											//ボス半径
 	float GaugeOffset_R;								//体力ゲージ半径
@@ -30,15 +32,19 @@ private:
 	int phaseTimer = 0;									//フェーズ開始からの経過時間
 	float phaseMaxHp;									//現在のフェーズの初期HP
 
+	
+
 	static constexpr BossPhase phases[] = {				//通常こうげきとスペカのデータを配列で定義
-	/*  {phaseNum, hpLimit, limitTime, interval, bulletNum, bulletSpeed, rotSpeed, isDouble, offsetAngle, offsetTime}  */
-		{ 0,	500.0f,		3600,			6,		8,			0.5f,		0.22f,	false,		0.0f,			0 },			//通1 
-		{ 1,	900.0f,		5400,			10,		18,			3.5f,		-0.05f,	false,		0.0f,			0 },			//スペカ1枚目
-		{ 2,	700.0f,		6000,			8,		20,			5.0f,		0.02f,	true,		0.1f,			5 },			//通2  
-		{ 3,	1500.0f,	3600,			5,		18,			3.0f,		0.10f,	true,		0.1f,			2 }				//スペカ2枚目
+	/*  {phaseNum, hpLimit, limitTime,{type,			sr,		ss,		si, way, 広角, 回転速度}, isDouble, offsetAngle, offsetTime} */
+									
+			{ 0,	500.0f,		3600,{PT::RotateAll,	4.0f,	0.5f,	6,	8,	360.0f,	0.22f},		false,		0.0f,		0},						//通1
+			{ 1,	900.0f,		5400,{PT::RotateAll,	4.0f,	3.5f,	10,	18,	360.0f,	0.02f},		false,		0.0f,		0},						//スペカ1枚目 
+			{ 2,	700.0f,		6000,{PT::RotateAll,	4.0f,	5.0f,	8,	20,	360.0f,	0.02f},		true,		0.1f,		5},						//通2																//スペカ1枚目
+			{ 3,	1000.0f,	3600,{PT::RotateAll,	4.0f,	3.0f,	5,	18,	360.0f,	0.10f},		true,		0.1f,		2},						//スペカ2枚目					
+			{ 4,	1500.0f,	3600,{PT::NWay,			4.0f,	10.0f,	3,	15,	180.0f,	0.5f},		false,		0.0f,		0},
 	};
 
-	static constexpr int PHASE_MAX = sizeof(phases) / sizeof(BossPhase);
+	static constexpr int PHASE_MAX = sizeof(phases) / sizeof(phases[0]);
 
 	float hp;											//現在の体力
 	int timer = 0;
@@ -46,7 +52,7 @@ private:
 public:
 	void Spawn(float in_x, float in_y);
 
-	void Update(class BulletManager* bm);				//BulletManagerを受け取ることで弾を出せるようにする
+	void Update(const class Player& player, class BulletManager* bm) override;				//BulletManagerを受け取ることで弾を出せるようにする
 	void Draw() override;
 
 	

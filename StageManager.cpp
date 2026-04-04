@@ -1,24 +1,35 @@
 #include "StageManager.h"
 #include "Common.h"
-#include "DxLib.h"
+#include "BulletPattern.h"
 #include "BurstController.h"
+#include "DxLib.h"
+
 
 /*　ーーーーーDxLibのデフォ：画面サイズ(640,480)ーーーーー　*/
 
 
 using namespace PlayArea;
 
+using namespace BulletPattern;								//省略名
+
 static constexpr int top = Top + StageManager::upMargin;			//妖精が出てくる時にプレイ領域の上からどれくらい開けて出現するか
 
 
 static constexpr EnemySpawn Stage1Timeline[] = {
-	/*	frame,	x,		y,		vx,		vy,		r,		hp,		type　	count	interval	ShotRadius		ShotSpeed	ShotInterval*/
-	{	60,		Left, 	top,	1.0f,	0.0f,	15.0f,	10,		0,		7,			20,			7.0f,			5.0f,		18			},
-	{	180,	Right,  top,	-1.5f,	0.0f,	15.0f,	10,		0,		7,			15,			5.0f,			7.0f,		24			},
-	{	240,	Left,	top,	1.5f,	0.0f,	15.0f,	10,		0,		8,			15,			20.0f,			8.0f,		30			},
-	{	240,	Right,	top,	-1.5f,	0.0f,	15.0f,	10,		0,		8,			15,			20.0f,			8.0f,		30			},
-	{	360,	Left,   top,	2.0f,	0.0f,	15.0f,	15,		0,		10,			10,			10.0f,			6.0f,		24			},
-	{	360,	Right,  top,	-2.0f,	0.0f,	15.0f,	15,		0,		10,			10,			7.0f,			6.0f,		24			}
+	/*	frame,	x,		y,		vx,		vy,		r,		hp,		count	interval,	
+		{	type,			sr,		ss,		si,		way,	広がり角,	回転速度}																	}}*/
+	{	60,		Left, 	top,	1.0f,	0.0f,	15.0f,	10,		7,			20,
+		{	PT::Aimed,		7.0f,	5.0f,	18,		1,		0.0f,		0.0f}},
+	{	120,	Right,  top,	-1.5f,	0.0f,	15.0f,	10,		7,			15,
+		{	PT::Aimed,		5.0f,	5.0f,	24,		1,		0.0f,		0.0f}},
+	{	180,	Left,	top,	1.5f,	0.0f,	15.0f,	10,		8,			15,
+		{	PT::Aimed,		20.0f,	8.0f,	30,		1,		0.0f,		0.0f}},
+	{	180,	Right,	top,	-1.5f,	0.0f,	15.0f,	10,		8,			15,
+		{	PT::Aimed,		20.0f,	8.0f,	30,		1,		0.0f,		0.0f}},
+	{	400,	Left,	top,	2.0f,	0.0f,	15.0f,	15,		10,			10,
+		{	PT::NWay,		15.0f,	5.0f,	30,		20,		180.0f,		0.0f}},
+	{	800,	CenterX,top,	-2.0f,	0.0f,	15.0f,	15,		10,			10,
+		{	PT::RotateAll,	5.0f,	8.0f,	30,		20,		0.0f,		0.5f}}
 };
 
 
@@ -49,7 +60,7 @@ void StageManager::Update(BulletManager* bm) {
 					for (int j = 0; j < Enemy::EnemyMax; j++) {
 						if (!fairies[j].GetFlag()) {
 							auto& d = Stage1Timeline[dataIdx];
-							fairies[j].Encount(d.x, d.y, d.r, d.vx, d.vy, d.hp,d.ShotRadius,d.ShotSpeed, d.ShotInterval);
+							fairies[j].Encount(d.x, d.y, d.r, d.vx, d.vy, d.hp,d.shotConf);
 							break;
 						}
 					}
@@ -58,7 +69,7 @@ void StageManager::Update(BulletManager* bm) {
 		}
 
 
-		if (stageTimer >= 780) {
+		if (stageTimer >= 900) {
 			state = StageState::BOSS_BATTLE;		//ステージ状態をボス戦へ移行
 
 
@@ -79,7 +90,7 @@ void StageManager::Update(BulletManager* bm) {
 	}
 
 	if (state == StageState::BOSS_BATTLE) {
-		boss.Update(bm);							//ボス戦中の場合、bmでボスの更新をしてボスが弾を撃てるようにする
+		boss.Update(player, bm);							//ボス戦中の場合、bmでボスの更新をしてボスが弾を撃てるようにする
 	}
 }
 
