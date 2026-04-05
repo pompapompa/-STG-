@@ -44,7 +44,8 @@ struct BossPhase {
 	float	hpLimit;					//そのフェーズのHP
 	int		limitTime;					//そのフェーズの制限時間
 	int shotCount;
-	BulletPattern::ShotConfig shots[3];	//弾パラメータ
+	BulletPattern::ShotConfig shots[5];	//弾パラメータ
+	bool clearOnEnd;					//Phase終了時に弾消しを行うか
 	
 };
 

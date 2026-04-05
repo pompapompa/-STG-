@@ -35,37 +35,42 @@ private:
 	
 
 	static constexpr BossPhase phases[] = {				//通常こうげきとスペカのデータを配列で定義
-	/*  {phaseNum, hpLimit, limitTime,弾幕数,{{type,	sr,		ss,		si,		way,	広角,		回転速度}{}{}}} */
+	/*  {phaseNum, hpLimit, limitTime,弾幕数,{{type,	sr,		ss,		si,		way,	広角,		回転速度}{}{}}},弾消しフラグ */
 	
 			/*	通1　*/
-			{ 0,	500.0f,		3600,	1,		{
-									{PT::RotateAll,		4.0f,	0.5f,	6,		8,		360.0f,		0.22f}
-			}},																
+			{ 0,	700.0f,		3600,	1,		{
+									{PT::RotateAll,		4.0f,	0.5f,	2,		12,		360.0f,		2.22f}
+			},false},																
 			
 			/*　スペカ1枚目　*/
-			{ 1,	900.0f,		5400,	1,		{
-									{PT::RotateAll,		4.0f,	3.5f,	10,		18,		360.0f,		0.02f}
-			}},																 
+			{ 1,	1200.0f,	5400,	2,		{
+									{PT::RotateAll,		4.0f,	3.5f,	10,		18,		360.0f,		0.02f},
+									{PT::RotateAll,		3.0f,	2.0f,	48,		64,		360.0f,		0.0f}
+			},true},																 
 	  
-			/*　天上天下の照國　*/
-			{ 2,	700.0f,		6000,	3,		{
+			
+			/*　通2　*/
+			{ 2,	1300.0f,	3600,	2,		{
+								{PT::RotateAll,		3.0f,	2.0f,	5,		24,		360.0f,		0.50f},
+								{PT::RotateAll,		3.0f,	2.0f,	5,		24,		360.0f,		-0.50f}
+			},true},
+	
+			/*　天上天下の照國(3枚目)　*/
+			{ 3,	700.0f,		6000,	3,		{
 									{PT::RotateAll,		4.0f,	5.0f,	8,		16,		360.0f,		5.0f},
 									{PT::RotateAll,		4.0f,	5.0f,	8,		16,		360.0f,		-5.0f},
 									{PT::RotateAll,		3.0f,	2.0f,	48,		64,		360.0f,		0.0f}
-			}},																												
+			},true},																												
 			
-			/*　スペカ2枚目　*/
-			{ 3,	1000.0f,	3600,	2,		{
-									{PT::RotateAll,		3.0f,	2.0f,	5,		24,		360.0f,		0.50f},
-									{PT::RotateAll,		3.0f,	2.0f,	5,		24,		360.0f,		-0.50f}
-			}},																					
+																							
 			
 			/*　ラストスペル　*/
-			{ 4,	1500.0f,	3600,	3,		{
+			{ 4,	1500.0f,	3600,	4,		{
 									{PT::NWay,			4.0f,	10.0f,	3,		12,		180.0f,		0.5f},
-									{PT::RotateAll,		6.0f,	4.0,	7,		18,		360.0f,		400.10f},
-									{PT::RotateAll,		6.0f,	4.0f,	7,		18,		360.0f,		-400.10f},
-			}},																
+									{PT::RotateAll,		6.0f,	7.0,	7,		18,		360.0f,		200.0f},
+									{PT::RotateAll,		6.0f,	7.0f,	7,		18,		360.0f,		-200.0f},
+									{PT::Aimed,			20.0f,	3.5f,	45,		1,		0.0f,		0.0f}
+			},true},
 	};
 
 	static constexpr int PHASE_MAX = sizeof(phases) / sizeof(phases[0]);
