@@ -41,7 +41,7 @@ public:
 		isHoming = in_homing;
 		owner = in_owner;
 		turnSpeed = in_turnSpeed;
-		type = in_type;
+		type = in_type;					//0:Â‰~,1:Ô‰~,2:Â—Ø’e
 
 		flag = true;
 	}
@@ -58,7 +58,7 @@ public:
 		
 	}
 
-	void Draw();					
+	void Draw(int scaleGraph = 0);
 
 	void SetFlag(bool f) {
 		flag = f;

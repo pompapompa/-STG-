@@ -40,7 +40,7 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 		if (phaseTimer % conf.interval == 0) {
 			if (conf.type == PT::RotateAll) {
 				float baseAngleDeg = (timer * conf.rotSpeed) * 180.0f / DX_PI_F;
-				BulletPattern::NWayShot(x, y, conf.radius, conf.speed, conf.way, conf.totalAngle, baseAngleDeg, bm);
+				BulletPattern::NWayShot(x, y, conf.radius, conf.speed, conf.way, conf.totalAngle, baseAngleDeg, bm, conf.graphicType);
 			}
 			else {
 				BulletPattern::ExecShot(x, y, conf, player, bm);

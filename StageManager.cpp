@@ -19,9 +19,9 @@ static constexpr EnemySpawn Stage1Timeline[] = {
 	/*	frame,	x,		y,		vx,		vy,		r,		hp,		count	interval,	
 		{	type,			sr,		ss,		si,		way,	çLÇ™ÇËäp,	âÒì]ë¨ìx}																	}}*/
 	{	60,		Left, 	top,	4.0f,	0.0f,	15.0f,	10,		7,			20,
-		{	PT::NWay,		7.0f,	8.0f,	18,		2,		10.0f,		0.0f}},
+		{	PT::NWay,		7.0f,	8.0f,	18,		4,		10.0f,		0.0f}},
 
-	{	120,	Right,  top,	-2.0f,	0.0f,	15.0f,	10,		7,			15,
+	{	120,	Right,  top,	-4.0f,	0.0f,	15.0f,	10,		7,			15,
 		{	PT::NWay,		5.0f,	16.0f,	4,		2,		4.0f,		0.0f}},
 
 	{	300,	Left,	top,	5.0f,	0.0f,	15.0f,	10,		8,			15,
@@ -30,17 +30,17 @@ static constexpr EnemySpawn Stage1Timeline[] = {
 	{	300,	Right,	top,	-5.0f,	0.0f,	15.0f,	10,		8,			15,
 		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f}},
 
-	{	500,	Left,	top,	3.0f,	0.0f,	15.0f,	15,		10,			10,
+	{	500,	Left,	top,	3.0f,	0.0f,	15.0f,	10,		10,			10,
 		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f}},
 
-	{	500,	Right,	top,	-3.0f,	0.0f,	15.0f,	15,		10,			10,
+	{	500,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			10,
 		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f}},
 
-	{	800,	CenterX,top,	-1.5f,	0.0f,	15.0f,	15,		10,			10,
-		{	PT::RotateAll,	9.0f,	6.0f,	24,		18,		0.0f,		2.5f}},
+	{	700,	CenterX,top,	-1.0f,	0.0f,	15.0f,	10,		1,			10,
+		{	PT::RotateAll,	16.0f,	4.0f,	24,		18,		0.0f,		2.5f}},
 
-	{	800,	CenterX,top,	1.5f,	0.0f,	15.0f,	15,		10,			10,
-		{	PT::RotateAll,	9.0f,	6.0f,	24,		18,		0.0f,		2.5f}}
+	{	700,	CenterX,top,	1.0f,	0.0f,	15.0f,	10,		1,			10,
+		{	PT::RotateAll,	16.0f,	4.0f,	24,		18,		0.0f,		2.5f}}
 
 };
 

@@ -6,6 +6,17 @@
 #include "Enemy.h"
 
 
+BulletManager::BulletManager() {
+
+	for (int i = 0; i < 10; i++) {
+		bulletGraphs[i] = -1;								//”z—ñ‚Ì’†g‚ð-1‚Å‰Šú‰»
+	}
+
+	bulletGraphs[2] = LoadGraph("‘fÞW/Â—Ø’e.png");
+	bulletGraphs[3] = LoadGraph("‘fÞW/Ô•Ä’e.png");
+	bulletGraphs[4] = LoadGraph("‘fÞW/Â•Ä’e.png");
+}
+
 void BulletManager::LaunchPlayerBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming, float turnSpeed) {
 	for (int i = 0; i < PlayerBMax; i++) {
 		if (!p_bullets[i].GetFlag()) {
@@ -15,10 +26,10 @@ void BulletManager::LaunchPlayerBullet(float x, float y, float sr, float ssx, fl
 	}
 }
 
-void BulletManager::LaunchEnemyBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming, float turnSpeed) {
+void BulletManager::LaunchEnemyBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming, float turnSpeed, int in_type) {
 	for (int i = 0; i < EnemyBMax; i++) {
 		if (!e_bullets[i].GetFlag()) {
-			e_bullets[i].Shoot(x, y, sr, ssx, ssy, isHoming, Bullet::OwnerType::ENEMY, turnSpeed);
+			e_bullets[i].Shoot(x, y, sr, ssx, ssy, isHoming, Bullet::OwnerType::ENEMY, turnSpeed, in_type);
 			break;
 		}
 	}
@@ -31,13 +42,13 @@ void BulletManager::Update(float playerX, float playerY, float bossX, float boss
 
 		if (p_bullets[i].isHoming) {
 			if (p_bullets[i].owner == Bullet::OwnerType::PLAYER) {				//OwnerType‚ÍBulletƒNƒ‰ƒX“à‚Å’è‹`‚µ‚Ä‚¢‚é‚Ì‚ÅABulletƒNƒ‰ƒX‚ÌOwnerType‚Å‚ ‚é‚±‚Æ‚ð–¾Ž¦‚·‚éB
-				
+
 				float targetX = -1.0f;
 				float targetY = -1.0f;
 				float minDistSq = FLT_MAX;										//FLT_MAX‚ÍfloatŒ^‚ªo‚¹‚éÅ‘å‚Ì”Žš‚ðo‚·
 				bool isTargetFound = false;
-				
-				
+
+
 				if (bossAlive) {																	//ƒ{ƒX‚Ìƒtƒ‰ƒO‚ª—§‚Á‚Ä‚éê‡
 					minDistSq = Distance::BetweenSq(bossX, bossY, p_bullets[i].x, p_bullets[i].y);	//ƒ{ƒX‚ÆŽ©‹@’eŠÔ‚Ì‹——£‚ð‘ã“ü
 					targetX = bossX;
@@ -49,12 +60,12 @@ void BulletManager::Update(float playerX, float playerY, float bossX, float boss
 					for (int j = 0; j < Enemy::EnemyMax; j++) {
 						if (fairies[j].GetFlag()) {
 							float distSq = Distance::BetweenSq(fairies[j].GetX(), fairies[j].GetY(), p_bullets[i].x, p_bullets[i].y);		//distSq‚ÉŽ©‹@‚Æ—d¸‚Ì‹——£‚ð‘ã“ü
-							
+
 							if (distSq < minDistSq) {												//Ž©‹@‚É—d¸‚Ì•û‚ªƒ{ƒX‚æ‚è‹ß‚¢ê‡
 								minDistSq = distSq;													//ˆê”Ô‹ß‚¢‹——£•Ï”‚É—d¸‚Ì‹——£‚ð‘ã“ü
-								targetX = fairies[j].GetX();										
+								targetX = fairies[j].GetX();
 								targetY = fairies[j].GetY();										//ƒz[ƒ~ƒ“ƒO‚Ìƒ^[ƒQƒbƒgˆÊ’u‚à—d¸‚Ì‚à‚Ì‚ÉXV
-								isTargetFound = true;		
+								isTargetFound = true;
 							}
 						}
 					}
@@ -80,19 +91,34 @@ void BulletManager::Update(float playerX, float playerY, float bossX, float boss
 	}
 }
 
-bool BulletManager::CheckPlayerCollision(float px, float py, float pr) {		//“G’e‚Ì“–‚½‚è”»’èŠÖ”
-	for (int i = 0; i < EnemyBMax; i++) {										//‘S“G’e‚É‘Î‚µ‚Äƒ‹[ƒv‚ð‰ñ‚·
-		if (!e_bullets[i].GetFlag()) continue;									//ƒtƒ‰ƒO‚ª—§‚Á‚Ä‚È‚¢‚È‚çƒXƒLƒbƒv
 
-		float enemyHitR = e_bullets[i].r * Bullet::HIT_RATE;					//“G’e‚Ì“–‚½‚è”»’è‚ðŒ©‚½–Ú‚æ‚è‚à¬‚³‚­‚·‚é‚½‚ß‚É”ä—¦(HIT_RATE)‚ðŠ|‚¯‚é
 
-		if (Collision::CheckCircle(px, py, pr, e_bullets[i].x, e_bullets[i].y, enemyHitR)) {		//CollisionƒNƒ‰ƒX‚ÌCheckCircleŠÖ”‚ÉŽ©‹@‚Æ“G’e‚»‚ê‚¼‚ê‚Ìx,y,r’l‚ð‹³‚¦‚é
-			e_bullets[i].flag = false;																	//“–‚½‚Á‚½’e‚ÍÁ‚·
-			return true;														//”í’e”»’è‚ð•Ô‚·
+bool BulletManager::CheckEnemyCollision(float ex, float ey, float er) {
+	for (int i = 0; i < PlayerBMax; i++) {
+		if (!p_bullets[i].GetFlag()) continue;
+
+		if (Collision::CheckCircle(ex, ey, er, p_bullets[i].x, p_bullets[i].y, p_bullets[i].r)) {		//CollisionƒNƒ‰ƒX‚ÌCheckCircleŠÖ”‚ÉŽ©‹@‚Æ“G’e‚»‚ê‚¼‚ê‚Ìx,y,r’l‚ð‹³‚¦‚é
+			p_bullets[i].flag = false;																	//“–‚½‚Á‚½’e‚ÍÁ‚·
+			return true;
 		}
 	}
-	return false;																//”í’e‚Ìif•¶‚ð’Ê‚ç‚È‚©‚Á‚½‚ç“–‚½‚Á‚Ä‚¢‚È‚¢‚Æ‚·‚é
+	return false;
 }
+
+bool BulletManager::CheckPlayerCollision(float px, float py, float pr) {
+	for (int i = 0; i < EnemyBMax; i++) {
+		if (!e_bullets[i].GetFlag()) continue;
+
+		float enemyHitR = e_bullets[i].r * Bullet::HIT_RATE;
+
+		if (Collision::CheckCircle(px, py, pr, e_bullets[i].x, e_bullets[i].y, enemyHitR)) {
+			e_bullets[i].flag = false;
+			return true;
+		}
+	}
+	return false;
+}
+
 
 void BulletManager::Draw() {
 	for (int i = 0; i < PlayerBMax; i++) {
@@ -101,6 +127,8 @@ void BulletManager::Draw() {
 		}
 	}
 	for (int i = 0; i < EnemyBMax; i++) {
-		if (e_bullets[i].GetFlag()) e_bullets[i].Draw();
+		if (!e_bullets[i].GetFlag()) continue;
+
+		e_bullets[i].Draw(bulletGraphs[e_bullets[i].type]);
 	}
 }

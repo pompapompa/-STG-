@@ -35,41 +35,41 @@ private:
 	
 
 	static constexpr BossPhase phases[] = {				//通常こうげきとスペカのデータを配列で定義
-	/*  {phaseNum, hpLimit, limitTime,弾幕数,{{type,	sr,		ss,		si,		way,	広角,		回転速度}{}{}}},弾消しフラグ */
+	/*  {phaseNum, hpLimit, limitTime,弾幕数,{{type,	sr,		ss,		si,		way,	広角,		回転速度,	基準角		見た目(0:青/1:赤/2:青鱗/3:赤米/4:青米)}{}{}}},弾消しフラグ　*/
 	
 			/*	通1　*/
-			{ 0,	700.0f,		3600,	1,		{
-									{PT::RotateAll,		4.0f,	0.5f,	2,		12,		360.0f,		2.22f}
+			{ 0,	300.0f,		3600,	1,		{
+									{PT::RotateAll,		4.0f,	0.5f,	8,		12,		360.0f,		0.22f,		90,			3}
 			},false},																
 			
 			/*　スペカ1枚目　*/
-			{ 1,	1200.0f,	5400,	2,		{
-									{PT::RotateAll,		4.0f,	3.5f,	10,		18,		360.0f,		0.02f},
-									{PT::RotateAll,		3.0f,	2.0f,	48,		64,		360.0f,		0.0f}
+			{ 1,	500.0f,	5400,	2,		{
+									{PT::RotateAll,		4.0f,	3.5f,	10,		18,		360.0f,		0.02f,		90,			3},
+									{PT::RotateAll,		4.0f,	2.0f,	48,		64,		360.0f,		0.0f,		90,			4}
 			},true},																 
 	  
 			
 			/*　通2　*/
-			{ 2,	1300.0f,	3600,	2,		{
-								{PT::RotateAll,		3.0f,	2.0f,	5,		24,		360.0f,		0.50f},
-								{PT::RotateAll,		3.0f,	2.0f,	5,		24,		360.0f,		-0.50f}
+			{ 2,	300.0f,	3600,	2,		{
+									{PT::RotateAll,		3.0f,	2.0f,	5,		24,		360.0f,		0.50f,		90,			0},
+									{PT::RotateAll,		3.0f,	2.0f,	5,		24,		360.0f,		-0.50f,		90,			0}
 			},true},
 	
 			/*　天上天下の照國(3枚目)　*/
 			{ 3,	700.0f,		6000,	3,		{
-									{PT::RotateAll,		4.0f,	5.0f,	8,		16,		360.0f,		5.0f},
-									{PT::RotateAll,		4.0f,	5.0f,	8,		16,		360.0f,		-5.0f},
-									{PT::RotateAll,		3.0f,	2.0f,	48,		64,		360.0f,		0.0f}
+									{PT::RotateAll,		4.0f,	5.0f,	8,		16,		360.0f,		5.0f,		90,			2},
+									{PT::RotateAll,		4.0f,	5.0f,	8,		16,		360.0f,		-5.0f,		90,			2},
+									{PT::RotateAll,		4.0f,	2.0f,	48,		64,		360.0f,		0.0f,		90,			4}
 			},true},																												
 			
 																							
 			
 			/*　ラストスペル　*/
 			{ 4,	1500.0f,	3600,	4,		{
-									{PT::NWay,			4.0f,	10.0f,	3,		12,		180.0f,		0.5f},
-									{PT::RotateAll,		6.0f,	7.0,	7,		18,		360.0f,		200.0f},
-									{PT::RotateAll,		6.0f,	7.0f,	7,		18,		360.0f,		-200.0f},
-									{PT::Aimed,			20.0f,	3.5f,	45,		1,		0.0f,		0.0f}
+									{PT::NWay,			4.0f,	10.0f,	3,		12,		180.0f,		0.5f,		90,			4},
+									{PT::RotateAll,		6.0f,	5.0,	7,		18,		360.0f,		10.0f,		90,			0},
+									{PT::RotateAll,		6.0f,	5.0f,	7,		18,		360.0f,		-10.0f,		90,			0},
+									{PT::Aimed,			20.0f,	3.5f,	45,		1,		0.0f,		0.0f,		90,			1}
 			},true},
 	};
 
@@ -85,7 +85,7 @@ public:
 	void Draw() override;
 
 	
-	void SetDamage(float d) { hp -= d; }											//hp -= dの様な単純な計算はヘッダに記述することで関数を呼び出す処理が必要ないため節約できる。この様にクラス定義内に直接処理を書いてるのはインライン関数と呼ばれる。
+	void SetDamage(float d) { hp -= d; }											
 	float GetHp() { return hp; }						
 	float GetHpRate() { return(phaseMaxHp > 0.0f) ? (hp / phaseMaxHp) : 0.0f; }		//そのフェーズの残りhpを円弧のUIで表現する時用の比率
 

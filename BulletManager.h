@@ -11,7 +11,16 @@ private:
 	Bullet p_bullets[PlayerBMax];												//Bulletクラスのインスタンスを配列で宣言
 	Bullet e_bullets[EnemyBMax];												//敵弾用のインスタンス配列
 
+	int bulletGraphs[50];														//画像の番号を格納する箱
+
 public:
+	BulletManager();															//初期化関数
+	void ReloadGraphic() {
+		bulletGraphs[2] = LoadGraph("素材集/青鱗弾.png");
+		bulletGraphs[3] = LoadGraph("素材集/赤米弾.png");
+		bulletGraphs[4] = LoadGraph("素材集/青米弾.png");
+	}
+
 	/**
 	 * @brief 自機弾を画面に発射する
 	 * @param x 発射元のX座標
@@ -34,7 +43,7 @@ public:
 	 * @param isHoming ホーミングするかどうかのフラグ
 	 * @param turnSpeed ホーミングの旋回の強さ
 	 */
-	void LaunchEnemyBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming, float turnSpeed);		//敵弾発射用関数
+	void LaunchEnemyBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming, float turnSpeed, int in_type = 0);		//敵弾発射用関数
 
 	void Update(float playerX, float playerY, float bossX, float bossY, bool bossAlive, Enemy* fairies);
 	void Draw();
@@ -46,6 +55,7 @@ public:
 
 
 	bool CheckPlayerCollision(float px, float py, float pr);
+	bool CheckEnemyCollision(float ex, float ey, float er);
 
 	
 

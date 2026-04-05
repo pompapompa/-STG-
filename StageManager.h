@@ -25,6 +25,7 @@ struct EnemySpawn {
 	int   count;							//隊列の数				
 	int   interval;							//出撃間隔(フレーム)
 	BulletPattern::ShotConfig shotConf;		//弾のパラメータ
+	bool clearOnEnd;						//弾消しフラグ
 };
 
 class StageManager {

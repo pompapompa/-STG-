@@ -61,7 +61,7 @@ private:
 		3,									//LI：セット内の1発ごとの発射間隔のフレーム数
 		-8.0f,								//ssy：ShotSpeed_Y
 		3.0f,								//sr：Shot半径
-		0.18f								//turn：ホーミングの曲がりやすさのパラメータ
+		0.15f								//turn：ホーミングの曲がりやすさのパラメータ
 	};
 
 	static constexpr StraightShotData wideSpread{

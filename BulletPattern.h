@@ -17,6 +17,7 @@ namespace BulletPattern {
 			Aimed = 0,			//’P”­©‹@‘_‚¢
 			NWay,				//N-Way
 			RotateAll			//‰ñ“]‘S•ûˆÊ
+
 		};
 	}
 
@@ -31,6 +32,8 @@ namespace BulletPattern {
 		int way = 1;							//’e‚Ìway”
 		float totalAngle = 0.0f;				//‘S‘Ì‚ÌL‚ª‚èŠp“x(“x”–@)
 		float rotSpeed = 0.0f;					//‰ñ“]‘¬“x
+		float baseAngle = 90.0f;
+		int graphicType = 0;					//0:Ô‰~,1:Â‰~,2:Â—Ø’e
 	};
 #pragma endregion
 
@@ -44,8 +47,9 @@ namespace BulletPattern {
 	 * @param speed “G’e‚Ì‘¬‚³
 	 * @param player ©‹@‚ÌÀ•W‚ğæ“¾‚·‚é‚½‚ß‚ÌPlayerƒNƒ‰ƒX‚ÌQÆ
 	 * @param bm ’e‚ğ¶¬EŠÇ—‚·‚é‚½‚ß‚ÌBulletManager‚Ö‚Ìƒ|ƒCƒ“ƒ^
+	 * @param graphicType ’e‚Ìí—Ş
 	 */
-	void AimedShot(float ex, float ey, float sr, float speed, const Player& player, BulletManager* bm);
+	void AimedShot(float ex, float ey, float sr, float speed, const Player& player, BulletManager* bm, int graphicType = 0);
 #pragma endregion
 
 
@@ -60,9 +64,12 @@ namespace BulletPattern {
 	* @param totalAngleDeg ‘S‘Ì‚ÌL‚ª‚èŠp“x(“x”–@)
 	* @param baseAngleDeg Šî€Šp“x(“x”–@)
 	* @param bm BulletManager‚Ö‚Ìƒ|ƒCƒ“ƒ^
+	* @param graphicType ’e‚Ìí—Ş
 	*/
-	void NWayShot(float ex, float ey, float sr, float speed, int way, float totalAngleDeg, float baseAngleDeg, BulletManager* bm);
+	void NWayShot(float ex, float ey, float sr, float speed, int way, float totalAngleDeg, float baseAngleDeg, BulletManager* bm, int graphicType = 0);
 #pragma endregion 
+
+
 
 #pragma region ’e–‹U‚è•ª‚¯
 	/**

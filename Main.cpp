@@ -41,7 +41,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		if (CheckHitKey(KEY_INPUT_F)) {
 			isWindow = !isWindow;							//trueとfalseの状態を交互に交換する
-			ChangeWindowMode(isWindow ? TRUE : FALSE);		
+			ChangeWindowMode(isWindow ? TRUE : FALSE);
+
+			bm.ReloadGraphic();
+			SetDrawScreen(DX_SCREEN_BACK);
+
 			while (CheckHitKey(KEY_INPUT_F)) {
 				if (ProcessMessage() != 0) return -1;
 			}
@@ -122,7 +126,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			bm.Draw();
 			stageManager.Draw(&bm);			//ステージ全体の流れを管理するためBulletManagerを使用するかもしれないので場所を教えておく
-			bm.Draw();
 
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
 
@@ -132,7 +135,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				scene = SCENE_CLEAR;
 			}
 
-			if (CheckHitKey(KEY_INPUT_ESCAPE)) scene = SCENE_PAUSE;
+			if (CheckHitKey(KEY_INPUT_ESCAPE)) {
+				scene = SCENE_PAUSE;
+				while (CheckHitKey(KEY_INPUT_ESCAPE) != 0) ProcessMessage();
+			}
 		}															//case SCENE_STAGEの中身を囲うことで変数のスコープがその中限定となる
 		break;
 
@@ -149,9 +155,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
 		case(SCENE_PAUSE):
+			using namespace PlayArea;
+
 			DrawString(360, 270, (PauseMenu.GetSelect() == 0 ? "> 続ける" : "続ける"), GetColor(255, 255, 255));
 			DrawString(360, 300, (PauseMenu.GetSelect() == 1 ? "> やり直す" : "やり直す"), GetColor(255, 255, 255));
 			DrawString(360, 330, (PauseMenu.GetSelect() == 2 ? "> ゲームを終了する" : "ゲームを終了する"), GetColor(255, 255, 255));
+
+			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
+			bm.Draw();
+			stageManager.Draw(&bm);
+
+
 
 			if (CheckHitKey(KEY_INPUT_UP)) {
 				PauseMenu.Prev();
@@ -171,7 +185,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					scene = SCENE_STAGE;
 				}
 				if (select == 2) scene = SCENE_TITLE;
-				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) ProcessMessage();			
+				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) ProcessMessage();
+			}
+
+			if (CheckHitKey(KEY_INPUT_ESCAPE)) {
+				scene = SCENE_STAGE;
+				while (CheckHitKey(KEY_INPUT_ESCAPE) != 0) ProcessMessage();
 			}
 
 			if (CheckHitKey(KEY_INPUT_R)) {
@@ -184,6 +203,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				scene = SCENE_TITLE;
 				while (CheckHitKey(KEY_INPUT_Q) != 0) ProcessMessage();
 			}
+
 			break;
 
 		case(SCENE_QUIT_CONFIRM):

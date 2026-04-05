@@ -3,6 +3,7 @@
 #include "BulletPattern.h"
 
 
+class StageManager;
 class BulletManager;					//‘O•ûéŒ¾
 
 class Enemy {

@@ -4,21 +4,21 @@
 #include <math.h>
 
 namespace BulletPattern {
-	void AimedShot(float ex, float ey, float sr, float speed, const Player& player, BulletManager* bm) {
+	void AimedShot(float ex, float ey, float sr, float speed, const Player& player, BulletManager* bm, int graphicType) {
 		float dx = player.GetX() - ex;
 		float dy = player.GetY() - ey;									//敵から自機への相対位置ベクトル(dx,dy)を算出
 
 		float angleRad = atan2f(dy, dx);								//敵から自機の角度[rad]を算出
 		float angleDeg = angleRad * 180.0f / DX_PI_F;					//弧度法→度数法変換
-		NWayShot(ex, ey, sr, speed, 1, 0.0f, angleDeg, bm);				//NWayShot関数へ処理を任せる
+		NWayShot(ex, ey, sr, speed, 1, 0.0f, angleDeg, bm, graphicType);				//NWayShot関数へ処理を任せる
 	}
 
-	void NWayShot(float ex, float ey, float sr, float speed, int way, float totalAngleDeg, float baseAngleDeg, BulletManager* bm) {
+	void NWayShot(float ex, float ey, float sr, float speed, int way, float totalAngleDeg, float baseAngleDeg, BulletManager* bm, int graphicType) {
 		if (way <= 1) {													//way数が1以下の場合の零除算防止
 			float rad = baseAngleDeg * DX_PI_F / 180.0f;				//度数法→弧度法変換
 			float vx = cosf(rad) * speed;								//弾速のx軸成分
 			float vy = sinf(rad) * speed;								//弾速のy軸成分
-			bm->LaunchEnemyBullet(ex, ey, sr, vx, vy, false, 0.0f);		//インスタンスbmに発射依頼
+			bm->LaunchEnemyBullet(ex, ey, sr, vx, vy, false, 0.0f, graphicType);		//インスタンスbmに発射依頼
 			return;
 		}
 
@@ -38,7 +38,7 @@ namespace BulletPattern {
 			float vx = cosf(rad) * speed;
 			float vy = sinf(rad) * speed;
 
-			bm->LaunchEnemyBullet(ex, ey, sr, vx, vy, false, 0.0f);
+			bm->LaunchEnemyBullet(ex, ey, sr, vx, vy, false, 0.0f, graphicType);
 		}
 	}
 
@@ -46,7 +46,7 @@ namespace BulletPattern {
 	void ExecShot(float ex, float ey, const ShotConfig& conf, const Player& player, BulletManager* bm) {
 		switch (conf.type) {
 		case PT::Aimed:
-			AimedShot(ex, ey, conf.radius, conf.speed, player, bm);
+			AimedShot(ex, ey, conf.radius, conf.speed, player, bm, conf.graphicType);
 			break;
 
 		case PT::NWay:
@@ -55,12 +55,12 @@ namespace BulletPattern {
 			float dy = player.GetY() - ey;
 			float aimAngleDeg = atan2f(dy, dx) * 180.0f / DX_PI_F;
 
-			NWayShot(ex, ey, conf.radius, conf.speed, conf.way, conf.totalAngle, aimAngleDeg, bm);
+			NWayShot(ex, ey, conf.radius, conf.speed, conf.way, conf.totalAngle, aimAngleDeg, bm, conf.graphicType);
 			break;
 		}
 
 		case PT::RotateAll:
-			NWayShot(ex, ey, conf.radius, conf.speed, conf.way, 360.0f, 0.0f, bm);
+			NWayShot(ex, ey, conf.radius, conf.speed, conf.way, 360.0f, conf.baseAngle, bm, conf.graphicType);
 			break;
 		}
 	}
