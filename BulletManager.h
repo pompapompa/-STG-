@@ -7,7 +7,7 @@ class BulletManager {
 private:
 	static constexpr int PlayerBMax = 1000;										//自機弾配列の最大数
 	static constexpr int EnemyBMax = 5000;										//敵弾配列の最大数
-	
+
 	Bullet p_bullets[PlayerBMax];												//Bulletクラスのインスタンスを配列で宣言
 	Bullet e_bullets[EnemyBMax];												//敵弾用のインスタンス配列
 
@@ -30,7 +30,7 @@ public:
 	 * @param ssy Y方向の射出速度(ShootSpeed_Y)
 	 * @param isHoming ホーミングするかどうかのフラグ
 	 * @param turnSpeed ホーミングの旋回の強さ
-	 */ 
+	 */
 	void LaunchPlayerBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming, float turnSpeed);		//自機弾発射用関数
 
 	/**
@@ -47,7 +47,7 @@ public:
 
 	void Update(float playerX, float playerY, float bossX, float bossY, bool bossAlive, Enemy* fairies);
 	void Draw();
-	
+
 
 
 	int GetPlayerBulletMax() const { return PlayerBMax; }
@@ -57,12 +57,18 @@ public:
 	bool CheckPlayerCollision(float px, float py, float pr);
 	bool CheckEnemyCollision(float ex, float ey, float er);
 
-	
+
 
 	void ClearAllBullets() {
 		for (int i = 0; i < PlayerBMax; i++) {
 			p_bullets[i].SetFlag(false);
 		}
+		for (int i = 0; i < EnemyBMax; i++) {
+			e_bullets[i].SetFlag(false);
+		}
+	}
+
+	void ClearEnemyBullets() {
 		for (int i = 0; i < EnemyBMax; i++) {
 			e_bullets[i].SetFlag(false);
 		}

@@ -9,7 +9,7 @@
 #include <math.h>
 
 
-void Enemy::Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy, int in_hp, const BulletPattern::ShotConfig& conf) {
+void Enemy::Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy, int in_hp, const BulletPattern::ShotConfig& conf, bool in_clear) {
 	x = in_x;
 	y = in_y;
 	r = in_r;
@@ -18,6 +18,7 @@ void Enemy::Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy
 	hp = in_hp;
 	m_shotConf = conf;
 	flag = true;				//フラグを立てる
+	clearOnDeath = in_clear;
 }
 
 void Enemy::Update(const Player& player, BulletManager* bm) {	//playerからはパラメータを参照するだけなので書き換えないconstと参照の&で、bmは書き換えたりするので*を使う

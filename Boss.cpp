@@ -9,7 +9,7 @@
 
 void Boss::Spawn(float in_x, float in_y) {
 	BulletPattern::ShotConfig dummyConf;
-	Encount(in_x, in_y, para.r, 0.0f, 0.0f, 0, dummyConf);							//hpの引数はボスの場合hpロジックが独自の為ダミーの0を入力している。その後上書きされる為何でも良い。
+	Encount(in_x, in_y, para.r, 0.0f, 0.0f, 0, dummyConf, false);							//hpの引数はボスの場合hpロジックが独自の為ダミーの0を入力している。その後上書きされる為何でも良い。
 
 	currentIdx = 0;
 	this->hp = phases[currentIdx].hpLimit;								//そのフェーズのHPをthis->hpに入れる

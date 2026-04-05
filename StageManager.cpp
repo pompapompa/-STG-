@@ -19,28 +19,33 @@ static constexpr EnemySpawn Stage1Timeline[] = {
 /*	{	frame,	x,		y,		vx,		vy,		r,		hp,		count	interval,	
 		{	type,			sr,		ss,		si,		way,	çLÇ™ÇËäp,	âÒì]ë¨ìx	äÓèÄäpìx	íeå©ÇΩñ⁄(0:ê¬/1:ê‘/2:ê¬óÿ/3:ê‘ïƒ/4:ê¬ïƒ)}}																	}}*/
 	{	60,		Left, 	top,	4.0f,	0.0f,	15.0f,	10,		7,			20,
-		{	PT::NWay,		4.0f,	8.0f,	18,		4,		10.0f,		0.0f,		90.0f,		3}},
+		{	PT::NWay,		4.0f,	8.0f,	18,		4,		10.0f,		0.0f,		90.0f,		3},false},
 
 	{	120,	Right,  top,	-4.0f,	0.0f,	15.0f,	10,		7,			15,
-		{	PT::NWay,		4.0f,	16.0f,	4,		2,		3.0f,		0.0f,		90.0f,		4}},
+		{	PT::NWay,		4.0f,	16.0f,	4,		2,		3.0f,		0.0f,		90.0f,		4},false},
 
 	{	300,	Left,	top,	5.0f,	0.0f,	15.0f,	10,		8,			15,
-		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		0}},
+		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		0}, false},
 
 	{	300,	Right,	top,	-5.0f,	0.0f,	15.0f,	10,		8,			15,
-		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		1}},
+		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		1}, false},
 
-	{	500,	Left,	top,	3.0f,	0.0f,	15.0f,	10,		10,			10,
-		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		0}},
+	{	500,	CenterX,top,	0.0f,	0.0f,	30.0f,	400,		1,			5,
+		{	PT::RotateAll,	4.0f,	3.0f,	5,		64,		0.0f,		0.22f,		90.0f,		2}, true},
 
-	{	500,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			10,
-		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		1}},
+	{	1000,	Left,	top,	3.0f,	0.0f,	15.0f,	10,		10,			10,
+		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		0}, false},
 
-	{	700,	CenterX,top,	-1.0f,	0.0f,	5.0f,	15,		10,			5,
-		{	PT::RotateAll,	4.0f,	4.0f,	15,		18,		0.0f,		0.5f,		90.0f,		3}},
+	{	1000,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			10,
+		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		1}, false},
 
-	{	700,	CenterX,top,	1.0f,	0.0f,	5.0f,	15,		10,			5,
-		{	PT::RotateAll,	4.0f,	4.0f,	15,		18,		0.0f,		0.5f,		90.0f,		3}}
+	{	1200,	CenterX,top,	-1.0f,	0.0f,	5.0f,	15,		10,			5,
+		{	PT::RotateAll,	4.0f,	4.0f,	15,		18,		0.0f,		0.5f,		90.0f,		3}, false},
+
+	{	1200,	CenterX,top,	1.0f,	0.0f,	5.0f,	15,		10,			5,
+		{	PT::RotateAll,	4.0f,	4.0f,	15,		18,		0.0f,		0.5f,		90.0f,		3}, false}
+
+
 
 };
 
@@ -72,7 +77,7 @@ void StageManager::Update(BulletManager* bm) {
 					for (int j = 0; j < Enemy::EnemyMax; j++) {
 						if (!fairies[j].GetFlag()) {
 							auto& d = Stage1Timeline[dataIdx];
-							fairies[j].Encount(d.x, d.y, d.r, d.vx, d.vy, d.hp,d.shotConf);
+							fairies[j].Encount(d.x, d.y, d.r, d.vx, d.vy, d.hp,d.shotConf,d.clearOnEnd);
 							break;
 						}
 					}
@@ -112,7 +117,11 @@ void StageManager::Draw(BulletManager* bm) {		//íeÇ∆Ç©ÇÃï`âÊ
 
 	for (int i = 0; i < Enemy::EnemyMax; i++) {
 		if (fairies[i].GetFlag()) {
-			fairies[i].CheckCollision(bm);
+			if (fairies[i].CheckCollision(bm)) {
+				if (fairies[i].IsClearOnDeath()) {
+					bm->ClearAllBullets();
+				}
+			}
 			fairies[i].Draw();						//ÉtÉâÉOÇ™óßÇ¡ÇƒÇ¢ÇÈódê∏Çï`âÊ
 		}
 	}
