@@ -16,31 +16,31 @@ static constexpr int top = Top + StageManager::upMargin;			//—d¸‚ªo‚Ä‚­‚é‚Éƒ
 
 
 static constexpr EnemySpawn Stage1Timeline[] = {
-	/*	frame,	x,		y,		vx,		vy,		r,		hp,		count	interval,	
-		{	type,			sr,		ss,		si,		way,	L‚ª‚èŠp,	‰ñ“]‘¬“x}																	}}*/
+/*	{	frame,	x,		y,		vx,		vy,		r,		hp,		count	interval,	
+		{	type,			sr,		ss,		si,		way,	L‚ª‚èŠp,	‰ñ“]‘¬“x	Šî€Šp“x	’eŒ©‚½–Ú(0:Â/1:Ô/2:Â—Ø/3:Ô•Ä/4:Â•Ä)}}																	}}*/
 	{	60,		Left, 	top,	4.0f,	0.0f,	15.0f,	10,		7,			20,
-		{	PT::NWay,		7.0f,	8.0f,	18,		4,		10.0f,		0.0f}},
+		{	PT::NWay,		4.0f,	8.0f,	18,		4,		10.0f,		0.0f,		90.0f,		3}},
 
 	{	120,	Right,  top,	-4.0f,	0.0f,	15.0f,	10,		7,			15,
-		{	PT::NWay,		5.0f,	16.0f,	4,		2,		4.0f,		0.0f}},
+		{	PT::NWay,		4.0f,	16.0f,	4,		2,		3.0f,		0.0f,		90.0f,		4}},
 
 	{	300,	Left,	top,	5.0f,	0.0f,	15.0f,	10,		8,			15,
-		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f}},
+		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		0}},
 
 	{	300,	Right,	top,	-5.0f,	0.0f,	15.0f,	10,		8,			15,
-		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f}},
+		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		1}},
 
 	{	500,	Left,	top,	3.0f,	0.0f,	15.0f,	10,		10,			10,
-		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f}},
+		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		0}},
 
 	{	500,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			10,
-		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f}},
+		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		1}},
 
-	{	700,	CenterX,top,	-1.0f,	0.0f,	15.0f,	10,		1,			10,
-		{	PT::RotateAll,	16.0f,	4.0f,	24,		18,		0.0f,		2.5f}},
+	{	700,	CenterX,top,	-1.0f,	0.0f,	5.0f,	15,		10,			5,
+		{	PT::RotateAll,	4.0f,	4.0f,	15,		18,		0.0f,		0.5f,		90.0f,		3}},
 
-	{	700,	CenterX,top,	1.0f,	0.0f,	15.0f,	10,		1,			10,
-		{	PT::RotateAll,	16.0f,	4.0f,	24,		18,		0.0f,		2.5f}}
+	{	700,	CenterX,top,	1.0f,	0.0f,	5.0f,	15,		10,			5,
+		{	PT::RotateAll,	4.0f,	4.0f,	15,		18,		0.0f,		0.5f,		90.0f,		3}}
 
 };
 
@@ -81,7 +81,7 @@ void StageManager::Update(BulletManager* bm) {
 		}
 
 
-		if (stageTimer >= 1000) {
+		if (stageTimer >= 1200) {
 			state = StageState::BOSS_BATTLE;		//ƒXƒe[ƒWó‘Ô‚ğƒ{ƒXí‚ÖˆÚs
 
 

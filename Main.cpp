@@ -124,8 +124,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());
 			}
 
-			bm.Draw();
-			stageManager.Draw(&bm);			//ステージ全体の流れを管理するためBulletManagerを使用するかもしれないので場所を教えておく
+			
+			stageManager.Draw(&bm);					//敵や自機本体の描画
+			bm.Draw();								//弾の描画
+			stageManager.GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
 
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
 

@@ -98,8 +98,15 @@ void Player::Draw() {
 	if (IsInvincible() && (invincibleTimer % para.blinkCycle < para.blinkThreshold)) {
 		return;												//–³“G”»’è‚ªtrueŠŽ‚Â–³“GŽžŠÔ‘S‘Ì‚ðŽüŠú‚ÅŠ„‚Á‚Ä‚»‚ê‚ªblinkThreshold‚æ‚è‚à¬‚³‚¢Žž‚É•`‰æˆ—‚ðreturn‚ÅƒXƒLƒbƒv‚·‚é‚±‚Æ‚Å“_–Å‚³‚¹‚é
 	}
-
 	DrawCircle(x, y, para.r, GetColor(0, 255, 0), true);
+}
+
+void Player::DrawHitBox(){
+
+	if (IsInvincible() && (invincibleTimer % para.blinkCycle < para.blinkThreshold)) {
+		return;
+	}
+
 	if (move_v == para.vs) {
 		DrawCircle(x, y, para.hr, GetColor(255, 255, 255), true);
 		DrawCircle(x, y, para.hfr, GetColor(255, 0, 0), false);

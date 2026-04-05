@@ -88,6 +88,7 @@ public:
 	void Update(BulletManager* bm);
 	void Reset();
 	void Draw();
+	void DrawHitBox();	
 
 	int GetBulletNum(const BulletManager * bm) const;
 
