@@ -8,13 +8,19 @@
 
 BulletManager::BulletManager() {
 
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 50; i++) {
 		bulletGraphs[i] = -1;								//”z—ñ‚Ì’†g‚ð-1‚Å‰Šú‰»
 	}
 
 	bulletGraphs[2] = LoadGraph("‘fÞW/Â—Ø’e.png");
 	bulletGraphs[3] = LoadGraph("‘fÞW/Ô•Ä’e.png");
 	bulletGraphs[4] = LoadGraph("‘fÞW/Â•Ä’e.png");
+	bulletGraphs[5] = LoadGraph("‘fÞW/Â‘å‹Ê.png");
+	bulletGraphs[6] = LoadGraph("‘fÞW/‰ü—Ç”Å“øF‘å‹Ê.png");
+	bulletGraphs[7] = LoadGraph("‘fÞW/¹.png");
+	bulletGraphs[8] = LoadGraph("‘fÞW/ÂƒiƒCƒt.png");
+	bulletGraphs[9] = LoadGraph("‘fÞW/ÔƒiƒCƒt.png");
+	bulletGraphs[10] = LoadGraph("‘fÞW/—Ø’e.png");
 }
 
 void BulletManager::LaunchPlayerBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming, float turnSpeed) {

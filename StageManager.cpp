@@ -31,19 +31,22 @@ static constexpr EnemySpawn Stage1Timeline[] = {
 		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		1}, false},
 
 	{	500,	CenterX,top,	0.0f,	0.0f,	30.0f,	400,	1,			5,									//道中ボス
-		{	PT::RotateAll,	4.0f,	3.0f,	7,		64,		0.0f,		100.0f,		90.0f,		2}, true},
+		{	PT::RotateAll,	4.0f,	3.0f,	7,		64,		0.0f,		50.0f,		90.0f,		2}, true},
 
-	{	1000,	Left,	top,	3.0f,	0.0f,	15.0f,	10,		10,			10,
+	{	700,	Left,	top,	3.0f,	0.0f,	15.0f,	10,		10,			10,
 		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		0}, false},
 
-	{	1000,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			10,
+	{	700,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			10,
 		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		1}, false},
 
-	{	1200,	CenterX,top,	-1.0f,	0.0f,	15.0f,	15,		10,			5,
-		{	PT::RotateAll,	4.0f,	4.0f,	15,		18,		0.0f,		0.5f,		90.0f,		3}, false},
+	{	800,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			5,		
+		{	PT::NWay,		4.0f,	6.0f,	30,		5,		90.0f,		5.0f,		90.0f,		2},	false},
 
-	{	1200,	CenterX,top,	1.0f,	0.0f,	15.0f,	15,		10,			5,
-		{	PT::RotateAll,	4.0f,	4.0f,	15,		18,		0.0f,		0.5f,		90.0f,		3}, false}
+	{	900,	CenterX,top,	-1.0f,	0.0f,	15.0f,	15,		10,			8,
+		{	PT::RotateAll,	4.0f,	3.0f,	15,		18,		0.0f,		0.0f,		90.0f,		3}, false},
+
+	{	900,	CenterX,top,	1.0f,	0.0f,	15.0f,	15,		10,			8,
+		{	PT::RotateAll,	4.0f,	3.0f,	15,		18,		0.0f,		0.0f,		90.0f,		3}, false}
 
 
 
@@ -86,7 +89,7 @@ void StageManager::Update(BulletManager* bm) {
 		}
 
 
-		if (stageTimer >= 1500) {
+		if (stageTimer >= 1200) {
 			state = StageState::BOSS_BATTLE;		//ステージ状態をボス戦へ移行
 
 

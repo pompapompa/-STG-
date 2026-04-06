@@ -17,6 +17,7 @@ namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書かねばならない
 	static constexpr int DefaultPlayerY = CenterY + (CenterY / 2);
 	static constexpr int DefaultBossX = CenterX;
 	static constexpr int DefaultBossY = CenterY - (CenterY / 2);
+	static constexpr int FitfullBossY = CenterY - ((CenterY) / 4);			//フィットフル用ボス位置Y
 };
 
 

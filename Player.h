@@ -35,8 +35,8 @@ private:
 
 
 	static constexpr PlayerParameter para{	//ここで同時にインスタンス宣言も行っている
-		6.0f,								//vn:通常速度
-		3.0f,								//vs:低速
+		4.0f,								//vn:通常速度
+		1.6f,								//vs:低速
 		15.0f,								//r:自機半径
 		2.0f,								//hr:当たり判定白い部分
 		3.0f,								//hfr:当たり判定の枠の赤い部分

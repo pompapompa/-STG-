@@ -1,11 +1,20 @@
 #include "DxLib.h"
 #include "Boss.h"
+#include "Common.h"
+#include "BossMoving.h"
 #include "Player.h"
 #include "BulletManager.h"
 #include "Collision.h"
-#include "Common.h"
 #include <math.h>
 
+
+Boss::Boss() {
+	for (int i = 0; i < 20; i++) {
+		BossGraphs[i] = -1;
+	}
+
+	BossGraphs[1] = LoadGraph("‘fÞW/¹.png");
+}
 
 void Boss::Spawn(float in_x, float in_y) {
 	BulletPattern::ShotConfig dummyConf;
@@ -29,8 +38,8 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 
 
 	x = PlayArea::DefaultBossX;
-	y = PlayArea::DefaultBossY;
-
+	//y = PlayArea::DefaultBossY;
+	y = PlayArea::FitfullBossY;
 	const BossPhase& p = phases[currentIdx];
 	
 	
@@ -70,7 +79,19 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 
 void Boss::Draw() {
 	if (!flag)return;
-	DrawCircle(x, y, r, GetColor(255, 0, 0), true);
+	float scale = r / 32.0f;
+
+
+	float angle = atan2f(vy, vx);
+
+
+
+	if (BossGraphs[1] != -1) {
+		DrawRotaGraph((int)x, (int)y, scale, angle, BossGraphs[1], TRUE);
+	}
+	else {
+		DrawCircle(x, y, r, GetColor(255, 0, 0), TRUE);
+	}
 
 	if (phaseMaxHp > 0) {
 		float hp_rate = GetHpRate();										//hp‚Ì”ä—¦ŒvŽZ	

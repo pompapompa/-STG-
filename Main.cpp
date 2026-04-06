@@ -49,6 +49,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			ChangeWindowMode(isWindow ? TRUE : FALSE);
 
 			bm.ReloadGraphic();
+			stageManager.ReloadGraphic();
 			SetDrawScreen(DX_SCREEN_BACK);
 		}
 

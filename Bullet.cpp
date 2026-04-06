@@ -38,6 +38,31 @@ void Bullet::Draw(int scaleGraph) {
 	else {
 		switch (type) {
 		
+		case 9:		//赤ナイフ
+		case 8:			//青ナイフ
+		{
+			float angle = atan2f(vy, vx);								       //進行方向の角度を算出
+			float drawAngle = angle - (DX_PI_F / 2.0f);				    	   //画像は下向きなので、始線(0)からの差(-π/2)する
+
+			float scale = r / 8.0f;										   //解像度に合わせて半径を調整
+
+			DrawRotaGraph((int)x, (int)y, scale, drawAngle, scaleGraph, TRUE);   //回転描画
+			break;
+		}
+
+		case 7:			
+		case 6:			//虹色大玉
+		case 5:			//青大玉
+		{
+			float angle = atan2f(vy, vx);
+			float drawAngle = angle - (DX_PI_F / 2.0f);
+
+			float scale = r / 128.0f;
+			DrawRotaGraph((int)x, (int)y, scale, drawAngle, scaleGraph, TRUE);
+			break;
+		}
+
+		
 		case 4:			//青米弾
 		case 3:			//赤米弾
 		{
@@ -50,7 +75,19 @@ void Bullet::Draw(int scaleGraph) {
 		}
 
 		
-		
+		case 10:		//鱗弾
+		{
+			float angle = atan2f(vy, vx);								       //進行方向の角度を算出
+			float drawAngle = angle - (DX_PI_F / 2.0f);				    	   //画像は下向きなので、始線(0)からの差(-π/2)する
+
+			float scale = r / 18.0f;										   //解像度に合わせて半径を調整
+
+			DrawRotaGraph((int)x, (int)y, scale, drawAngle, scaleGraph, TRUE);   //回転描画
+			break;
+		}
+
+
+
 		case 2:        //青鱗弾
 		{
 			float angle = atan2f(vy, vx);								       //進行方向の角度を算出

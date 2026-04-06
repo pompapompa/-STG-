@@ -137,6 +137,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Boss.cpp" />
+    <ClCompile Include="BossMoving.cpp" />
     <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="BulletManager.cpp" />
     <ClCompile Include="BulletPattern.cpp" />
@@ -150,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Boss.h" />
+    <ClInclude Include="BossMoving.h" />
     <ClInclude Include="Bullet.h" />
     <ClInclude Include="BulletManager.h" />
     <ClInclude Include="BulletPattern.h" />
