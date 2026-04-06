@@ -70,7 +70,9 @@ public:
 
 	void ClearEnemyBullets() {
 		for (int i = 0; i < EnemyBMax; i++) {
-			e_bullets[i].SetFlag(false);
+			if (e_bullets[i].GetFlag()) {
+				e_bullets[i].SetFlag(false);
+			}
 		}
 	}
 

@@ -21,17 +21,17 @@ static constexpr EnemySpawn Stage1Timeline[] = {
 	{	60,		Left, 	top,	4.0f,	0.0f,	15.0f,	10,		7,			20,
 		{	PT::NWay,		4.0f,	8.0f,	18,		4,		10.0f,		0.0f,		90.0f,		3},false},
 
-	{	120,	Right,  top,	-4.0f,	0.0f,	15.0f,	10,		7,			15,
+	{	120,	Right,  top,	-3.0f,	0.0f,	15.0f,	10,		7,			15,
 		{	PT::NWay,		4.0f,	16.0f,	4,		2,		3.0f,		0.0f,		90.0f,		4},false},
 
-	{	300,	Left,	top,	5.0f,	0.0f,	15.0f,	10,		8,			15,
+	{	350,	Left,	top,	5.0f,	0.0f,	15.0f,	10,		8,			15,
 		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		0}, false},
 
-	{	300,	Right,	top,	-5.0f,	0.0f,	15.0f,	10,		8,			15,
+	{	350,	Right,	top,	-5.0f,	0.0f,	15.0f,	10,		8,			15,
 		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		1}, false},
 
-	{	500,	CenterX,top,	0.0f,	0.0f,	30.0f,	400,		1,			5,
-		{	PT::RotateAll,	4.0f,	3.0f,	5,		64,		0.0f,		0.22f,		90.0f,		2}, true},
+	{	500,	CenterX,top,	0.0f,	0.0f,	30.0f,	400,	1,			5,									//“¹’†ƒ{ƒX
+		{	PT::RotateAll,	4.0f,	3.0f,	7,		64,		0.0f,		100.0f,		90.0f,		2}, true},
 
 	{	1000,	Left,	top,	3.0f,	0.0f,	15.0f,	10,		10,			10,
 		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		0}, false},
@@ -39,10 +39,10 @@ static constexpr EnemySpawn Stage1Timeline[] = {
 	{	1000,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			10,
 		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		1}, false},
 
-	{	1200,	CenterX,top,	-1.0f,	0.0f,	5.0f,	15,		10,			5,
+	{	1200,	CenterX,top,	-1.0f,	0.0f,	15.0f,	15,		10,			5,
 		{	PT::RotateAll,	4.0f,	4.0f,	15,		18,		0.0f,		0.5f,		90.0f,		3}, false},
 
-	{	1200,	CenterX,top,	1.0f,	0.0f,	5.0f,	15,		10,			5,
+	{	1200,	CenterX,top,	1.0f,	0.0f,	15.0f,	15,		10,			5,
 		{	PT::RotateAll,	4.0f,	4.0f,	15,		18,		0.0f,		0.5f,		90.0f,		3}, false}
 
 
@@ -86,7 +86,7 @@ void StageManager::Update(BulletManager* bm) {
 		}
 
 
-		if (stageTimer >= 1200) {
+		if (stageTimer >= 1500) {
 			state = StageState::BOSS_BATTLE;		//ƒXƒe[ƒWó‘Ô‚ðƒ{ƒXí‚ÖˆÚs
 
 
@@ -119,7 +119,7 @@ void StageManager::Draw(BulletManager* bm) {		//’e‚Æ‚©‚Ì•`‰æ
 		if (fairies[i].GetFlag()) {
 			if (fairies[i].CheckCollision(bm)) {
 				if (fairies[i].IsClearOnDeath()) {
-					bm->ClearAllBullets();
+					bm->ClearEnemyBullets();
 				}
 			}
 			fairies[i].Draw();						//ƒtƒ‰ƒO‚ª—§‚Á‚Ä‚¢‚é—d¸‚ð•`‰æ
@@ -146,5 +146,5 @@ void StageManager::Init(BulletManager* bm) {							//ƒXƒe[ƒW‚Ìó‘Ô‚ð‘S‚ÄƒŠƒZƒbƒ
 		SpawnSlots[i].Reset();
 	}
 
-	bm->ClearAllBullets();
+	bm->ClearEnemyBullets();
 }

@@ -44,7 +44,7 @@ void Bullet::Draw(int scaleGraph) {
 			float angle = atan2f(vy, vx);
 			float drawAngle = angle - (DX_PI_F / 2.0f);
 
-			float scale = r / 64;
+			float scale = r / 64.0f;
 			DrawRotaGraph((int)x, (int)y, scale, drawAngle, scaleGraph, TRUE);
 			break;
 		}

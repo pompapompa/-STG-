@@ -141,6 +141,7 @@
     <ClCompile Include="BulletManager.cpp" />
     <ClCompile Include="BulletPattern.cpp" />
     <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="Input.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MenuManager.cpp" />
     <ClCompile Include="Player.cpp" />
@@ -156,6 +157,7 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="Distance.h" />
     <ClInclude Include="Enemy.h" />
+    <ClInclude Include="Input.h" />
     <ClInclude Include="MenuManager.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="StageManager.h" />

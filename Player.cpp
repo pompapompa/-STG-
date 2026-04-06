@@ -1,5 +1,6 @@
-#include "DxLib.h"			
 #include "Player.h"			//自分のヘッダを最初にインクルード
+#include "DxLib.h"
+#include "Input.h"
 #include "BulletManager.h"	//使う部品
 #include "Common.h"			//共通設定
 #include <math.h>			//システムという順番が良いらしい
@@ -23,11 +24,11 @@ void Player::Update(BulletManager* bm) {
 	int vy = 0;
 	move_v = para.vn;												//毎フレームで通常速度に初期化することで低速状態を解除
 
-	if (CheckHitKey(KEY_INPUT_DOWN)) vy = 1;
-	if (CheckHitKey(KEY_INPUT_UP)) vy = -1;
-	if (CheckHitKey(KEY_INPUT_RIGHT)) vx = 1;
-	else if (CheckHitKey(KEY_INPUT_LEFT)) vx = -1;				//ここでelse ifにすることでRIGHTの方の判定を強くして妖々夢らしくする
-	if (CheckHitKey(KEY_INPUT_LSHIFT)) {
+	if (InputManager::IsPress(KEY_INPUT_DOWN)) vy = 1;
+	if (InputManager::IsPress(KEY_INPUT_UP)) vy = -1;
+	if (InputManager::IsPress(KEY_INPUT_RIGHT)) vx = 1;
+	else if (InputManager::IsPress(KEY_INPUT_LEFT)) vx = -1;				//ここでelse ifにすることでRIGHTの方の判定を強くして妖々夢らしくする
+	if (InputManager::IsPress(KEY_INPUT_LSHIFT)|| InputManager::IsPress(KEY_INPUT_RSHIFT)) {
 		move_v = para.vs;										//低速
 	}
 
@@ -47,8 +48,8 @@ void Player::Update(BulletManager* bm) {
 		invincibleTimer--;										//無敵時間の変数が0超過ならデクリメント
 	}
 
-	bool isPress = (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_SPACE));		//ショット発射ボタンを押しているか
-	bool isSlow = (move_v == para.vs);												//低速状態か
+	bool isPress = (InputManager::IsPress(KEY_INPUT_Z) || InputManager::IsPress(KEY_INPUT_SPACE));		//ショット発射ボタンを押しているか
+	bool isSlow = (move_v == para.vs);																	//低速状態か
 
 	if (isPress && shot_timer <= 0) {							//発射ボタン押下されている状態且つショットクールタイムが0の場合
 		ActivateWeapon(MainSlot, MainShot.L);					//メインショット
@@ -89,7 +90,6 @@ void Player::Reset() {
 		SubSlot[i].Reset();								//上と同様
 	}
 	shot_timer = 0;										//ショットのクールタイムも初期化
-
 }
 
 

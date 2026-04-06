@@ -1,4 +1,5 @@
 #include "DxLib.h"
+#include "Input.h"
 #include "Common.h"
 #include "StageManager.h"
 #include "BulletManager.h"
@@ -8,6 +9,8 @@
 #include "Boss.h"
 #include "MenuManager.h"
 #include <math.h>
+
+using namespace DxLib;									//IntelliSenseの勘違い防止
 
 
 /*　ーーーーーDxLibのデフォ：画面サイズ(640,480)ーーーーー　*/
@@ -37,18 +40,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
 	while (ProcessMessage() == 0 && ClearDrawScreen() == 0) {						//メインループ
+		InputManager::Update();								
 
-
-		if (CheckHitKey(KEY_INPUT_F)) {
+		if (InputManager::IsTrigger(KEY_INPUT_F)) {
 			isWindow = !isWindow;							//trueとfalseの状態を交互に交換する
 			ChangeWindowMode(isWindow ? TRUE : FALSE);
 
 			bm.ReloadGraphic();
 			SetDrawScreen(DX_SCREEN_BACK);
-
-			while (CheckHitKey(KEY_INPUT_F)) {
-				if (ProcessMessage() != 0) return -1;
-			}
 		}
 
 
@@ -63,15 +62,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawString(30, 450, "決定：Z or Enter　　フルスクリーン/ウィンドウ：F", GetColor(0, 255, 0));
 
 
-			if (CheckHitKey(KEY_INPUT_UP)) {
+			if (InputManager::IsTrigger(KEY_INPUT_UP)) {
 				TitleMenu.Prev();
-				while (CheckHitKey(KEY_INPUT_UP) != 0) ProcessMessage();
 			}
-			if (CheckHitKey(KEY_INPUT_DOWN)) {
+			if (InputManager::IsTrigger(KEY_INPUT_DOWN)) {
 				TitleMenu.Next();
-				while (CheckHitKey(KEY_INPUT_DOWN) != 0) ProcessMessage();
 			}
-			if (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) {
+			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
 				int select = TitleMenu.GetSelect();											//上で計算し終わって決定する直前のmenu_cursorを利用
 				if (select == 0) {
 					stageManager.Init(&bm);
@@ -83,11 +80,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 				if (select == 2) scene = SCENE_QUIT_CONFIRM;
 				if (select == 3) scene = SCENE_QUIT_CONFIRM;
-				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) ProcessMessage();	//連打防止処理
 			}
-			if (CheckHitKey(KEY_INPUT_ESCAPE)) {
+			if (InputManager::IsTrigger(KEY_INPUT_ESCAPE)) {
 				TitleMenu.SetSelect(3);
-				while (CheckHitKey(KEY_INPUT_ESCAPE) != 0) ProcessMessage();
 			}
 
 			break;
@@ -131,15 +126,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
 
+			if (InputManager::IsTrigger(KEY_INPUT_X)) {
+				bm.ClearEnemyBullets();
+			}
 
 			if (isDead) {											//ボスを倒したフラグが返されたらタイトルに戻る
-				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) ProcessMessage();		//z,enterキーを長押し状態でCLEARに遷移してきた時に離したらそのままタイトルに行くのを防ぐ為の文
+				while (InputManager::IsTrigger(KEY_INPUT_F)) ProcessMessage();		//z,enterキーを長押し状態でCLEARに遷移してきた時に離したらそのままタイトルに行くのを防ぐ為の文
 				scene = SCENE_CLEAR;
 			}
 
-			if (CheckHitKey(KEY_INPUT_ESCAPE)) {
+			if (InputManager::IsTrigger(KEY_INPUT_ESCAPE)) {
 				scene = SCENE_PAUSE;
-				while (CheckHitKey(KEY_INPUT_ESCAPE) != 0) ProcessMessage();
 			}
 		}															//case SCENE_STAGEの中身を囲うことで変数のスコープがその中限定となる
 		break;
@@ -149,8 +146,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawString(270, 240, "All Clear!!!", GetColor(0, 255, 0), false);
 			DrawString(200, 300, "終了するにはZかEnterキーを押して下さい", GetColor(0, 255, 0), false);
 
-			if (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) {
-				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) ProcessMessage();
+			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
 				scene = SCENE_TITLE;
 			}
 			break;
@@ -164,22 +160,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawString(360, 330, (PauseMenu.GetSelect() == 2 ? "> ゲームを終了する" : "ゲームを終了する"), GetColor(255, 255, 255));
 
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
-			bm.Draw();
-			stageManager.Draw(&bm);
+			stageManager.Draw(&bm);					//敵や自機本体の描画
+			bm.Draw();								//弾の描画
+			stageManager.GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
 
 
-
-			if (CheckHitKey(KEY_INPUT_UP)) {
-				PauseMenu.Prev();
-				while (CheckHitKey(KEY_INPUT_UP) != 0) ProcessMessage();
+			if (InputManager::IsTrigger(KEY_INPUT_UP)) {
+				PauseMenu.Prev();	
 			}
-			if (CheckHitKey(KEY_INPUT_DOWN)) {
+			if (InputManager::IsTrigger(KEY_INPUT_DOWN)) {
 				PauseMenu.Next();
-				while (CheckHitKey(KEY_INPUT_DOWN) != 0) ProcessMessage();
 			}
 
 
-			if (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) {
+			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
 				int select = PauseMenu.GetSelect();
 				if (select == 0) scene = SCENE_STAGE;
 				if (select == 1) {
@@ -187,23 +181,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					scene = SCENE_STAGE;
 				}
 				if (select == 2) scene = SCENE_TITLE;
-				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) ProcessMessage();
 			}
 
-			if (CheckHitKey(KEY_INPUT_ESCAPE)) {
+			if (InputManager::IsTrigger(KEY_INPUT_ESCAPE)) {
 				scene = SCENE_STAGE;
-				while (CheckHitKey(KEY_INPUT_ESCAPE) != 0) ProcessMessage();
 			}
 
-			if (CheckHitKey(KEY_INPUT_R)) {
+			if (InputManager::IsTrigger(KEY_INPUT_R)) {
 				stageManager.Init(&bm);
+				bm.ClearAllBullets();
 				scene = SCENE_STAGE;
-				while (CheckHitKey(KEY_INPUT_R) != 0) ProcessMessage();
 			}
 
-			if (CheckHitKey(KEY_INPUT_Q)) {
+			if (InputManager::IsTrigger(KEY_INPUT_Q)) {
 				scene = SCENE_TITLE;
-				while (CheckHitKey(KEY_INPUT_Q) != 0) ProcessMessage();
 			}
 
 			break;
@@ -212,15 +203,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawString(240, 210, "終了しますか？", GetColor(0, 255, 255));
 			DrawString(240, 240, (QuitMenu.GetSelect() == 1 ? "> はい　　いいえ" : "はい　　>いいえ"), GetColor(0, 255, 255));
 
-			if (CheckHitKey(KEY_INPUT_LEFT)) QuitMenu.Prev();
-			if (CheckHitKey(KEY_INPUT_RIGHT)) QuitMenu.Next();
-			while (CheckHitKey(KEY_INPUT_LEFT) || CheckHitKey(KEY_INPUT_RIGHT)) ProcessMessage();
+			if (InputManager::IsTrigger(KEY_INPUT_LEFT)) QuitMenu.Prev();
+			if (InputManager::IsTrigger(KEY_INPUT_RIGHT)) QuitMenu.Next();
 
-			if (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) {
+			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
 				int select = QuitMenu.GetSelect();
 				if (select == 0) scene = SCENE_TITLE;
 				if (select == 1) DxLib_End();
-				while (CheckHitKey(KEY_INPUT_Z) || CheckHitKey(KEY_INPUT_RETURN)) ProcessMessage();
 			}
 			break;
 		}
