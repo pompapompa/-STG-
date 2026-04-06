@@ -1,5 +1,6 @@
 #include "DxLib.h"
 #include "Input.h"
+#include "FpsManager.h"
 #include "Common.h"
 #include "StageManager.h"
 #include "BulletManager.h"
@@ -27,7 +28,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	bool isWindow = true;								//ウィンドウかフルスクかの状態を保存するフラグ
 	ChangeWindowMode(TRUE);								//初期状態はウィンドウモード
 
-
+	SetWaitVSyncFlag(FALSE);							//DxLib標準機能のブレーキ機能フラグを消して、自作時間制御システムで管理
 	SetDrawScreen(DX_SCREEN_BACK);						//裏描画
 	if (DxLib_Init() == -1) return -1;					//エラーが発生したら終了
 
@@ -40,7 +41,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
 	while (ProcessMessage() == 0 && ClearDrawScreen() == 0) {						//メインループ
-		InputManager::Update();								
+		InputManager::Update();		
+		FpsManager::Update();														//fps計算の更新
 
 		if (InputManager::IsTrigger(KEY_INPUT_F)) {
 			isWindow = !isWindow;							//trueとfalseの状態を交互に交換する
@@ -213,7 +215,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 			break;
 		}
+		FpsManager::Draw();																		//fpsの描画。ゲームのどの描画よりも前に描画する為ScreenFlipの直前に記述
 		ScreenFlip();
+		FpsManager::Wait();																		//fps固定
 	}
 	DxLib_End();
 	return 0;
