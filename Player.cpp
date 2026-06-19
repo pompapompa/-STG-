@@ -17,7 +17,6 @@ void Player::ActivateWeapon(BurstController* slots, int count) {
 }
 
 
-
 void Player::Update(BulletManager* bm) {
 	using namespace PlayArea;
 	int vx = 0;

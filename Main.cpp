@@ -107,6 +107,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				stageManager.GetFairies()
 			);
 
+			bm.UpdateItems(
+				stageManager.GetPlayer().GetX(),
+				stageManager.GetPlayer().GetY(),
+				50.0f
+			);
+
 			bool isDead = stageManager.GetBoss().CheckCollision(stageManager.GetPlayer(), bm);
 
 			bool isPlayerHit = false;
@@ -125,6 +131,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			
 			stageManager.Draw(&bm);					//“G‚â©‹@–{‘Ì‚Ì•`‰æ
 			bm.Draw();								//’e‚Ì•`‰æ
+			bm.DrawItems();
 			stageManager.GetPlayer().DrawHitBox();	//©‹@“–‚½‚è”»’è‚Ì•`‰æ‚Ì‡‚É‚·‚é‚±‚Æ‚Å“–‚½‚è”»’è‚ªŠm”F‚µ‚â‚·‚­‚È‚é
 
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
@@ -192,7 +199,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			if (InputManager::IsTrigger(KEY_INPUT_R)) {
 				stageManager.Init(&bm);
-				bm.ClearAllBullets();
+				bm.ClearAllBullet();
 				scene = SCENE_STAGE;
 			}
 

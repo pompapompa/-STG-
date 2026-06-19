@@ -1,5 +1,6 @@
 #pragma once
 #include "Bullet.h"
+#include "Item.h"
 
 class Enemy;																	//前方宣言
 
@@ -10,6 +11,9 @@ private:
 
 	Bullet p_bullets[PlayerBMax];												//Bulletクラスのインスタンスを配列で宣言
 	Bullet e_bullets[EnemyBMax];												//敵弾用のインスタンス配列
+
+	static constexpr int MAX_ITEMS = 2000;										//アイテムの最大配列数
+	Item items[MAX_ITEMS];														//アイテムの実体配列
 
 	int bulletGraphs[50];														//画像の番号を格納する箱
 
@@ -61,11 +65,9 @@ public:
 
 
 	bool CheckPlayerCollision(float px, float py, float pr);
-	bool CheckEnemyCollision(float ex, float ey, float er);
-
-
-
-	void ClearAllBullets() {
+	bool CheckEnemyCollision(float ex, float ey, float er);	
+	
+	void ClearAllBullet(){
 		for (int i = 0; i < PlayerBMax; i++) {
 			p_bullets[i].SetFlag(false);
 		}
@@ -74,12 +76,8 @@ public:
 		}
 	}
 
-	void ClearEnemyBullets() {
-		for (int i = 0; i < EnemyBMax; i++) {
-			if (e_bullets[i].GetFlag()) {
-				e_bullets[i].SetFlag(false);
-			}
-		}
-	}
+	void ClearEnemyBullets();
 
+	void UpdateItems(float playerX, float playerY, float collectRadius);		//アイテムの更新を行う関数		
+	void DrawItems();															//アイテムの描画を司令する関数
 };

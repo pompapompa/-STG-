@@ -126,6 +126,46 @@ bool BulletManager::CheckPlayerCollision(float px, float py, float pr) {
 }
 
 
+void BulletManager::ClearEnemyBullets() {
+	for (int i = 0; i < EnemyBMax; i++) {
+		if (e_bullets[i].GetFlag()) {
+
+			float bx = e_bullets[i].x;
+			float by = e_bullets[i].y;			//消す前に敵弾座標退避
+
+			e_bullets[i].flag = false;			
+
+			for (int j = 0; j < BulletManager::MAX_ITEMS; j++) {		
+				if (!items[j].isExist) {
+					items[j].Spawn(bx, by, ItemType::MINI_SCORE);	//小スコアアイテムを出現させる
+
+					items[j].isTargeted = true;						//回収モードオン
+					items[j].startX = bx;
+					items[j].startY = by;							//変わったら回収モードに移行するので初期座標に敵弾座標を渡す
+					items[j].collectTimer = 0;
+					break;											//1つの弾をアイテムに変えたら次の弾ループへ
+				}
+			}
+		}
+	}
+}
+
+void BulletManager::UpdateItems(float playerX, float playerY, float collectRadius) {
+	for (int i = 0; i < BulletManager::MAX_ITEMS; i++) {
+		if (items[i].isExist) {
+			items[i].Update(playerX, playerY, collectRadius);
+		}
+	}
+}
+
+void BulletManager::DrawItems() {
+	for (int i = 0; i < BulletManager::MAX_ITEMS; i++) {
+		if (items[i].isExist) {
+			items[i].Draw();
+		}
+	}
+}
+
 void BulletManager::Draw() {
 	for (int i = 0; i < PlayerBMax; i++) {
 		if (p_bullets[i].GetFlag() != 0) {
@@ -138,3 +178,4 @@ void BulletManager::Draw() {
 		e_bullets[i].Draw(bulletGraphs[e_bullets[i].type]);
 	}
 }
+
