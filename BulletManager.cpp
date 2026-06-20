@@ -138,11 +138,6 @@ void BulletManager::ClearEnemyBullets() {
 			for (int j = 0; j < BulletManager::MAX_ITEMS; j++) {		
 				if (!items[j].isExist) {
 					items[j].Spawn(bx, by, ItemType::MINI_SCORE);	//小スコアアイテムを出現させる
-
-					items[j].isTargeted = true;						//回収モードオン
-					items[j].startX = bx;
-					items[j].startY = by;							//変わったら回収モードに移行するので初期座標に敵弾座標を渡す
-					items[j].collectTimer = 0;
 					break;											//1つの弾をアイテムに変えたら次の弾ループへ
 				}
 			}

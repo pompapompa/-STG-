@@ -9,28 +9,32 @@ Item::Item() {
 }
 
 void Item::Spawn(float startX, float startY, ItemType itemType) {
-	x = startX;
-	y = startY;
-	type = itemType;
+	this->x = startX;
+	this->y = startY;
+	this->type = itemType;
+	this->isExist = true;
+	this->isTargeted = false;
+	this->collectTimer = 0;			//公転等をしていつまでも回収されないバグ回避用のタイマー(これを超えると自動回収)
+	this->topDelayTimer = 0;
+	this->gravity = 0.12f;
 
-	isExist = true;
-	isTargeted = false;
-	collectTimer = 0;			//公転等をしていつまでも回収されないバグ回避用のタイマー(これを超えると自動回収)
-}
+	if (itemType == ItemType::MINI_SCORE) {
+		this->vy = -5.5f;
+	}
+	else if(itemType==ItemType::ZANKI){
+		this->vy = -6.5f;
+	}
+	else {
+		this->vy = -5.5;
+	}
+}	
 
 void Item::Update(float playerX, float playerY, float collectRadius) {
 	if (!isExist) return;			//存在フラグが立っていないならスキップ
 
-	if (!isTargeted) {
-		if (Collision::CheckCircle(playerX, playerY, collectRadius, x, y, r)) {			//自機とアイテムの半径が被っていたら回収モードへ
-			isTargeted = true;
-			this->startX = x;
-			this->startY = y;							//現在地を記録
-			collectTimer = 0;							//回収タイマーのセット		
-		}
-	}
-
-	if (isTargeted) {				//回収モード
+	vy += gravity;					//加速
+	
+	if (isTargeted) {			//回収モード
 		collectTimer++;
 		float t = (float)collectTimer / limit;
 
@@ -38,16 +42,47 @@ void Item::Update(float playerX, float playerY, float collectRadius) {
 		if (t > 1.0f) t = 1.0f;
 
 		x = this->startX + (playerX - this->startX) * t;
-		y = this->startY + (playerY - this->startY) * t;					//記録した初期位置から自機方向へ補完移動
+		y = this->startY + (playerY - this->startY) * t;				//記録した初期位置から自機方向へ補完移動
 
 		if (collectTimer >= limit) {
-			isExist = false;												
-		}																	//メモ：ここで確実に回収されるので、フラグを消してアイテムの種類ごと効果を記述する。
+			isExist = false;
+		}																//メモ：ここで確実に回収されるので、フラグを消してアイテムの種類ごと効果を記述する。
 	}
+
+	
 	else {							//回収モードではない時
-		y += fallSpeed;		//落下速度を毎フレーム加算
-		if (y > PlayArea::Bottom+20) {
-			isExist = false;	//下端480と遊び分20よりも下に行ったらフラグを折る
+		if (vy < 0.0f) {
+			vy += gravity;			//加速
+			y += vy;				//位置を加算
+		}
+		else {
+			if (type == ItemType::MINI_SCORE) {
+				topDelayTimer++;
+				
+				if (topDelayTimer >= 30) {
+					isTargeted = true;
+					this->startX = x;
+					this->startY = y;
+					collectTimer = 0;
+				}
+			}
+			else {
+				vy += gravity;
+				if (vy > fallSpeed) {
+					vy = fallSpeed;
+				}
+				y += vy;
+
+				if (Collision::CheckCircle(playerX, playerY, collectRadius, x, y, r)) {
+					isTargeted = true;
+					this->startX = x;
+					this->startY = y;
+					collectTimer = 0;
+				}
+			}
+		}
+		if (y > PlayArea::Bottom + 20) {
+			isExist = false;
 		}
 	}
 }
