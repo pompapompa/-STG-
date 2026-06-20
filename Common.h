@@ -1,6 +1,7 @@
 #pragma once
 #include "BulletPattern.h"
 #include "DxLib.h"
+#include "math.h"
 
 
 namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書かねばならないが、これだと使用する関数内でusing namespace PlayArea;と一度宣言すればその関数内限定で使えるようになるから便利ってこと
@@ -20,6 +21,25 @@ namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書かねばならない
 	static constexpr int FitfullBossY = CenterY - ((CenterY) / 4);			//フィットフル用ボス位置Y
 };
 
+
+namespace MyMath {
+	inline void AccelarateToTarget(float targetX, float targetY, float currentX, float currentY, float& vx, float& vy, float acceleration, float speedCap) {		//2点間の誘導加速及び速度制限を行う関数
+		float dx = targetX - currentX;
+		float dy = targetY - currentY;
+		float dist = sqrtf(dx * dx + dy * dy);
+
+		if (dist > 0.0f) {
+			vx += (dx / dist) * acceleration;
+			vy += (dy / dist) * acceleration;
+		}
+
+		float currentSpeed = sqrtf(vx * vx + vy * vy);
+		if (currentSpeed > speedCap) {
+			vx = (vx / currentSpeed) * speedCap;
+			vy = (vy / currentSpeed) * speedCap;
+		}
+	}
+}
 
 struct StraightShotData {
 	int L;								//1セット内の総発射弾数
@@ -76,3 +96,4 @@ struct BulletColor {
 		}
 	}
 };
+

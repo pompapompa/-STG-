@@ -5,7 +5,18 @@
 #include "Common.h"
 
 Item::Item() {
+	x = 0.0f;
+	y = 0.0f;
+	vx = 0.0f;
+	vy = 0.0f;
+	gravity = 0.0f;
 	isExist = false;
+	isTargeted = false;
+	type = ItemType::MINI_SCORE;
+	collectTimer = 0;
+	startX = 0.0f;
+	startY = 0.0f;
+	topDelayTimer = 0;					//メンバ変数等の初期化
 }
 
 void Item::Spawn(float startX, float startY, ItemType itemType) {
@@ -16,40 +27,51 @@ void Item::Spawn(float startX, float startY, ItemType itemType) {
 	this->isTargeted = false;
 	this->collectTimer = 0;			//公転等をしていつまでも回収されないバグ回避用のタイマー(これを超えると自動回収)
 	this->topDelayTimer = 0;
-	this->gravity = 0.12f;
+	this->vx = 0.0f;
+	this->vy = DEFAULT_SPAWN_VY;
+	this->gravity = DEFAULT_GRAVITY;
 
 	if (itemType == ItemType::MINI_SCORE) {
-		this->vy = -5.5f;
+		this->vy = MINI_SCORE_SPAWN_VY;
 	}
-	else if(itemType==ItemType::ZANKI){
-		this->vy = -6.5f;
+	else if (itemType == ItemType::ZANKI) {
+		this->vy = ZANKI_SPAWN_VY;
 	}
 	else {
-		this->vy = -5.5;
+		this->vy = BASE_SPAWN_VY;
 	}
-}	
+}
 
 void Item::Update(float playerX, float playerY, float collectRadius) {
 	if (!isExist) return;			//存在フラグが立っていないならスキップ
 
 	vy += gravity;					//加速
-	
+
 	if (isTargeted) {			//回収モード
-		collectTimer++;
-		float t = (float)collectTimer / limit;
+		float toPlayerDist = sqrtf((playerX - x) * (playerX - x) + (playerY - y) * (playerY - y));	//自機とアイテムの距離
 
-		t = t * t * t;
-		if (t > 1.0f) t = 1.0f;
-
-		x = this->startX + (playerX - this->startX) * t;
-		y = this->startY + (playerY - this->startY) * t;				//記録した初期位置から自機方向へ補完移動
-
-		if (collectTimer >= limit) {
+		if (toPlayerDist < ADSORPTION_DISTANCE_LIMIT) {
+			x = playerX;
+			y = playerY;
 			isExist = false;
-		}																//メモ：ここで確実に回収されるので、フラグを消してアイテムの種類ごと効果を記述する。
-	}
+		}
+		else {						//距離が離れてるならすり抜けない速度(BASE_SPEED_CAP)で自機を追尾
+			collectTimer++;
 
-	
+			float currentPull = BASE_PULL_POWER + ((float)collectTimer * PULL_POWER_INC);
+			float currentCap = BASE_SPEED_CAP + ((float)collectTimer * SPEED_CAP_INC);
+
+			MyMath::AccelarateToTarget(playerX, playerY, x, y, vx, vy, currentPull, currentCap);
+
+			x += ((playerX - x) / toPlayerDist) * BASE_SPEED_CAP;
+			y += ((playerY - y) / toPlayerDist) * BASE_SPEED_CAP;
+		}
+
+
+		if (Collision::CheckCircle(playerX, playerY, PLAYER_MIN_HIT_R, x, y, r)) {
+			isExist = false;
+		}
+	}
 	else {							//回収モードではない時
 		if (vy < 0.0f) {
 			vy += gravity;			//加速
@@ -58,8 +80,8 @@ void Item::Update(float playerX, float playerY, float collectRadius) {
 		else {
 			if (type == ItemType::MINI_SCORE) {
 				topDelayTimer++;
-				
-				if (topDelayTimer >= 30) {
+
+				if (topDelayTimer >= MINI_SCORE_DELAY_FRAME) {
 					isTargeted = true;
 					this->startX = x;
 					this->startY = y;
@@ -81,13 +103,14 @@ void Item::Update(float playerX, float playerY, float collectRadius) {
 				}
 			}
 		}
-		if (y > PlayArea::Bottom + 20) {
+		if (y > PlayArea::Bottom + PLAYAREA_BOTTOM_MARGIN) {	//下端の遊びを過ぎたらフラグ折り
 			isExist = false;
 		}
 	}
 }
 
-void Item::Draw(){
+
+void Item::Draw() {
 	if (!isExist) return;			//存在しないなら描画はスキップ
 
 	unsigned int color;
