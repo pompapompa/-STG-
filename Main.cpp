@@ -39,6 +39,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	SceneType scene = SCENE_TITLE;						//場面を初期化(タイトル)
 	StageManager stageManager;
 	
+	bool playingPractice = false;						//現在Practiceモードをプレイ中かのフラグ
+
 
 	while (ProcessMessage() == 0 && ClearDrawScreen() == 0) {						//メインループ
 		InputManager::Update();		
@@ -78,8 +80,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					scene = SCENE_STAGE;
 				}
 				if (select == 1) {
-					stageManager.Init(&bm);
+					stageManager.Init(&bm, true);		//isPracticeにtrueを渡すことでボス戦へ
 					scene = SCENE_STAGE;
+					playingPractice = true;				//現在Practiceモードであることを保存
 				}
 				if (select == 2) scene = SCENE_QUIT_CONFIRM;
 				if (select == 3) scene = SCENE_QUIT_CONFIRM;
@@ -168,7 +171,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			DrawString(360, 270, (PauseMenu.GetSelect() == 0 ? "> 続ける" : "続ける"), GetColor(255, 255, 255));
 			DrawString(360, 300, (PauseMenu.GetSelect() == 1 ? "> やり直す" : "やり直す"), GetColor(255, 255, 255));
-			DrawString(360, 330, (PauseMenu.GetSelect() == 2 ? "> ゲームを終了する" : "ゲームを終了する"), GetColor(255, 255, 255));
+			DrawString(360, 330, (PauseMenu.GetSelect() == 2 ? "> タイトルに戻る" : "タイトルに戻る"), GetColor(255, 255, 255));
 
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
 			stageManager.Draw(&bm);					//敵や自機本体の描画
@@ -191,7 +194,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					stageManager.Init(&bm);									//やり直しなのでリセット処理
 					scene = SCENE_STAGE;
 				}
-				if (select == 2) scene = SCENE_TITLE;
+				if (select == 2) {
+					scene = SCENE_TITLE;
+					playingPractice = false;			//ここでフラグを折ることで一度Practiceを遊んだあとに通常モードでプレイしてもやり直しするとボス戦から開始となることを防止
+				}
 			}
 
 			if (InputManager::IsTrigger(KEY_INPUT_ESCAPE)) {
@@ -203,10 +209,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				bm.ClearAllBullet();
 				bm.ClearAllItems();
 				scene = SCENE_STAGE;
+				stageManager.Init(&bm, playingPractice);
 			}
 
 			if (InputManager::IsTrigger(KEY_INPUT_Q)) {
 				scene = SCENE_TITLE;
+				playingPractice = false;				//ここでフラグを折ることで一度Practiceを遊んだあとに通常モードでプレイしてもやり直しするとボス戦から開始となることを防止
 			}
 
 			break;

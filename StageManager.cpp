@@ -134,7 +134,7 @@ void StageManager::Draw(BulletManager* bm) {		//’e‚Æ‚©‚Ì•`‰æ
 	}
 }
 
-void StageManager::Init(BulletManager* bm) {							//ƒXƒe[ƒW‚Ìó‘Ô‚ğ‘S‚ÄƒŠƒZƒbƒg‚·‚éŠÖ”
+void StageManager::Init(BulletManager* bm, bool isPractice) {							//ƒXƒe[ƒW‚Ìó‘Ô‚ğ‘S‚ÄƒŠƒZƒbƒg‚·‚éŠÖ”
 	stageTimer = 0;
 	state = StageState::DOCHU;
 
@@ -152,4 +152,13 @@ void StageManager::Init(BulletManager* bm) {							//ƒXƒe[ƒW‚Ìó‘Ô‚ğ‘S‚ÄƒŠƒZƒbƒ
 
 	bm->ClearEnemyBullets();
 	bm->ClearAllItems();
+
+	if (isPractice) {							//Practiceƒ‚[ƒh‚Ì‚Íƒ{ƒXí‚Ü‚ÅƒXƒLƒbƒv
+		stageTimer = 1200;							//ƒXƒe[ƒWƒ^ƒCƒ}[‚ğ1200(’Êí‚Ìƒ{ƒX‚ªo‚Ä‚­‚éŠÔ)‚É‚·‚é‚±‚Æ‚Å“¹’†‚ÌG‹›‚ªoŒ»‚·‚é‚Ì‚ğ–h~
+		state = StageState::BOSS_BATTLE;			//ó‘Ô‚ğƒ{ƒXí‚Ö
+
+		float X = Left + (Right - Left) / 2.0f;
+		float Y = Top + (Bottom - Top) / 2.0f;
+		boss.Spawn(X, Y);							//‰æ–Ê’†‰›‚Éƒ{ƒX‚ğoŒ»‚³‚¹‚éB
+	}
 }

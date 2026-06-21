@@ -47,7 +47,7 @@ public:
 
 	void Update(BulletManager* bm);			//弾を出すタイミングとかで必要になるので住所を知っておく。(&bmは場所を教える。*bmはその場所の情報を受け取る箱のようなもの)
 	void Draw(BulletManager* bm);
-	void Init(BulletManager *bm);
+	void Init(BulletManager *bm, bool isPractice = false);			//Practiceモードかのフラグ
 
 	void ReloadGraphic() {
 		boss.ReloadGraphic();					
