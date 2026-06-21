@@ -38,7 +38,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	MenuManager QuitMenu(2);
 	SceneType scene = SCENE_TITLE;						//場面を初期化(タイトル)
 	StageManager stageManager;
-
+	
 
 	while (ProcessMessage() == 0 && ClearDrawScreen() == 0) {						//メインループ
 		InputManager::Update();		
@@ -134,6 +134,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			bm.DrawItems();
 			stageManager.GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
 
+
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
 
 			if (InputManager::IsTrigger(KEY_INPUT_X)) {
@@ -173,7 +174,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			stageManager.Draw(&bm);					//敵や自機本体の描画
 			bm.Draw();								//弾の描画
 			stageManager.GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
-
+			bm.DrawItems();
 
 			if (InputManager::IsTrigger(KEY_INPUT_UP)) {
 				PauseMenu.Prev();	
@@ -200,6 +201,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (InputManager::IsTrigger(KEY_INPUT_R)) {
 				stageManager.Init(&bm);
 				bm.ClearAllBullet();
+				bm.ClearAllItems();
 				scene = SCENE_STAGE;
 			}
 

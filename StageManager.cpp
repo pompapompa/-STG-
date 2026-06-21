@@ -141,6 +141,7 @@ void StageManager::Init(BulletManager* bm) {							//ƒXƒe[ƒW‚Ìó‘Ô‚ğ‘S‚ÄƒŠƒZƒbƒ
 	player.Reset();
 	boss.Reset();									//ƒ{ƒXƒtƒ‰ƒO‚ğÜ‚é
 
+
 	for (int i = 0; i < 100; i++) {
 		fairies[i].SetFlag(false);					//—d¸ƒtƒ‰ƒO‚àÜ‚é
 	}
@@ -150,4 +151,5 @@ void StageManager::Init(BulletManager* bm) {							//ƒXƒe[ƒW‚Ìó‘Ô‚ğ‘S‚ÄƒŠƒZƒbƒ
 	}
 
 	bm->ClearEnemyBullets();
+	bm->ClearAllItems();
 }
