@@ -7,15 +7,11 @@
 Item::Item() {
 	x = 0.0f;
 	y = 0.0f;
-	vx = 0.0f;
 	vy = 0.0f;
 	gravity = 0.0f;
 	isExist = false;
 	isTargeted = false;
 	type = ItemType::MINI_SCORE;
-	collectTimer = 0;
-	startX = 0.0f;
-	startY = 0.0f;
 	topDelayTimer = 0;					//メンバ変数等の初期化
 }
 
@@ -25,9 +21,7 @@ void Item::Spawn(float startX, float startY, ItemType itemType) {
 	this->type = itemType;
 	this->isExist = true;
 	this->isTargeted = false;
-	this->collectTimer = 0;			//公転等をしていつまでも回収されないバグ回避用のタイマー(これを超えると自動回収)
 	this->topDelayTimer = 0;
-	this->vx = 0.0f;
 	this->vy = DEFAULT_SPAWN_VY;
 	this->gravity = DEFAULT_GRAVITY;
 
@@ -56,17 +50,9 @@ void Item::Update(float playerX, float playerY, float collectRadius) {
 			isExist = false;
 		}
 		else {						//距離が離れてるならすり抜けない速度(BASE_SPEED_CAP)で自機を追尾
-			collectTimer++;
-
-			float currentPull = BASE_PULL_POWER + ((float)collectTimer * PULL_POWER_INC);
-			float currentCap = BASE_SPEED_CAP + ((float)collectTimer * SPEED_CAP_INC);
-
-			MyMath::AccelarateToTarget(playerX, playerY, x, y, vx, vy, currentPull, currentCap);
-
 			x += ((playerX - x) / toPlayerDist) * BASE_SPEED_CAP;
 			y += ((playerY - y) / toPlayerDist) * BASE_SPEED_CAP;
 		}
-
 
 		if (Collision::CheckCircle(playerX, playerY, PLAYER_MIN_HIT_R, x, y, r)) {
 			isExist = false;
@@ -74,8 +60,8 @@ void Item::Update(float playerX, float playerY, float collectRadius) {
 	}
 	else {							//回収モードではない時
 		if (vy < 0.0f) {
-			vy += gravity;			//加速
-			y += vy;				//位置を加算
+				vy += gravity;			//加速
+				y += vy;				//位置を加算
 		}
 		else {
 			if (type == ItemType::MINI_SCORE) {
@@ -83,23 +69,17 @@ void Item::Update(float playerX, float playerY, float collectRadius) {
 
 				if (topDelayTimer >= MINI_SCORE_DELAY_FRAME) {
 					isTargeted = true;
-					this->startX = x;
-					this->startY = y;
-					collectTimer = 0;
 				}
 			}
 			else {
 				vy += gravity;
 				if (vy > fallSpeed) {
-					vy = fallSpeed;
+						vy = fallSpeed;
 				}
 				y += vy;
 
 				if (Collision::CheckCircle(playerX, playerY, collectRadius, x, y, r)) {
 					isTargeted = true;
-					this->startX = x;
-					this->startY = y;
-					collectTimer = 0;
 				}
 			}
 		}
