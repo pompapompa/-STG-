@@ -131,10 +131,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());
 			}
 
-			
+			bm.DrawItems();
 			stageManager.Draw(&bm);					//敵や自機本体の描画
 			bm.Draw();								//弾の描画
-			bm.DrawItems();
 			stageManager.GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
 
 
@@ -174,10 +173,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawString(360, 330, (PauseMenu.GetSelect() == 2 ? "> タイトルに戻る" : "タイトルに戻る"), GetColor(255, 255, 255));
 
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
+		
+			bm.DrawItems();
 			stageManager.Draw(&bm);					//敵や自機本体の描画
 			bm.Draw();								//弾の描画
 			stageManager.GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
-			bm.DrawItems();
+		
 
 			if (InputManager::IsTrigger(KEY_INPUT_UP)) {
 				PauseMenu.Prev();	
@@ -205,7 +206,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 
 			if (InputManager::IsTrigger(KEY_INPUT_R)) {
-				stageManager.Init(&bm);
 				bm.ClearAllBullet();
 				bm.ClearAllItems();
 				scene = SCENE_STAGE;
