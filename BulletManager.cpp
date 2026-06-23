@@ -12,15 +12,15 @@ BulletManager::BulletManager() {
 		bulletGraphs[i] = -1;								//配列の中身を-1で初期化
 	}
 
-	bulletGraphs[2] = LoadGraph("素材集/青鱗弾.png");
+	bulletGraphs[2] = LoadGraph("素材集/鱗/青鱗.png");
 	bulletGraphs[3] = LoadGraph("素材集/赤米弾.png");
 	bulletGraphs[4] = LoadGraph("素材集/青米弾.png");
 	bulletGraphs[5] = LoadGraph("素材集/青大玉.png");
 	bulletGraphs[6] = LoadGraph("素材集/改良版虹色大玉.png");
-	bulletGraphs[7] = LoadGraph("素材集/聖.png");
-	bulletGraphs[8] = LoadGraph("素材集/青ナイフ.png");
-	bulletGraphs[9] = LoadGraph("素材集/赤ナイフ.png");
-	bulletGraphs[10] = LoadGraph("素材集/鱗弾.png");
+	bulletGraphs[7] = LoadGraph("素材集/ポイフル/紫ポイフル.png");
+	bulletGraphs[8] = LoadGraph("素材集/ナイフ/青ナイフ.png");
+	bulletGraphs[9] = LoadGraph("素材集/ナイフ/赤ナイフ.png");
+	bulletGraphs[10] = LoadGraph("素材集/鱗/黄鱗.png");
 }
 
 void BulletManager::LaunchPlayerBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming, float turnSpeed) {

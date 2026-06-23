@@ -38,22 +38,27 @@ private:
 
 	static constexpr BossPhase phases[] = {				//通常こうげきとスペカのデータを配列で定義
 		/*
-	bulletGraphs[2] = LoadGraph("素材集/青鱗弾.png");
-	bulletGraphs[3] = LoadGraph("素材集/赤米弾.png");
-	bulletGraphs[4] = LoadGraph("素材集/青米弾.png");
-	bulletGraphs[5] = LoadGraph("素材集/青大玉.png");
-	bulletGraphs[6] = LoadGraph("素材集/改良版虹色大玉.png");
-	bulletGraphs[7] = LoadGraph("素材集/聖.png");
-	bulletGraphs[8] = LoadGraph("素材集/青ナイフ.png");
-	bulletGraphs[9] = LoadGraph("素材集/赤ナイフ.png");
-	bulletGraphs[10] = LoadGraph("素材集/鱗弾.png");
+	
+		0:青円
+		1:赤円
+		2:青鱗
+		3:赤米弾
+		4:青米弾
+		5:青大玉
+		6:虹色大玉
+		7:紫ポイフル
+		8:青ナイフ
+		9:赤ナイフ
+		10:黄鱗
+
+	
 	*/
 
-	/*  {phaseNum, hpLimit, limitTime,弾幕数,{{type,	sr,		ss,		si,		way,	広角,		回転速度,	基準角		見た目(0:青/1:赤/2:青鱗/3:赤米/4:青米/5:青大玉)}{}{}}},弾消しフラグ　*/
+	/*  {phaseNum, hpLimit, limitTime,弾幕数,{{type,	sr,		ss,		si,		way,	広角,		回転速度,	基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ　*/
 	
 			/*	通1　*/
 			{ 0,	600.0f,		3600,	1,		{
-									{PT::RotateAll,		4.0f,	0.6f,	5,		12,		360.0f,		0.5f,		90,			9}
+									{PT::RotateAll,		4.0f,	0.6f,	5,		12,		360.0f,		0.5f,		90,			0}
 			},false},																
 	
 
@@ -61,7 +66,7 @@ private:
 			/*　スペカ1枚目　*/
 			{ 1,	900.0f,		5400,	2,		{
 									{PT::RotateAll,		4.0f,	3.5f,	10,		18,		360.0f,		0.2f,		90,			3},
-									{PT::RotateAll,		4.0f,	2.0f,	48,		64,		360.0f,		0.0f,		90,			4}
+									{PT::RotateAll,		4.0f,	2.0f,	48,		64,		360.0f,		0.0f,		90,			7}
 			},true},																 
 	  
 			
@@ -69,8 +74,8 @@ private:
 			{ 2,	600.0f,		3600,	4,		{
 									{PT::RotateAll,		3.0f,	1.2f,	5,		17,		360.0f,		5.5f,		90,			0},
 									{PT::RotateAll,		3.0f,	1.2f,	5,		17,		360.0f,		-5.5f,		90,			0},
-									{PT::RotateAll,		4.0f,	5.0f,	20,		15,		360.0f,		10.0f,		90,			2},
-									{PT::RotateAll,		4.0f,	5.0f,	20,		15,		360.0f,		-10.0f,		90,			2}
+									{PT::RotateAll,		4.0f,	3.0f,	20,		15,		360.0f,		10.0f,		90,			2},
+									{PT::RotateAll,		4.0f,	3.0f,	20,		15,		360.0f,		-10.0f,		90,			2}
 
 			},true},
 	
@@ -89,9 +94,9 @@ private:
 			/*　ラストスペル　*/
 			{ 5,	800.0f,		3600,	4,		{
 									{PT::NWay,			4.0f,	15.0f,	3,		12,		180.0f,		0.5f,		90,			9},
-									{PT::RotateAll,		6.0f,	5.0,	7,		18,		360.0f,		5.0f,		90,			1},
-									{PT::RotateAll,		6.0f,	5.0f,	7,		18,		360.0f,		-5.0f,		90,			0},
-									{PT::Aimed,			32.0f,	3.5f,	75,		1,		0.0f,		500.0f,		90,			5}
+									{PT::RotateAll,		6.0f,	2.5f,	7,		18,		360.0f,		5.0f,		90,			1},
+									{PT::RotateAll,		6.0f,	2.5f,	7,		18,		360.0f,		-5.0f,		90,			0},
+									{PT::Aimed,			32.0f,	2.0f,	120,		1,		0.0f,		500.0f,		90,			5}
 			},true},
 	};
 
@@ -104,7 +109,7 @@ public:
 
 	Boss();
 	void ReloadGraphic() {
-		BossGraphs[1] = LoadGraph("素材集/聖.png");
+		BossGraphs[1] = LoadGraph("素材集/改良版虹色大玉.png");
 	}
 
 	void Spawn(float in_x, float in_y);

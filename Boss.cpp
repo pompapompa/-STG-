@@ -13,7 +13,7 @@ Boss::Boss() {
 		BossGraphs[i] = -1;
 	}
 
-	BossGraphs[1] = LoadGraph("‘fŞW/¹.png");
+	BossGraphs[1] = LoadGraph("‘fŞW/‰ü—Ç”Å“øF‘å‹Ê.png");
 }
 
 void Boss::Spawn(float in_x, float in_y) {
@@ -79,7 +79,7 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 
 void Boss::Draw() {
 	if (!flag)return;
-	float scale = r / 32.0f;
+	float scale = r / 128.0f;
 
 
 	float angle = atan2f(vy, vx);
