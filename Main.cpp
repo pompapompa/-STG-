@@ -76,7 +76,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (InputManager::IsTrigger(KEY_INPUT_DOWN)) {
 				TitleMenu.Next();
 			}
-			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
+			if (InputManager::IsRelease(KEY_INPUT_Z) || InputManager::IsRelease(KEY_INPUT_RETURN)) {
 				int select = TitleMenu.GetSelect();											//上で計算し終わって決定する直前のmenu_cursorを利用
 				if (select == 0) {
 					lastSelectedStage = 1;
@@ -113,7 +113,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (InputManager::IsTrigger(KEY_INPUT_DOWN)) PracticeMenu.Next();
 			if (InputManager::IsPress(KEY_INPUT_ESCAPE)) scene = SCENE_TITLE;
 
-			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
+			if (InputManager::IsRelease(KEY_INPUT_Z) || InputManager::IsRelease(KEY_INPUT_RETURN)) {
 				lastSelectedStage=1;
 				lastSelectedPhase = PracticeMenu.GetSelect();
 				playingPractice = true;			
@@ -186,9 +186,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		case(SCENE_CLEAR):
 
 			DrawString(270, 240, "All Clear!!!", GetColor(0, 255, 0), false);
-			DrawString(200, 300, (playingPractice ? "プラクティスに戻るにはZかEnterキーを押してください" : "終了するにはZかEnterキーを押して下さい"), GetColor(0, 255, 0), false);
+			DrawString(180, 300, (playingPractice ? "プラクティスに戻るにはZかEnterキーを押してください" : "終了するにはZかEnterキーを押して下さい"), GetColor(0, 255, 0), false);
 
-			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
+			if (InputManager::IsRelease(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
 				scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;													//三項演算子によりシーン遷移
 			}
 			break;
@@ -197,9 +197,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		case(SCENE_PAUSE):
 			using namespace PlayArea;
 
-			DrawString(360, 270, (PauseMenu.GetSelect() == 0 ? "> 続ける" : "続ける"), GetColor(255, 255, 255));
-			DrawString(360, 300, (PauseMenu.GetSelect() == 1 ? "> やり直す" : "やり直す"), GetColor(255, 255, 255));
-			DrawString(360, 330, (PauseMenu.GetSelect() == 2 ? "> タイトルに戻る" : "タイトルに戻る"), GetColor(255, 255, 255));
+			DrawString(440, 270, (PauseMenu.GetSelect() == 0 ? "> 続ける" : "続ける"), GetColor(255, 255, 255));
+			DrawString(440, 300, (PauseMenu.GetSelect() == 1 ? "> やり直す" : "やり直す"), GetColor(255, 255, 255));
+			DrawString(440, 330, (PauseMenu.GetSelect() == 2 ? "> タイトルに戻る" : "タイトルに戻る"), GetColor(255, 255, 255));
 
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
 		
@@ -217,7 +217,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 
 
-			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
+			if (InputManager::IsRelease(KEY_INPUT_Z) || InputManager::IsRelease(KEY_INPUT_RETURN)) {
 				int select = PauseMenu.GetSelect();
 				if (select == 0) scene = SCENE_STAGE;
 				if (select == 1) {
@@ -233,7 +233,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				scene = SCENE_STAGE;
 			}
 
-			if (InputManager::IsTrigger(KEY_INPUT_R)) {
+			if (InputManager::IsRelease(KEY_INPUT_R)) {
 				bm.ClearAllBullet();
 				bm.ClearAllItems();
 				scene = SCENE_STAGE;
