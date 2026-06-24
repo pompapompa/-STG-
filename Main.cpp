@@ -42,7 +42,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	StageManager stageManager;
 	
 	int lastSelectedStage = 1;							
-	int lastSelectedPhase = 0;							//リトライで適切なステージとフェーズに飛べる用に保存
+	int lastSelectedPhase = 0;							//これらはリトライで適切なステージとフェーズに飛べる用に保存
+	bool playingPractice = false;						//プラクティス経由かどうかを判定するフラグ(前使っていたplayintPracticeとは用途はちがくなっている)
 
 	while (ProcessMessage() == 0 && ClearDrawScreen() == 0) {						//メインループ
 		InputManager::Update();		
@@ -80,6 +81,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (select == 0) {
 					lastSelectedStage = 1;
 					lastSelectedPhase = 0;
+					playingPractice = false;											//通常スタート時はフラグを折る
 					stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase);
 					scene = SCENE_STAGE;
 				}
@@ -97,7 +99,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
 		case SCENE_PRACTICE:
-			DrawString(200, 100, "～～～ スペルプラクティスモード ～～～", GetColor(255, 255, 255));
+			DrawString(170, 100, "～～～ スペルプラクティスモード ～～～", GetColor(255, 255, 255));
 			DrawString(230, 160, (PracticeMenu.GetSelect() == 0 ? "> 1面道中" : "1面道中"), GetColor(255, 255, 255));
 			DrawString(230, 190, (PracticeMenu.GetSelect() == 1 ? "> 1ボス　通1" : "1ボス　通1"), GetColor(255, 255, 255));
 			DrawString(230, 210, (PracticeMenu.GetSelect() == 2 ? "> 1ボス　スペカ1" : "1ボス　スペカ1"), GetColor(255, 255, 255));
@@ -114,6 +116,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
 				lastSelectedStage=1;
 				lastSelectedPhase = PracticeMenu.GetSelect();
+				playingPractice = true;			
 
 				stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase);
 				scene=SCENE_STAGE;
@@ -183,10 +186,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		case(SCENE_CLEAR):
 
 			DrawString(270, 240, "All Clear!!!", GetColor(0, 255, 0), false);
-			DrawString(200, 300, "終了するにはZかEnterキーを押して下さい", GetColor(0, 255, 0), false);
+			DrawString(200, 300, (playingPractice ? "プラクティスに戻るにはZかEnterキーを押してください" : "終了するにはZかEnterキーを押して下さい"), GetColor(0, 255, 0), false);
 
 			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
-				scene = SCENE_TITLE;
+				scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;													//三項演算子によりシーン遷移
 			}
 			break;
 
@@ -222,7 +225,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					scene = SCENE_STAGE;
 				}
 				if (select == 2) {
-					scene = SCENE_TITLE;
+					scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
 				}
 			}
 
@@ -238,7 +241,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 
 			if (InputManager::IsTrigger(KEY_INPUT_Q)) {
-				scene = SCENE_TITLE;
+				scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
 			}
 
 			break;
@@ -258,7 +261,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			break;
 		}
 		FpsManager::Draw();																		//fpsの描画。ゲームのどの描画よりも前に描画する為ScreenFlipの直前に記述
-		ScreenFlip();
+		DxLib::ScreenFlip();
 		FpsManager::Wait();																		//fps固定
 	}
 	DxLib::DxLib_End();
