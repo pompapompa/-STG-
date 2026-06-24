@@ -63,7 +63,7 @@ private:
 	
 
 
-			/*　スペカ1枚目　*/
+			/*　通1の2段階目(発狂)　*/
 			{ 1,	900.0f,		5400,	2,		{
 									{PT::RotateAll,		4.0f,	3.5f,	10,		18,		360.0f,		0.2f,		90,			3},
 									{PT::RotateAll,		4.0f,	2.0f,	48,		64,		360.0f,		0.0f,		90,			7}
@@ -72,8 +72,8 @@ private:
 			
 			/*　通2　*/
 			{ 2,	600.0f,		3600,	4,		{
-									{PT::RotateAll,		3.0f,	1.2f,	5,		17,		360.0f,		5.5f,		90,			0},
-									{PT::RotateAll,		3.0f,	1.2f,	5,		17,		360.0f,		-5.5f,		90,			0},
+									{PT::RotateAll,		3.0f,	1.6f,	5,		17,		360.0f,		5.5f,		90,			0},
+									{PT::RotateAll,		3.0f,	1.6f,	5,		17,		360.0f,		-5.5f,		90,			0},
 									{PT::RotateAll,		4.0f,	3.0f,	20,		15,		360.0f,		10.0f,		90,			2},
 									{PT::RotateAll,		4.0f,	3.0f,	20,		15,		360.0f,		-10.0f,		90,			2}
 
@@ -127,4 +127,6 @@ public:
 	void Reset() {
 		flag = false;
 	}
+
+	void JumpToPhase(int phaseIdx);
 };

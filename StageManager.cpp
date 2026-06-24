@@ -134,31 +134,39 @@ void StageManager::Draw(BulletManager* bm) {		//弾とかの描画
 	}
 }
 
-void StageManager::Init(BulletManager* bm, bool isPractice) {							//ステージの状態を全てリセットする関数
-	stageTimer = 0;
-	state = StageState::DOCHU;
+void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx) {							//ステージの状態を全てリセットする関数
+	currentStageNum = stageNum;
+	
+	bm->ClearEnemyBullets();
+	bm->ClearAllItems();
 
+	player.Reset();
+	boss.Reset();
+	
+	
 	player.Reset();
 	boss.Reset();									//ボスフラグを折る
 
 
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < Enemy::EnemyMax;i++) {
 		fairies[i].SetFlag(false);					//妖精フラグも折る
 	}
 
 	for (int i = 0; i < MAX_SPAWN_SLOT; i++) {
 		SpawnSlots[i].Reset();
 	}
-
-	bm->ClearEnemyBullets();
-	bm->ClearAllItems();
-
-	if (isPractice) {							//Practiceモードの時はボス戦までスキップ
+	if (startPhaseIdx > 0) {							//Practiceモードの時はボス戦までスキップ
 		stageTimer = 1200;							//ステージタイマーを1200(通常時のボスが出てくる時間)にすることで道中の雑魚が出現するのを防止
 		state = StageState::BOSS_BATTLE;			//状態をボス戦へ
 
 		float X = Left + (Right - Left) / 2.0f;
-		float Y = Top + (Bottom - Top) / 2.0f;
+		float Y = Top + (Bottom - Top) / 4.0f;
 		boss.Spawn(X, Y);							//画面中央にボスを出現させる。
+
+		boss.JumpToPhase(startPhaseIdx - 1);
+	}
+	else {
+		stageTimer = 0;
+		state = StageState::DOCHU;
 	}
 }

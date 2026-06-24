@@ -8,7 +8,7 @@
 #include <math.h>
 
 
-Boss::Boss() {
+Boss::Boss() : hp(0.0f) {
 	for (int i = 0; i < 20; i++) {
 		BossGraphs[i] = -1;
 	}
@@ -128,4 +128,14 @@ bool Boss::CheckCollision(Player& player, BulletManager& bm) {
 		return true;												//倒したフラグを立てる
 	}
 	return false;
+}
+
+void Boss::JumpToPhase(int phaseIdx) {
+	if (phaseIdx < 0 || phaseIdx >= PHASE_MAX) return;		//最大フェーズ配列数を越えない対策
+	currentIdx = phaseIdx;
+	phaseTimer = 0;
+	phaseMaxHp = phases[currentIdx].hpLimit;
+	hp = phaseMaxHp;
+
+	flag = true;
 }

@@ -18,6 +18,7 @@ using namespace DxLib;									//IntelliSenseの勘違い防止
 
 enum SceneType {
 	SCENE_TITLE,
+	SCENE_PRACTICE,
 	SCENE_STAGE,
 	SCENE_CLEAR,
 	SCENE_PAUSE,
@@ -34,13 +35,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	BulletManager bm;
 	MenuManager TitleMenu(4);							//引数が必要なクラスなのでインスタンスにも引数を与える
+	MenuManager PracticeMenu(7);						
 	MenuManager PauseMenu(3);
 	MenuManager QuitMenu(2);
 	SceneType scene = SCENE_TITLE;						//場面を初期化(タイトル)
 	StageManager stageManager;
 	
-	bool playingPractice = false;						//現在Practiceモードをプレイ中かのフラグ
-
+	int lastSelectedStage = 1;							
+	int lastSelectedPhase = 0;							//リトライで適切なステージとフェーズに飛べる用に保存
 
 	while (ProcessMessage() == 0 && ClearDrawScreen() == 0) {						//メインループ
 		InputManager::Update();		
@@ -76,13 +78,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
 				int select = TitleMenu.GetSelect();											//上で計算し終わって決定する直前のmenu_cursorを利用
 				if (select == 0) {
-					stageManager.Init(&bm);
+					lastSelectedStage = 1;
+					lastSelectedPhase = 0;
+					stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase);
 					scene = SCENE_STAGE;
 				}
 				if (select == 1) {
-					stageManager.Init(&bm, true);		//isPracticeにtrueを渡すことでボス戦へ
-					scene = SCENE_STAGE;
-					playingPractice = true;				//現在Practiceモードであることを保存
+					scene = SCENE_PRACTICE;
 				}
 				if (select == 2) scene = SCENE_QUIT_CONFIRM;
 				if (select == 3) scene = SCENE_QUIT_CONFIRM;
@@ -93,6 +95,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			break;
 
+
+		case SCENE_PRACTICE:
+			DrawString(200, 100, "～～～ スペルプラクティスモード ～～～", GetColor(255, 255, 255));
+			DrawString(230, 160, (PracticeMenu.GetSelect() == 0 ? "> 1面道中" : "1面道中"), GetColor(255, 255, 255));
+			DrawString(230, 190, (PracticeMenu.GetSelect() == 1 ? "> 1ボス　通1" : "1ボス　通1"), GetColor(255, 255, 255));
+			DrawString(230, 210, (PracticeMenu.GetSelect() == 2 ? "> 1ボス　スペカ1" : "1ボス　スペカ1"), GetColor(255, 255, 255));
+			DrawString(230, 240, (PracticeMenu.GetSelect() == 3 ? "> 1ボス　通2" : "1ボス　通2"), GetColor(255, 255, 255));
+			DrawString(230, 270, (PracticeMenu.GetSelect() == 4 ? "> 1ボス　天上天下の照國(笑)" : "1ボス　天上天下の照國(笑)"), GetColor(255, 255, 255));
+			DrawString(230, 300, (PracticeMenu.GetSelect() == 5 ? "> 1ボス　フィットフルナイトメア(笑)" : "フィットフルナイトメア(笑)"), GetColor(255, 255, 255));
+			DrawString(230, 330, (PracticeMenu.GetSelect() == 6 ? "> 1ボスラスペ" : "1ボスラスペ"), GetColor(255, 255, 255));
+
+
+			if (InputManager::IsTrigger(KEY_INPUT_UP)) PracticeMenu.Prev();
+			if (InputManager::IsTrigger(KEY_INPUT_DOWN)) PracticeMenu.Next();
+			if (InputManager::IsPress(KEY_INPUT_ESCAPE)) scene = SCENE_TITLE;
+
+			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
+				lastSelectedStage=1;
+				lastSelectedPhase = PracticeMenu.GetSelect();
+
+				stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase);
+				scene=SCENE_STAGE;
+			}
+			break;
 
 
 		case SCENE_STAGE:
@@ -192,12 +218,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				int select = PauseMenu.GetSelect();
 				if (select == 0) scene = SCENE_STAGE;
 				if (select == 1) {
-					stageManager.Init(&bm);									//やり直しなのでリセット処理
+					stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase);									//やり直しなのでリセット処理
 					scene = SCENE_STAGE;
 				}
 				if (select == 2) {
 					scene = SCENE_TITLE;
-					playingPractice = false;			//ここでフラグを折ることで一度Practiceを遊んだあとに通常モードでプレイしてもやり直しするとボス戦から開始となることを防止
 				}
 			}
 
@@ -209,12 +234,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				bm.ClearAllBullet();
 				bm.ClearAllItems();
 				scene = SCENE_STAGE;
-				stageManager.Init(&bm, playingPractice);
+				stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase);
 			}
 
 			if (InputManager::IsTrigger(KEY_INPUT_Q)) {
 				scene = SCENE_TITLE;
-				playingPractice = false;				//ここでフラグを折ることで一度Practiceを遊んだあとに通常モードでプレイしてもやり直しするとボス戦から開始となることを防止
 			}
 
 			break;
@@ -229,7 +253,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
 				int select = QuitMenu.GetSelect();
 				if (select == 0) scene = SCENE_TITLE;
-				if (select == 1) DxLib_End();
+				if (select == 1) DxLib::DxLib_End();
 			}
 			break;
 		}
@@ -237,6 +261,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		ScreenFlip();
 		FpsManager::Wait();																		//fps固定
 	}
-	DxLib_End();
+	DxLib::DxLib_End();
 	return 0;
 }
