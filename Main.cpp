@@ -120,6 +120,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				lastSelectedPhase = PracticeMenu.GetSelect();
 				playingPractice = true;			
 
+				bm.ClearAllBullet();
+				bm.ClearAllItems();
 				stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase);
 				scene=SCENE_STAGE;
 			}
