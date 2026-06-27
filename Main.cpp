@@ -76,11 +76,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (InputManager::IsTrigger(KEY_INPUT_DOWN)) {
 				TitleMenu.Next();
 			}
-			if (InputManager::IsRelease(KEY_INPUT_Z) || InputManager::IsRelease(KEY_INPUT_RETURN)) {
+			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
 				int select = TitleMenu.GetSelect();											//上で計算し終わって決定する直前のmenu_cursorを利用
 				if (select == 0) {
 					lastSelectedStage = 1;
 					lastSelectedPhase = 0;
+					bm.ClearAllBullet();
+					bm.ClearAllItems();
 					playingPractice = false;											//通常スタート時はフラグを折る
 					stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase);
 					scene = SCENE_STAGE;
@@ -113,7 +115,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (InputManager::IsTrigger(KEY_INPUT_DOWN)) PracticeMenu.Next();
 			if (InputManager::IsPress(KEY_INPUT_ESCAPE)) scene = SCENE_TITLE;
 
-			if (InputManager::IsRelease(KEY_INPUT_Z) || InputManager::IsRelease(KEY_INPUT_RETURN)) {
+			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
 				lastSelectedStage=1;
 				lastSelectedPhase = PracticeMenu.GetSelect();
 				playingPractice = true;			
@@ -189,7 +191,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawString(270, 240, "All Clear!!!", GetColor(0, 255, 0), false);
 			DrawString(180, 300, (playingPractice ? "プラクティスに戻るにはZかEnterキーを押してください" : "終了するにはZかEnterキーを押して下さい"), GetColor(0, 255, 0), false);
 
-			if (InputManager::IsRelease(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
+			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
 				scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;													//三項演算子によりシーン遷移
 			}
 			break;
@@ -217,7 +219,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 
 
-			if (InputManager::IsRelease(KEY_INPUT_Z) || InputManager::IsRelease(KEY_INPUT_RETURN)) {
+			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
 				int select = PauseMenu.GetSelect();
 				if (select == 0) scene = SCENE_STAGE;
 				if (select == 1) {
