@@ -47,7 +47,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	while (ProcessMessage() == 0 && ClearDrawScreen() == 0) {						//メインループ
 		InputManager::Update();		
-		FpsManager::Update();														//fps計算の更新
+		FPSManager::Update();														//fps計算の更新
 
 		if (InputManager::IsTrigger(KEY_INPUT_F)) {
 			isWindow = !isWindow;							//trueとfalseの状態を交互に交換する
@@ -264,9 +264,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 			break;
 		}
-		FpsManager::Draw();																		//fpsの描画。ゲームのどの描画よりも前に描画する為ScreenFlipの直前に記述
+		FPSManager::Draw();																		//fpsの描画。ゲームのどの描画よりも前に描画する為ScreenFlipの直前に記述
 		DxLib::ScreenFlip();
-		FpsManager::Wait();																		//fps固定
+		FPSManager::Wait();																		//fps固定
 	}
 	DxLib::DxLib_End();
 	return 0;

@@ -1,7 +1,7 @@
 #pragma once
 #include "DxLib.h"
 
-class FpsManager {
+class FPSManager {
 private:
 	static int startTime;		//計測開始時間
 	static int goalTime;		//計測終了時間
