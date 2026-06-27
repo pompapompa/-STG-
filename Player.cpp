@@ -88,7 +88,7 @@ void Player::Reset() {
 		MainSlot[i].Reset();							//スロット内の残り弾数やら次までの残り時間を初期化
 		SubSlot[i].Reset();								//上と同様
 	}
-	shot_timer = 30;										//ショットのクールタイムも初期化
+	shot_timer = 15;										//ショットのクールタイムも初期化
 	invincibleTimer = 0;
 }
 
