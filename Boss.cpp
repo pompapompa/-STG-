@@ -94,10 +94,23 @@ void Boss::Draw() {
 	}
 
 	if (phaseMaxHp > 0) {
+		
+		for (int i = 0; i < para.GaugeSegments; i++) {									//‘½ŠpŒ`‚ÌŠp”‚¾‚¯ŒJ‚è•Ô‚·
+			float a1 = para.StartAngle - (DX_PI_F * 2.0f * i / para.GaugeSegments);			//Œ»Ý‚Ì“_‚ÌŠp“x
+			float a2 = para.StartAngle - (DX_PI_F * 2.0f * (i + 1) / para.GaugeSegments);	//ŽŸ“_‚ÌŠp“x
+
+			int x1 = (int)(x + cos(a1) * (r + para.GaugeOffset_R));								//Œ»Ý‚Ì“_‚ÌxÀ•W
+			int y1 = (int)(y + sin(a1) * (r + para.GaugeOffset_R));								//Œ»Ý‚Ì“_‚ÌyÀ•W
+			int x2 = (int)(x + cos(a2) * (r + para.GaugeOffset_R));								//ŽŸ“_‚Ìx
+			int y2 = (int)(y + sin(a2) * (r + para.GaugeOffset_R));								//ŽŸ“_‚Ìy
+
+			DrawLine(x1, y1, x2, y2, GetColor(64, 64, 64), para.GaugeThickness);				//ƒOƒŒ[‚Ì‘Ì—ÍƒQ[ƒW(‘Ì—Í‚ÉˆË‘¶‚µ‚È‚¢)‚Ì•`‰æ
+		}
+		
 		float hp_rate = GetHpRate();										//hp‚Ì”ä—¦ŒvŽZ	
 		int draw_limit = (int)(para.GaugeSegments * hp_rate);					//ŽcHP•ª‚ÌŠp‚ð•`‰æ
 
-		for (int i = 0; i < draw_limit; i++) {									//‘½ŠpŒ`‚ÌŠp”‚¾‚¯ŒJ‚è•Ô‚·
+		for (int i = 0; i < draw_limit; i++) {									//ŽcHP•ª‚Ì‘½ŠpŒ`‚ÌŠp”‚¾‚¯ŒJ‚è•Ô‚·
 			float a1 = para.StartAngle - (DX_PI_F * 2.0f * i / para.GaugeSegments);			//Œ»Ý‚Ì“_‚ÌŠp“x
 			float a2 = para.StartAngle - (DX_PI_F * 2.0f * (i + 1) / para.GaugeSegments);	//ŽŸ“_‚ÌŠp“x
 
