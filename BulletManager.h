@@ -83,6 +83,7 @@ public:
 		}
 	}
 
+
 	void UpdateItems(float playerX, float playerY, float collectRadius);		//アイテムの更新を行う関数		
 	void DrawItems();															//アイテムの描画を司令する関数
 };

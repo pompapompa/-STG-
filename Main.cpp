@@ -178,6 +178,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 
 			if (InputManager::IsTrigger(KEY_INPUT_ESCAPE)) {
+				PauseMenu.SetSelect(0);								//ポーズ遷移前にポーズメニュのカーソルを初期化
 				scene = SCENE_PAUSE;
 			}
 		}															//case SCENE_STAGEの中身を囲うことで変数のスコープがその中限定となる
@@ -207,8 +208,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			stageManager.Draw(&bm);					//敵や自機本体の描画
 			bm.Draw();								//弾の描画
 			stageManager.GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
-		
-
+			
 			if (InputManager::IsTrigger(KEY_INPUT_UP)) {
 				PauseMenu.Prev();	
 			}
@@ -221,6 +221,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				int select = PauseMenu.GetSelect();
 				if (select == 0) scene = SCENE_STAGE;
 				if (select == 1) {
+					bm.ClearAllBullet();
+					bm.ClearAllItems();
 					stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase);									//やり直しなのでリセット処理
 					scene = SCENE_STAGE;
 				}
@@ -236,8 +238,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (InputManager::IsRelease(KEY_INPUT_R)) {
 				bm.ClearAllBullet();
 				bm.ClearAllItems();
-				scene = SCENE_STAGE;
 				stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase);
+				scene = SCENE_STAGE;
 			}
 
 			if (InputManager::IsTrigger(KEY_INPUT_Q)) {

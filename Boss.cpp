@@ -130,6 +130,7 @@ bool Boss::CheckCollision(Player& player, BulletManager& bm) {
 	return false;
 }
 
+
 void Boss::JumpToPhase(int phaseIdx) {
 	if (phaseIdx < 0 || phaseIdx >= PHASE_MAX) return;		//最大フェーズ配列数を越えない対策
 	currentIdx = phaseIdx;
