@@ -70,7 +70,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		case SCENE_TITLE:
 			DrawString(250, 210, "東 方 酔 々 夢", GetColor(255, 255, 255));
 			DrawString(270, 270, (TitleMenu.GetSelect() == 0 ? "> Start" : "Start"), GetColor(255, 255, 255));
-			DrawString(270, 300, (TitleMenu.GetSelect() == 1 ? "> Practice" : "Practice"), GetColor(255, 255, 255));
+			DrawString(270, 300, (TitleMenu.GetSelect() == 1 ? "> Practice Start" : "Practice"), GetColor(255, 255, 255));
 			DrawString(270, 330, (TitleMenu.GetSelect() == 2 ? "> Replay" : "Replay"), GetColor(255, 255, 255));
 			DrawString(270, 360, (TitleMenu.GetSelect() == 3 ? "> Quit" : "Quit"), GetColor(255, 255, 255));
 			DrawString(30, 450, "決定：Z or Enter　　フルスクリーン/ウィンドウ：F", GetColor(0, 255, 0));
@@ -260,10 +260,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		case(SCENE_PAUSE):
 			using namespace PlayArea;
-
-			DrawString(440, 270, (PauseMenu.GetSelect() == 0 ? "> 続ける" : "続ける"), GetColor(255, 255, 255));
-			DrawString(440, 300, (PauseMenu.GetSelect() == 1 ? "> やり直す" : "やり直す"), GetColor(255, 255, 255));
-			DrawString(440, 330, (PauseMenu.GetSelect() == 2 ? "> タイトルに戻る" : "タイトルに戻る"), GetColor(255, 255, 255));
+			
+			DrawString(470, 220, "一時停止", GetColor(0, 255, 255));
+			DrawString(470, 270, (PauseMenu.GetSelect() == 0 ? "> 続ける" : "続ける"), GetColor(255, 255, 255));
+			DrawString(470, 300, (PauseMenu.GetSelect() == 1 ? "> タイトルに戻る" : "タイトルに戻る"), GetColor(255, 255, 255));
+			DrawString(470, 330, (PauseMenu.GetSelect() == 2 ? "> やり直す" : "やり直す"), GetColor(255, 255, 255));
 
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
 		
@@ -273,25 +274,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			stageManager.GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
 			hud.Draw(&stageManager.GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
 
-			if (InputManager::IsTrigger(KEY_INPUT_UP)) {
-				PauseMenu.Prev();	
-			}
-			if (InputManager::IsTrigger(KEY_INPUT_DOWN)) {
-				PauseMenu.Next();
-			}
-
+			if (InputManager::IsTrigger(KEY_INPUT_UP)) { PauseMenu.Prev(); }
+			if (InputManager::IsTrigger(KEY_INPUT_DOWN)) { PauseMenu.Next(); }
 
 			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
 				int select = PauseMenu.GetSelect();
 				if (select == 0) scene = SCENE_STAGE;
-				if (select == 1) {
+				if (select == 1) { scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE; }
+				if (select == 2) {
 					bm.ClearAllBullet();
 					bm.ClearAllItems();
 					stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase);									//やり直しなのでリセット処理
 					scene = SCENE_STAGE;
-				}
-				if (select == 2) {
-					scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
 				}
 			}
 
