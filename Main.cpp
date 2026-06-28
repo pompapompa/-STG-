@@ -21,6 +21,7 @@ enum SceneType {
 	SCENE_TITLE,
 	SCENE_PRACTICE,
 	SCENE_STAGE,
+	SCENE_GAMEOVER,
 	SCENE_CLEAR,
 	SCENE_PAUSE,
 	SCENE_QUIT_CONFIRM
@@ -39,6 +40,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	MenuManager PracticeMenu(7);						
 	MenuManager PauseMenu(3);
 	MenuManager QuitMenu(2);
+	MenuManager GameOverMenu(2);
 	SceneType scene = SCENE_TITLE;						//場面を初期化(タイトル)
 	StageManager stageManager;
 	HUD hud;
@@ -169,9 +171,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					stageManager.GetPlayer().LoseLife();													//残機をデクリメント
 					stageManager.GetPlayer().loadingBomb();													//基準ボム数を装填
 					stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());	//無敵状態
+					bm.ClearAllBullet();					
+					bm.ClearAllItems();
 				}
 				else {
-					scene = SCENE_TITLE;
+					scene = SCENE_GAMEOVER;
 				}
 			}
 
@@ -202,7 +206,48 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}															//case SCENE_STAGEの中身を囲うことで変数のスコープがその中限定となる
 		break;
 
-		case(SCENE_CLEAR):
+		case SCENE_GAMEOVER:
+		{
+			using namespace PlayArea;
+			
+			bm.DrawItems();
+			stageManager.Draw(&bm);					//敵や自機本体の描画
+			bm.Draw();								//弾の描画
+			stageManager.GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
+			hud.Draw(&stageManager.GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
+			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);	//プレイ領域描画
+
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 120);
+			DrawBox(Left, Top, Right, Bottom, GetColor(0, 0, 0), true);
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+			DrawString(Left + 150, Top + 150, "Game Over", GetColor(255, 0, 0));
+			DrawString(Left + 130, Top + 200, "コンティニュー", GetColor(255, 255, 255));
+
+			DrawString(Left + 160, Top + 240, "はい", GameOverMenu.GetSelect() == 0 ? GetColor(255, 255, 0) : GetColor(128, 128, 128));
+			DrawString(Left + 160, Top + 270, "いいえ", GameOverMenu.GetSelect() == 1 ? GetColor(255, 255, 0) : GetColor(128, 128, 128));
+		
+			if (InputManager::IsTrigger(KEY_INPUT_UP)) { GameOverMenu.Prev(); }
+			if (InputManager::IsTrigger(KEY_INPUT_DOWN)) { GameOverMenu.Next(); }
+			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
+				int select = GameOverMenu.GetSelect();
+
+				if (select == 0) {					//コンティニューする場合
+					stageManager.GetPlayer().loadingLife();		//基準残機数のセット
+					stageManager.GetPlayer().loadingBomb();		//基準ボム数のセット
+					stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());
+					scene = SCENE_STAGE;
+					bm.ClearAllBullet();					
+					bm.ClearAllItems();
+				}
+				if (select == 1) {					//諦める場合
+					scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
+				}
+			}
+		}
+		break;
+
+		case SCENE_CLEAR:
 
 			DrawString(270, 240, "All Clear!!!", GetColor(0, 255, 0), false);
 			DrawString(180, 300, (playingPractice ? "プラクティスに戻るにはZかEnterキーを押してください" : "終了するにはZかEnterキーを押して下さい"), GetColor(0, 255, 0), false);
