@@ -164,7 +164,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 
 			if (isPlayerHit) {
-				stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());
+				if (stageManager.GetPlayer().GetLife() > 0) {							//残機が0以上あるとき
+					stageManager.GetPlayer().LoseLife();													//残機をデクリメント
+					stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());	//無敵状態
+				}
+				else {
+					scene = SCENE_TITLE;
+				}
 			}
 
 			bm.DrawItems();

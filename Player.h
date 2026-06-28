@@ -99,6 +99,9 @@ public:
 
 	bool IsInvincible() const { return invincibleTimer > 0; }			//現在無敵かどうかの判定
 	void SetInVincible(int frame) { invincibleTimer = frame; }			//無敵時間(フレーム)をセット
+	void LoseLife() {						//残機を減らす関数
+		mLife--;					
+	}
 
 	/*　　↓はprivateに書いた物を安全に読み込み専用でインスタンスから値のみ取得する　　*/
 	float GetX() const { return x; }			//ホーミング用にx座標を取得する
