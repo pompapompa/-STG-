@@ -70,7 +70,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		case SCENE_TITLE:
 			DrawString(250, 210, "東 方 酔 々 夢", GetColor(255, 255, 255));
 			DrawString(270, 270, (TitleMenu.GetSelect() == 0 ? "> Start" : "Start"), GetColor(255, 255, 255));
+<<<<<<< HEAD
 			DrawString(270, 300, (TitleMenu.GetSelect() == 1 ? "> Practice Start" : "Practice"), GetColor(255, 255, 255));
+=======
+			DrawString(270, 300, (TitleMenu.GetSelect() == 1 ? "> Practice Start" : "Practice Start"), GetColor(255, 255, 255));
+>>>>>>> Refactor・壹・繝ｼ繧ｺ逕ｻ髱｢縺ｮUI隱ｿ謨ｴ縺ｨ辟｡鬧・↑陦後・蜑頑ｸ・
 			DrawString(270, 330, (TitleMenu.GetSelect() == 2 ? "> Replay" : "Replay"), GetColor(255, 255, 255));
 			DrawString(270, 360, (TitleMenu.GetSelect() == 3 ? "> Quit" : "Quit"), GetColor(255, 255, 255));
 			DrawString(30, 450, "決定：Z or Enter　　フルスクリーン/ウィンドウ：F", GetColor(0, 255, 0));
