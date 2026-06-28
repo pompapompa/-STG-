@@ -58,6 +58,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			bm.ReloadGraphic();
 			stageManager.ReloadGraphic();
+			hud.ReloadFont();
 			SetDrawScreen(DX_SCREEN_BACK);
 		}
 
@@ -166,6 +167,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (isPlayerHit) {
 				if (stageManager.GetPlayer().GetLife() > 0) {							//残機が0以上あるとき
 					stageManager.GetPlayer().LoseLife();													//残機をデクリメント
+					stageManager.GetPlayer().loadingBomb();													//基準ボム数を装填
 					stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());	//無敵状態
 				}
 				else {
@@ -182,10 +184,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
 
-			if (InputManager::IsTrigger(KEY_INPUT_X)) {
-				bm.ClearEnemyBullets();
+			if (stageManager.GetPlayer().GetBomb() > 0) {		//残ボムが1以上ならボム使用可
+				if (InputManager::IsTrigger(KEY_INPUT_X)) {
+					bm.ClearEnemyBullets();						//敵弾消去
+					stageManager.GetPlayer().ComsumeBomb();		//ボム消費
+				}
 			}
-
 			if (isDead) {											//ボスを倒したフラグが返されたらタイトルに戻る
 				while (InputManager::IsTrigger(KEY_INPUT_F)) ProcessMessage();		//z,enterキーを長押し状態でCLEARに遷移してきた時に離したらそのままタイトルに行くのを防ぐ為の文
 				scene = SCENE_CLEAR;

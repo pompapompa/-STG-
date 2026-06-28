@@ -32,7 +32,9 @@ private:
 
 	static constexpr int sca = 20;								//ShotChargeAutomatic
 	static constexpr int scm = 10;								//ShotChargeManualtransmission
-
+	static constexpr int stdLife = 2;							//StandardLife(基準残機数)
+	static constexpr int stdBomb = 3;							//StandardBomb(基準ボム数)
+	
 
 	static constexpr PlayerParameter para{	//ここで同時にインスタンス宣言も行っている
 		4.0f,								//vn:通常速度
@@ -99,9 +101,11 @@ public:
 
 	bool IsInvincible() const { return invincibleTimer > 0; }			//現在無敵かどうかの判定
 	void SetInVincible(int frame) { invincibleTimer = frame; }			//無敵時間(フレーム)をセット
-	void LoseLife() {						//残機を減らす関数
-		mLife--;					
-	}
+	void LoseLife() { mLife--; }				//残機を減らす関数
+	void ComsumeBomb() { mBomb--; }				//ボムを消費する関数
+	void loadingLife() { mLife = stdLife; }		//基準残機数装填関数
+	void loadingBomb() { mBomb = stdBomb; }		//基準ボム数装填関数
+
 
 	/*　　↓はprivateに書いた物を安全に読み込み専用でインスタンスから値のみ取得する　　*/
 	float GetX() const { return x; }			//ホーミング用にx座標を取得する

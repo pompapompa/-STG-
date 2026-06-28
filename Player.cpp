@@ -91,8 +91,8 @@ void Player::Reset() {
 	shot_timer = 15;										//ショットのクールタイムも初期化
 	invincibleTimer = 0;
 
-	mLife = 2;					//初期残機2
-	mBomb = 3;					//初期残ボム3
+	mLife = stdLife;			//初期残機数
+	mBomb = stdBomb;			//初期残ボム数
 }
 
 

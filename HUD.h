@@ -14,5 +14,5 @@ public:
 	void Update();
 	void Draw(const Player* player);
 	void Release();					//リソース解放
-
+	void ReloadFont() { Release(); Init(); }		//フルスク/ウィンドウ切り替え時にフォントを再生成する関数
 };
