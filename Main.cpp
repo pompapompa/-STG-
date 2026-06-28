@@ -175,6 +175,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					bm.ClearAllItems();
 				}
 				else {
+					GameOverMenu.SetSelect(0);													
 					scene = SCENE_GAMEOVER;
 				}
 			}
