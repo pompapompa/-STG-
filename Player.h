@@ -80,6 +80,9 @@ private:
 	int invincibleTimer = 0;				//0<Timerなら無敵
 	float move_v = 0;
 
+	int mLife = 0;							//残機数管理のメンバ変数
+	int mBomb = 0;							//残ボム数管理のメンバ変数
+
 
 	void ActivateWeapon(BurstController* slots, int count);		//指定したスロット配列の空きを探して弾をセットする。ヘルパー関数
 
@@ -104,4 +107,7 @@ public:
 	float GetHitR() const { return para.hr; }	//敵弾と自機の当たり判定用に当たり判定の半径の値を取得する
 	int GetInvincibleTime() const { return para.invincibleTime; }	//無敵時間のコンパイル時定数をparaより取得
 	int GetBlinkCycle() const { return para.blinkCycle; }			//点滅の周期
+
+	int GetLife() const { return mLife; }				//現在の残機数の取得
+	int GetBomb() const { return mBomb; }				//現在の残ボム数の取得
 };

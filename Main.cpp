@@ -1,6 +1,7 @@
 #include "DxLib.h"
 #include "Input.h"
 #include "FpsManager.h"
+#include "HUD.h"
 #include "Common.h"
 #include "StageManager.h"
 #include "BulletManager.h"
@@ -40,6 +41,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	MenuManager QuitMenu(2);
 	SceneType scene = SCENE_TITLE;						//場面を初期化(タイトル)
 	StageManager stageManager;
+	HUD hud;
+	hud.Init();
 	
 	int lastSelectedStage = 1;							
 	int lastSelectedPhase = 0;							//これらはリトライで適切なステージとフェーズに飛べる用に保存
@@ -168,6 +171,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			stageManager.Draw(&bm);					//敵や自機本体の描画
 			bm.Draw();								//弾の描画
 			stageManager.GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
+			hud.Draw(&stageManager.GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
 
 
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
@@ -212,7 +216,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			stageManager.Draw(&bm);					//敵や自機本体の描画
 			bm.Draw();								//弾の描画
 			stageManager.GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
-			
+			hud.Draw(&stageManager.GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
+
 			if (InputManager::IsTrigger(KEY_INPUT_UP)) {
 				PauseMenu.Prev();	
 			}

@@ -143,6 +143,7 @@
     <ClCompile Include="BulletPattern.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="FpsManager.cpp" />
+    <ClCompile Include="HUD.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="Distance.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="FpsManager.h" />
+    <ClInclude Include="HUD.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="MenuManager.h" />
