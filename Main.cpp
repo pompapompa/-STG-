@@ -70,11 +70,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		case SCENE_TITLE:
 			DrawString(250, 210, "東 方 酔 々 夢", GetColor(255, 255, 255));
 			DrawString(270, 270, (TitleMenu.GetSelect() == 0 ? "> Start" : "Start"), GetColor(255, 255, 255));
-<<<<<<< HEAD
-			DrawString(270, 300, (TitleMenu.GetSelect() == 1 ? "> Practice Start" : "Practice"), GetColor(255, 255, 255));
-=======
 			DrawString(270, 300, (TitleMenu.GetSelect() == 1 ? "> Practice Start" : "Practice Start"), GetColor(255, 255, 255));
->>>>>>> Refactor・壹・繝ｼ繧ｺ逕ｻ髱｢縺ｮUI隱ｿ謨ｴ縺ｨ辟｡鬧・↑陦後・蜑頑ｸ・
 			DrawString(270, 330, (TitleMenu.GetSelect() == 2 ? "> Replay" : "Replay"), GetColor(255, 255, 255));
 			DrawString(270, 360, (TitleMenu.GetSelect() == 3 ? "> Quit" : "Quit"), GetColor(255, 255, 255));
 			DrawString(30, 450, "決定：Z or Enter　　フルスクリーン/ウィンドウ：F", GetColor(0, 255, 0));
@@ -222,7 +218,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);	//プレイ領域描画
 
 			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 120);
-			DrawBox(Left, Top, Right, Bottom, GetColor(0, 0, 0), true);
+			DrawBox(Left - Margin, Top - Margin, Right + Margin, Bottom + Margin, GetColor(0, 0, 0), true);
 			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
 			DrawString(Left + 150, Top + 150, "Game Over", GetColor(255, 0, 0));
@@ -243,6 +239,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					scene = SCENE_STAGE;
 					bm.ClearAllBullet();					
 					bm.ClearAllItems();
+					stageManager.GetPlayer().Reset();
 				}
 				if (select == 1) {					//諦める場合
 					scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
