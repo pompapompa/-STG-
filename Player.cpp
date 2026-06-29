@@ -23,11 +23,11 @@ void Player::Update(BulletManager* bm) {
 	int vy = 0;
 	move_v = para.vn;												//毎フレームで通常速度に初期化することで低速状態を解除
 
-	if (InputManager::IsPress(KEY_INPUT_DOWN)) vy = 1;
-	if (InputManager::IsPress(KEY_INPUT_UP)) vy = -1;
-	if (InputManager::IsPress(KEY_INPUT_RIGHT)) vx = 1;
-	else if (InputManager::IsPress(KEY_INPUT_LEFT)) vx = -1;				//ここでelse ifにすることでRIGHTの方の判定を強くして妖々夢らしくする
-	if (InputManager::IsPress(KEY_INPUT_LSHIFT)|| InputManager::IsPress(KEY_INPUT_RSHIFT)) {
+	if (Input::IsPress(KEY_INPUT_DOWN)) vy = 1;
+	if (Input::IsPress(KEY_INPUT_UP)) vy = -1;
+	if (Input::IsPress(KEY_INPUT_RIGHT)) vx = 1;
+	else if (Input::IsPress(KEY_INPUT_LEFT)) vx = -1;				//ここでelse ifにすることでRIGHTの方の判定を強くして妖々夢らしくする
+	if (Input::IsPress(KEY_INPUT_LSHIFT)|| Input::IsPress(KEY_INPUT_RSHIFT)) {
 		move_v = para.vs;										//低速
 	}
 
@@ -47,7 +47,7 @@ void Player::Update(BulletManager* bm) {
 		invincibleTimer--;										//無敵時間の変数が0超過ならデクリメント
 	}
 
-	bool isPress = (InputManager::IsPress(KEY_INPUT_Z) || InputManager::IsPress(KEY_INPUT_SPACE));		//ショット発射ボタンを押しているか
+	bool isPress = (Input::IsPress(KEY_INPUT_Z) || Input::IsPress(KEY_INPUT_SPACE));		//ショット発射ボタンを押しているか
 	bool isSlow = (move_v == para.vs);																	//低速状態か
 
 	if (isPress && shot_timer <= 0) {							//発射ボタン押下されている状態且つショットクールタイムが0の場合

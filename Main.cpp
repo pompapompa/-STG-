@@ -51,10 +51,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	bool playingPractice = false;						//プラクティス経由かどうかを判定するフラグ(前使っていたplayintPracticeとは用途はちがくなっている)
 
 	while (ProcessMessage() == 0 && ClearDrawScreen() == 0) {						//メインループ
-		InputManager::Update();		
+		Input::Update();		
 		FPSManager::Update();														//fps計算の更新
 
-		if (InputManager::IsTrigger(KEY_INPUT_F)) {
+		if (Input::IsTrigger(KEY_INPUT_F)) {
 			isWindow = !isWindow;							//trueとfalseの状態を交互に交換する
 			ChangeWindowMode(isWindow ? TRUE : FALSE);
 
@@ -76,13 +76,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawString(30, 450, "決定：Z or Enter　　フルスクリーン/ウィンドウ：F", GetColor(0, 255, 0));
 
 
-			if (InputManager::IsTrigger(KEY_INPUT_UP)) {
+			if (Input::IsTrigger(KEY_INPUT_UP)) {
 				TitleMenu.Prev();
 			}
-			if (InputManager::IsTrigger(KEY_INPUT_DOWN)) {
+			if (Input::IsTrigger(KEY_INPUT_DOWN)) {
 				TitleMenu.Next();
 			}
-			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
+			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
 				int select = TitleMenu.GetSelect();											//上で計算し終わって決定する直前のmenu_cursorを利用
 				if (select == 0) {
 					lastSelectedStage = 1;
@@ -99,7 +99,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (select == 2) scene = SCENE_QUIT_CONFIRM;
 				if (select == 3) scene = SCENE_QUIT_CONFIRM;
 			}
-			if (InputManager::IsTrigger(KEY_INPUT_ESCAPE)) {
+			if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
 				TitleMenu.SetSelect(3);
 			}
 
@@ -117,11 +117,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawString(230, 330, (PracticeMenu.GetSelect() == 6 ? "> 1ボスラスペ" : "1ボスラスペ"), GetColor(255, 255, 255));
 
 
-			if (InputManager::IsTrigger(KEY_INPUT_UP)) PracticeMenu.Prev();
-			if (InputManager::IsTrigger(KEY_INPUT_DOWN)) PracticeMenu.Next();
-			if (InputManager::IsPress(KEY_INPUT_ESCAPE)) scene = SCENE_TITLE;
+			if (Input::IsTrigger(KEY_INPUT_UP)) PracticeMenu.Prev();
+			if (Input::IsTrigger(KEY_INPUT_DOWN)) PracticeMenu.Next();
+			if (Input::IsPress(KEY_INPUT_ESCAPE)) scene = SCENE_TITLE;
 
-			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
+			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
 				lastSelectedStage=1;
 				lastSelectedPhase = PracticeMenu.GetSelect();
 				playingPractice = true;			
@@ -183,7 +183,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
 
-			if (InputManager::IsTrigger(KEY_INPUT_X) && stageManager.GetPlayer().GetBomb() > 0) {// X押下且つボム数が1以上の時
+			if (Input::IsTrigger(KEY_INPUT_X) && stageManager.GetPlayer().GetBomb() > 0) {// X押下且つボム数が1以上の時
 				if (stageManager.GetPlayer().IsDeathTimerActive()) {								//deathTimerがアクティブな時
 					stageManager.GetPlayer().StopDeathTimer();												//deathTimerを停止(inactivate)
 					stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());	//無敵時間をセット
@@ -197,11 +197,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 
 			if (isDead) {											//ボスを倒したフラグが返されたらタイトルに戻る
-				while (InputManager::IsTrigger(KEY_INPUT_F)) ProcessMessage();		//z,enterキーを長押し状態でCLEARに遷移してきた時に離したらそのままタイトルに行くのを防ぐ為の文
+				while (Input::IsTrigger(KEY_INPUT_F)) ProcessMessage();		//z,enterキーを長押し状態でCLEARに遷移してきた時に離したらそのままタイトルに行くのを防ぐ為の文
 				scene = SCENE_CLEAR;
 			}
 
-			if (InputManager::IsTrigger(KEY_INPUT_ESCAPE)) {
+			if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
 				PauseMenu.SetSelect(0);								//ポーズ遷移前にポーズメニュのカーソルを初期化
 				scene = SCENE_PAUSE;
 			}
@@ -229,9 +229,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawString(Left + 160, Top + 240, "はい", GameOverMenu.GetSelect() == 0 ? GetColor(255, 255, 0) : GetColor(128, 128, 128));
 			DrawString(Left + 160, Top + 270, "いいえ", GameOverMenu.GetSelect() == 1 ? GetColor(255, 255, 0) : GetColor(128, 128, 128));
 		
-			if (InputManager::IsTrigger(KEY_INPUT_UP)) { GameOverMenu.Prev(); }
-			if (InputManager::IsTrigger(KEY_INPUT_DOWN)) { GameOverMenu.Next(); }
-			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
+			if (Input::IsTrigger(KEY_INPUT_UP)) { GameOverMenu.Prev(); }
+			if (Input::IsTrigger(KEY_INPUT_DOWN)) { GameOverMenu.Next(); }
+			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
 				int select = GameOverMenu.GetSelect();
 
 				if (select == 0) {					//コンティニューする場合
@@ -254,7 +254,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawString(270, 240, "All Clear!!!", GetColor(0, 255, 0), false);
 			DrawString(180, 300, (playingPractice ? "プラクティスに戻るにはZかEnterキーを押してください" : "終了するにはZかEnterキーを押して下さい"), GetColor(0, 255, 0), false);
 
-			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
+			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
 				scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;													//三項演算子によりシーン遷移
 			}
 			break;
@@ -276,10 +276,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			stageManager.GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
 			hud.Draw(&stageManager.GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
 
-			if (InputManager::IsTrigger(KEY_INPUT_UP)) { PauseMenu.Prev(); }
-			if (InputManager::IsTrigger(KEY_INPUT_DOWN)) { PauseMenu.Next(); }
+			if (Input::IsTrigger(KEY_INPUT_UP)) { PauseMenu.Prev(); }
+			if (Input::IsTrigger(KEY_INPUT_DOWN)) { PauseMenu.Next(); }
 
-			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
+			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
 				int select = PauseMenu.GetSelect();
 				if (select == 0) scene = SCENE_STAGE;
 				if (select == 1) { scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE; }
@@ -291,18 +291,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 			}
 
-			if (InputManager::IsTrigger(KEY_INPUT_ESCAPE)) {
+			if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
 				scene = SCENE_STAGE;
 			}
 
-			if (InputManager::IsRelease(KEY_INPUT_R)) {
+			if (Input::IsRelease(KEY_INPUT_R)) {
 				bm.ClearAllBullets();
 				bm.ClearAllItems();
 				stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase, playingPractice);
 				scene = SCENE_STAGE;
 			}
 
-			if (InputManager::IsTrigger(KEY_INPUT_Q)) {
+			if (Input::IsTrigger(KEY_INPUT_Q)) {
 				scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
 			}
 
@@ -312,10 +312,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawString(240, 210, "終了しますか？", GetColor(0, 255, 255));
 			DrawString(240, 240, (QuitMenu.GetSelect() == 1 ? "> はい　　いいえ" : "はい　　>いいえ"), GetColor(0, 255, 255));
 
-			if (InputManager::IsTrigger(KEY_INPUT_LEFT)) QuitMenu.Prev();
-			if (InputManager::IsTrigger(KEY_INPUT_RIGHT)) QuitMenu.Next();
+			if (Input::IsTrigger(KEY_INPUT_LEFT)) QuitMenu.Prev();
+			if (Input::IsTrigger(KEY_INPUT_RIGHT)) QuitMenu.Next();
 
-			if (InputManager::IsTrigger(KEY_INPUT_Z) || InputManager::IsTrigger(KEY_INPUT_RETURN)) {
+			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
 				int select = QuitMenu.GetSelect();
 				if (select == 0) scene = SCENE_TITLE;
 				if (select == 1) DxLib::DxLib_End();
