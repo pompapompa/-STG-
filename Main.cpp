@@ -166,17 +166,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				);
 			}
 
-			if (isPlayerHit) {
-				if (stageManager.GetPlayer().GetLife() > 0) {							//残機が0以上あるとき
-					stageManager.GetPlayer().LoseLife();													//残機をデクリメント
-					stageManager.GetPlayer().loadingBomb();													//基準ボム数を装填
-					stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());	//無敵状態
-					bm.ClearAllBullet();					
-				}
-				else {
-					GameOverMenu.SetSelect(0);													
-					scene = SCENE_GAMEOVER;
-				}
+			if (isPlayerHit && !stageManager.GetPlayer().IsDeathTimerActive()) {	//被弾且つDeathTimerがアクティブではない時
+				stageManager.GetPlayer().StartDeathTimer();								//DeathTimerを始動(アクティベート)
+			}
+
+			if (stageManager.GetPlayer().GetLife() < 0) {		//残機(整数型)が負即ち残機0で被弾した状態の場合
+				GameOverMenu.SetSelect(0);							//ゲームオーバーシーンのカーソルの初期化
+				scene = SCENE_GAMEOVER;								
 			}
 
 			bm.DrawItems();
@@ -185,15 +181,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			stageManager.GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
 			hud.Draw(&stageManager.GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
 
-
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
 
-			if (stageManager.GetPlayer().GetBomb() > 0) {		//残ボムが1以上ならボム使用可
-				if (InputManager::IsTrigger(KEY_INPUT_X)) {
-					bm.ClearEnemyBullets();						//敵弾消去
-					stageManager.GetPlayer().ComsumeBomb();		//ボム消費
+			if (InputManager::IsTrigger(KEY_INPUT_X) && stageManager.GetPlayer().GetBomb() > 0) {// X押下且つボム数が1以上の時
+				if (stageManager.GetPlayer().IsDeathTimerActive()) {								//DeathTimerがアクティブな時
+					stageManager.GetPlayer().StopDeathTimer();												//DeathTimerを停止(inactivate)
+					stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());	//無敵時間をセット
+					bm.ClearEnemyBullets();																	//敵弾消去
+					stageManager.GetPlayer().ComsumeBomb();													//ボム消費
+				}
+				else if (!stageManager.GetPlayer().IsInvincible()){									//無敵状態でなければ通常ボム消費	
+					bm.ClearEnemyBullets();																	//敵弾消去
+					stageManager.GetPlayer().ComsumeBomb();													//ボム消費
 				}
 			}
+
 			if (isDead) {											//ボスを倒したフラグが返されたらタイトルに戻る
 				while (InputManager::IsTrigger(KEY_INPUT_F)) ProcessMessage();		//z,enterキーを長押し状態でCLEARに遷移してきた時に離したらそのままタイトルに行くのを防ぐ為の文
 				scene = SCENE_CLEAR;
@@ -237,7 +239,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					stageManager.GetPlayer().loadingBomb();		//基準ボム数のセット
 					stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());
 					scene = SCENE_STAGE;
-					bm.ClearAllBullet();					
+					bm.ClearEnemyBullets();					
 					stageManager.GetPlayer().Reset(playingPractice);
 				}
 				if (select == 1) {					//諦める場合

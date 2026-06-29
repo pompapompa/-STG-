@@ -77,6 +77,21 @@ void Player::Update(BulletManager* bm) {
 	}
 
 	if (shot_timer > 0) shot_timer--;
+
+	if (IsDeathTimerActive()) {				//喰らいボム受付時間中の場合
+		DecrementDeathTimer();							//deathTimerのデクリメント
+		if (!IsDeathTimerActive()) {					//タイマが0に成った瞬間
+			if (mLife > 0) {					//残機がある場合
+				LoseLife();								//残機を減らす				
+				loadingBomb();							//基準ボム数の装填
+				SetInVincible(GetInvincibleTime());		//無敵状態遷移
+				bm->ClearEnemyBullets();				//敵弾消去
+			}
+			else {
+				mLife = -1;				//メインループでSCENE_GAMEOVERに移行する為にmLife=-1にしておく
+			}
+		}
+	}
 }
 
 

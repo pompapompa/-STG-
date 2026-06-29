@@ -21,6 +21,7 @@ struct PlayerParameter {
 	int	  invincibleTime;					//被弾時の無敵時間
 	int   blinkCycle;						//点滅の周期
 	int   blinkThreshold;					//消える時間(この数値以下のときは消灯)
+	int   MAX_DEATH_TIME;					//喰らいボム受付時間(フレーム)
 };
 
 
@@ -47,7 +48,8 @@ private:
 		10.0f,								//areaH：プレイ領域にめり込める自機からの距離y
 		120,								//invincibleTime：被弾時の無敵時間
 		10,									//blinkCycle；点滅の周期
-		7									//blinkThreshold；消える時間
+		7,									//blinkThreshold；消える時間
+		8									//MAX_DEATH_TIME：//喰らいボム受付時間
 	};
 
 	static constexpr StraightShotData MainShot{
@@ -82,6 +84,7 @@ private:
 	int shot_timer = 0;
 	int invincibleTimer = 0;				//0<Timerなら無敵
 	float move_v = 0;
+	int deathTimer = 0;						//喰らいボムの猶予
 
 	int mLife = 0;							//残機数管理のメンバ変数
 	int mBomb = 0;							//残ボム数管理のメンバ変数
@@ -106,16 +109,19 @@ public:
 	void ComsumeBomb() { mBomb--; }				//ボムを消費する関数
 	void loadingLife() { mLife = stdLife; }		//基準残機数装填関数
 	void loadingBomb() { mBomb = stdBomb; }		//基準ボム数装填関数
-
+	bool IsDeathTimerActive() const { return deathTimer > 0; }			//喰らいボム受付時間中かどうかの判定
+	void StartDeathTimer() { deathTimer = para.MAX_DEATH_TIME; }		//喰らいボム受付時間のタイマを始動
+	void StopDeathTimer() { deathTimer = 0; }							//喰らいボム受付時間のタイマを停止
+	void DecrementDeathTimer() { if (deathTimer > 0)deathTimer--; }		//喰らいボム受付時間のタイマをデクリメント(ただしアンダーフロー防止の為1以上の時に限定)
 
 	/*　　↓はprivateに書いた物を安全に読み込み専用でインスタンスから値のみ取得する　　*/
-	float GetX() const { return x; }			//ホーミング用にx座標を取得する
-	float GetY() const { return y; }			//ホーミング用にy座標を取得する
-	float GetR() const { return para.r; }		//描画とかする用にr値を取得する
-	float GetHitR() const { return para.hr; }	//敵弾と自機の当たり判定用に当たり判定の半径の値を取得する
+	float GetX() const { return x; }								//ホーミング用にx座標を取得する
+	float GetY() const { return y; }								//ホーミング用にy座標を取得する
+	float GetR() const { return para.r; }							//描画とかする用にr値を取得する
+	float GetHitR() const { return para.hr; }						//敵弾と自機の当たり判定用に当たり判定の半径の値を取得する
 	int GetInvincibleTime() const { return para.invincibleTime; }	//無敵時間のコンパイル時定数をparaより取得
 	int GetBlinkCycle() const { return para.blinkCycle; }			//点滅の周期
 
-	int GetLife() const { return mLife; }				//現在の残機数の取得
-	int GetBomb() const { return mBomb; }				//現在の残ボム数の取得
+	int GetLife() const { return mLife; }							//現在の残機数の取得
+	int GetBomb() const { return mBomb; }							//現在の残ボム数の取得
 };
