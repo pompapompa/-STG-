@@ -107,9 +107,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
 		case SCENE_PRACTICE:
-			DrawString(170, 100, "～～～ スペルプラクティスモード ～～～", GetColor(255, 255, 255));
-			DrawString(230, 160, (PracticeMenu.GetSelect() == 0 ? "> 1面道中" : "1面道中"), GetColor(255, 255, 255));
-			DrawString(230, 190, (PracticeMenu.GetSelect() == 1 ? "> 1ボス　通1" : "1ボス　通1"), GetColor(255, 255, 255));
+			DrawString(170, 100, "～～～ スペルプラクティスモード ～～～", GetColor(0, 255, 0));
+			DrawString(230, 150, (PracticeMenu.GetSelect() == 0 ? "> 1面道中" : "1面道中"), GetColor(255, 255, 255));
+			DrawString(230, 180, (PracticeMenu.GetSelect() == 1 ? "> 1ボス　通1" : "1ボス　通1"), GetColor(255, 255, 255));
 			DrawString(230, 210, (PracticeMenu.GetSelect() == 2 ? "> 1ボス　スペカ1" : "1ボス　スペカ1"), GetColor(255, 255, 255));
 			DrawString(230, 240, (PracticeMenu.GetSelect() == 3 ? "> 1ボス　通2" : "1ボス　通2"), GetColor(255, 255, 255));
 			DrawString(230, 270, (PracticeMenu.GetSelect() == 4 ? "> 1ボス　天上天下の照國(笑)" : "1ボス　天上天下の照國(笑)"), GetColor(255, 255, 255));
@@ -172,7 +172,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					stageManager.GetPlayer().loadingBomb();													//基準ボム数を装填
 					stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());	//無敵状態
 					bm.ClearAllBullet();					
-					bm.ClearAllItems();
 				}
 				else {
 					GameOverMenu.SetSelect(0);													
@@ -239,7 +238,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());
 					scene = SCENE_STAGE;
 					bm.ClearAllBullet();					
-					bm.ClearAllItems();
 					stageManager.GetPlayer().Reset();
 				}
 				if (select == 1) {					//諦める場合
