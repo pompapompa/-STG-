@@ -20,7 +20,7 @@ namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書かねばならない
 	static constexpr int DefaultBossY = CenterY - (CenterY / 2);
 	static constexpr int FitfullBossY = CenterY - ((CenterY) / 4);			//フィットフル用ボス位置Y
 
-	static constexpr float Margin = 20.0f;									//ゲームオーバーシーンでのプレイ領域に被せる黒いモヤの遊び
+	static constexpr float Margin = 15.0f;									//ゲームオーバーシーンでのプレイ領域に被せる黒いモヤの遊び
 };
 
 
