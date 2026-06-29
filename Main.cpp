@@ -87,7 +87,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (select == 0) {
 					lastSelectedStage = 1;
 					lastSelectedPhase = 0;
-					bm.ClearAllBullet();
+					bm.ClearAllBullets();
 					bm.ClearAllItems();
 					playingPractice = false;											//通常スタート時はフラグを折る
 					stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase, playingPractice);
@@ -126,7 +126,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				lastSelectedPhase = PracticeMenu.GetSelect();
 				playingPractice = true;			
 
-				bm.ClearAllBullet();
+				bm.ClearAllBullets();
 				bm.ClearAllItems();
 				stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase, playingPractice);
 				scene=SCENE_STAGE;
@@ -166,8 +166,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				);
 			}
 
-			if (isPlayerHit && !stageManager.GetPlayer().IsDeathTimerActive()) {	//被弾且つDeathTimerがアクティブではない時
-				stageManager.GetPlayer().StartDeathTimer();								//DeathTimerを始動(アクティベート)
+			if (isPlayerHit && !stageManager.GetPlayer().IsDeathTimerActive()) {	//被弾且つdeathTimerがアクティブではない時
+				stageManager.GetPlayer().StartDeathTimer();								//deathTimerを始動(アクティベート)
 			}
 
 			if (stageManager.GetPlayer().GetLife() < 0) {		//残機(整数型)が負即ち残機0で被弾した状態の場合
@@ -184,14 +184,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
 
 			if (InputManager::IsTrigger(KEY_INPUT_X) && stageManager.GetPlayer().GetBomb() > 0) {// X押下且つボム数が1以上の時
-				if (stageManager.GetPlayer().IsDeathTimerActive()) {								//DeathTimerがアクティブな時
-					stageManager.GetPlayer().StopDeathTimer();												//DeathTimerを停止(inactivate)
+				if (stageManager.GetPlayer().IsDeathTimerActive()) {								//deathTimerがアクティブな時
+					stageManager.GetPlayer().StopDeathTimer();												//deathTimerを停止(inactivate)
 					stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());	//無敵時間をセット
-					bm.ClearEnemyBullets();																	//敵弾消去
+					bm.ConvertEnemyBulletsToItems();														//敵弾を小スコアへ変換
 					stageManager.GetPlayer().ComsumeBomb();													//ボム消費
 				}
 				else if (!stageManager.GetPlayer().IsInvincible()){									//無敵状態でなければ通常ボム消費	
-					bm.ClearEnemyBullets();																	//敵弾消去
+					bm.ConvertEnemyBulletsToItems();														//敵弾を小スコアへ変換
 					stageManager.GetPlayer().ComsumeBomb();													//ボム消費
 				}
 			}
@@ -284,7 +284,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (select == 0) scene = SCENE_STAGE;
 				if (select == 1) { scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE; }
 				if (select == 2) {
-					bm.ClearAllBullet();
+					bm.ClearAllBullets();
 					bm.ClearAllItems();
 					stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase, playingPractice);									//やり直しなのでリセット処理
 					scene = SCENE_STAGE;
@@ -296,7 +296,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 
 			if (InputManager::IsRelease(KEY_INPUT_R)) {
-				bm.ClearAllBullet();
+				bm.ClearAllBullets();
 				bm.ClearAllItems();
 				stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase, playingPractice);
 				scene = SCENE_STAGE;

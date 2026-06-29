@@ -126,7 +126,7 @@ bool BulletManager::CheckPlayerCollision(float px, float py, float pr) {
 }
 
 
-void BulletManager::ClearEnemyBullets() {
+void BulletManager::ConvertEnemyBulletsToItems() {
 	for (int i = 0; i < EnemyBMax; i++) {
 		if (e_bullets[i].GetFlag()) {
 

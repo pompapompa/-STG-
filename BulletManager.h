@@ -67,16 +67,24 @@ public:
 	bool CheckPlayerCollision(float px, float py, float pr);
 	bool CheckEnemyCollision(float ex, float ey, float er);	
 	
-	void ClearAllBullet(){
+	void ClearPlayerBullets() {
 		for (int i = 0; i < PlayerBMax; i++) {
 			p_bullets[i].SetFlag(false);
 		}
+	}
+
+	void ClearEnemyBullets() {
 		for (int i = 0; i < EnemyBMax; i++) {
 			e_bullets[i].SetFlag(false);
 		}
 	}
 
-	void ClearEnemyBullets();
+	void ClearAllBullets(){
+		ClearPlayerBullets();
+		ClearEnemyBullets();
+	}
+
+	void ConvertEnemyBulletsToItems();
 	void ClearAllItems() {
 		for (int i = 0; i < MAX_ITEMS; i++) {
 			items[i].isExist = false;

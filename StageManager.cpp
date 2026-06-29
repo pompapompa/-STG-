@@ -122,7 +122,7 @@ void StageManager::Draw(BulletManager* bm) {		//’e‚Æ‚©‚Ì•`‰æ
 		if (fairies[i].GetFlag()) {
 			if (fairies[i].CheckCollision(bm)) {
 				if (fairies[i].IsClearOnDeath()) {
-					bm->ClearEnemyBullets();
+					bm->ConvertEnemyBulletsToItems();
 				}
 			}
 			fairies[i].Draw();						//ƒtƒ‰ƒO‚ª—§‚Á‚Ä‚¢‚é—d¸‚ð•`‰æ
@@ -137,7 +137,7 @@ void StageManager::Draw(BulletManager* bm) {		//’e‚Æ‚©‚Ì•`‰æ
 void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx, bool isPractice) {							//ƒXƒe[ƒW‚Ìó‘Ô‚ð‘S‚ÄƒŠƒZƒbƒg‚·‚éŠÖ”
 	currentStageNum = stageNum;
 	
-	bm->ClearEnemyBullets();
+	bm->ConvertEnemyBulletsToItems();
 	bm->ClearAllItems();
 
 	player.Reset(isPractice);

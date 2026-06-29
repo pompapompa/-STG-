@@ -61,7 +61,7 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 	if (hp <= 0) {																//フェーズのhpがなくなった場合
 		
 		if (phases[currentIdx].clearOnEnd) {
-			bm->ClearEnemyBullets();												//現在のphaseでclearOnEndフラグが立っているならbmに弾消し申請
+			bm->ConvertEnemyBulletsToItems();												//現在のphaseでclearOnEndフラグが立っているならbmに弾消し申請
 		}
 		
 		currentIdx++;															//現在のフェーズを次の段階へ
@@ -71,7 +71,7 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 			this->phaseTimer = 0;												//フェーズタイマーの初期化
 		}
 		else {
-			bm->ClearEnemyBullets();												//全スペカ終了で弾全消し
+			bm->ConvertEnemyBulletsToItems();												//全スペカ終了で弾全消し
 			flag = false;														//全スペカ終了でボスフラグを消す
 		}
 	}
