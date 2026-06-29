@@ -47,7 +47,7 @@ public:
 
 	void Update(BulletManager* bm);			//弾を出すタイミングとかで必要になるので住所を知っておく。(&bmは場所を教える。*bmはその場所の情報を受け取る箱のようなもの)
 	void Draw(BulletManager* bm);
-	void Init(BulletManager* bm, int stageNum = 1, int startPhaseIdx = 0);			//ステージ数と開始段階インデックス(0:最初から, 1:中ボス, 2:ボス通常)を組み合わせる設計
+	void Init(BulletManager* bm, int stageNum = 1, int startPhaseIdx = 0, bool isPractice = false);			//ステージ数と開始段階インデックス(0:最初から, 1:中ボス, 2:ボス通常)を組み合わせる設計
 
 	void ReloadGraphic() {
 		boss.ReloadGraphic();					

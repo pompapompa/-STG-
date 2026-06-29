@@ -32,8 +32,9 @@ private:
 
 	static constexpr int sca = 20;								//ShotChargeAutomatic
 	static constexpr int scm = 10;								//ShotChargeManualtransmission
-	static constexpr int stdLife = 8;							//StandardLife(基準残機数)
+	static constexpr int stdLife = 2;							//StandardLife(基準残機数)
 	static constexpr int stdBomb = 3;							//StandardBomb(基準ボム数)
+	static constexpr int stdPracLife = 8;						//StandardPracticeLife(プラクティスモードでの基準残機数)
 	
 
 	static constexpr PlayerParameter para{	//ここで同時にインスタンス宣言も行っている
@@ -91,7 +92,7 @@ private:
 
 public:
 	void Update(BulletManager* bm);
-	void Reset();
+	void Reset(bool isPractice = false);
 	void Draw();
 	void DrawHitBox();	
 

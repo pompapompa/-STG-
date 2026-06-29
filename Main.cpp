@@ -90,7 +90,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					bm.ClearAllBullet();
 					bm.ClearAllItems();
 					playingPractice = false;											//通常スタート時はフラグを折る
-					stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase);
+					stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase, playingPractice);
 					scene = SCENE_STAGE;
 				}
 				if (select == 1) {
@@ -128,7 +128,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 				bm.ClearAllBullet();
 				bm.ClearAllItems();
-				stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase);
+				stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase, playingPractice);
 				scene=SCENE_STAGE;
 			}
 			break;
@@ -238,7 +238,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());
 					scene = SCENE_STAGE;
 					bm.ClearAllBullet();					
-					stageManager.GetPlayer().Reset();
+					stageManager.GetPlayer().Reset(playingPractice);
 				}
 				if (select == 1) {					//諦める場合
 					scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
@@ -284,7 +284,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (select == 2) {
 					bm.ClearAllBullet();
 					bm.ClearAllItems();
-					stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase);									//やり直しなのでリセット処理
+					stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase, playingPractice);									//やり直しなのでリセット処理
 					scene = SCENE_STAGE;
 				}
 			}
@@ -296,7 +296,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (InputManager::IsRelease(KEY_INPUT_R)) {
 				bm.ClearAllBullet();
 				bm.ClearAllItems();
-				stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase);
+				stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase, playingPractice);
 				scene = SCENE_STAGE;
 			}
 

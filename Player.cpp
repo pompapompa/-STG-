@@ -80,7 +80,7 @@ void Player::Update(BulletManager* bm) {
 }
 
 
-void Player::Reset() {
+void Player::Reset(bool isPractice) {
 	x = (float)PlayArea::DefaultPlayerX;				//自機x座標初期化
 	y = (float)PlayArea::DefaultPlayerY;				//自機y座標初期化
 
@@ -91,8 +91,8 @@ void Player::Reset() {
 	shot_timer = 15;										//ショットのクールタイムも初期化
 	invincibleTimer = 0;
 
-	mLife = stdLife;			//初期残機数
-	mBomb = stdBomb;			//初期残ボム数
+	mLife = (isPractice ? stdPracLife : stdLife);			//プラクティスモードではstdPracLife,通常モードならstdLifeを初期残機として代入
+	mBomb = stdBomb;										//初期残ボム数
 }
 
 

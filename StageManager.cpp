@@ -134,17 +134,13 @@ void StageManager::Draw(BulletManager* bm) {		//弾とかの描画
 	}
 }
 
-void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx) {							//ステージの状態を全てリセットする関数
+void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx, bool isPractice) {							//ステージの状態を全てリセットする関数
 	currentStageNum = stageNum;
 	
 	bm->ClearEnemyBullets();
 	bm->ClearAllItems();
 
-	player.Reset();
-	boss.Reset();
-	
-	
-	player.Reset();
+	player.Reset(isPractice);
 	boss.Reset();									//ボスフラグを折る
 
 
