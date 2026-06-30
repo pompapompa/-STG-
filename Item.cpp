@@ -100,13 +100,13 @@ void Item::Draw() {
 	case ItemType::MINI_SCORE:
 		color = BulletColor::Get(BulletColor::Type::CYAN);    size = 3; break;
 	case ItemType::SCORE:
-		color = BulletColor::Get(BulletColor::Type::BLUE);    size = 6; break;
+		color = BulletColor::Get(BulletColor::Type::BLUE);    size = 10; break;
 	case ItemType::POWER:
-		color = BulletColor::Get(BulletColor::Type::RED);     size = 6; break;
+		color = BulletColor::Get(BulletColor::Type::RED);     size = 10; break;
 	case ItemType::ZANKI:
-		color = BulletColor::Get(BulletColor::Type::MAGENTA); size = 8; break;
+		color = BulletColor::Get(BulletColor::Type::MAGENTA); size = 12; break;
 	case ItemType::BOMB:
-		color = BulletColor::Get(BulletColor::Type::GREEN);   size = 8; break;
+		color = BulletColor::Get(BulletColor::Type::GREEN);   size = 12; break;
 	default:
 		color = BulletColor::Get(BulletColor::Type::WHITE);   break;
 	}

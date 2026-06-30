@@ -91,7 +91,7 @@ public:
 		}
 	}
 
-
-	void UpdateItems(float playerX, float playerY, float collectRadius);		//アイテムの更新を行う関数		
-	void DrawItems();															//アイテムの描画を司令する関数
+	void LaunchItem(float x, float y, ItemType type, int count, float scatterRadius);			
+	void UpdateItems(float playerX, float playerY, float collectRadius, bool isAutoCollect);		//アイテムの更新を行う関数		
+	void DrawItems();																				//アイテムの描画を司令する関数
 };

@@ -26,6 +26,7 @@ struct EnemySpawn {
 	int   interval;							//出撃間隔(フレーム)
 	BulletPattern::ShotConfig shotConf;		//弾のパラメータ
 	bool clearOnEnd;						//弾消しフラグ
+	int dropItemType;						//妖精が死んだ時に落とすアイテムの種類(-1：無し, 0：小スコア, 1：スコア, 2：パワー, 3：大パワー, 4：残機, 5：ボム)
 };
 
 class StageManager {

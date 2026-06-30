@@ -21,6 +21,7 @@ namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書かねばならない
 	static constexpr int FitfullBossY = CenterY - ((CenterY) / 4);			//フィットフル用ボス位置Y
 
 	static constexpr float Margin = 15.0f;									//ゲームオーバーシーンでのプレイ領域に被せる黒いモヤの遊び
+	static constexpr float ItemCollectionLine = Top + 150.0f;				//アイテム上部回収ライン
 };
 
 
@@ -69,7 +70,7 @@ struct BossPhase {
 	int shotCount;
 	BulletPattern::ShotConfig shots[5];	//弾パラメータ
 	bool clearOnEnd;					//Phase終了時に弾消しを行うか
-	
+	int dropCounts[5];					//ボスがドロップするアイテムの各個数(0：小スコア,　1：スコア,　2：パワー,　3：残機,　4：ボム)
 };
 
 

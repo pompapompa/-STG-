@@ -145,9 +145,26 @@ void BulletManager::ConvertEnemyBulletsToItems() {
 	}
 }
 
-void BulletManager::UpdateItems(float playerX, float playerY, float collectRadius) {
+void BulletManager::LaunchItem(float x, float y, ItemType type, int count, float scatterRadius) {
+	for (int i = 0; i < count; i++) {
+		for (int j = 0; j < MAX_ITEMS; j++) {
+			if (!items[j].isExist) {														//配列内の空いてるアイテムを探す
+				float offsetX = (float)(GetRand((int)scatterRadius * 2) - scatterRadius);	
+				float offsetY = (float)(GetRand((int)scatterRadius * 2) - scatterRadius);	//scatterRadiusの範囲内でランダムなオフセットを作る、半分引くことで-Rから+Rの範囲の乱数を返す
+
+				items[j].Spawn(x + offsetX, y + offsetY, type);								//オフセットを加算した座標でアイテム呼び出し
+				break;
+			}
+		}
+	}
+}
+
+void BulletManager::UpdateItems(float playerX, float playerY, float collectRadius, bool isAutoCollect) {
 	for (int i = 0; i < BulletManager::MAX_ITEMS; i++) {
 		if (items[i].isExist) {
+			if (isAutoCollect && !items[i].isTargeted) {	//上部回収フラグオンで、まだ回収モードに成ってないアイテムがある場合
+				items[i].isTargeted = true;						//アイテムの回収モードON
+			}
 			items[i].Update(playerX, playerY, collectRadius);
 		}
 	}

@@ -60,6 +60,14 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 
 	if (hp <= 0) {																//フェーズのhpがなくなった場合
 		
+		for (int typeIdx = 0; typeIdx < 5; typeIdx++) {					//アイテム全種類のループ
+			int count = phases[currentIdx].dropCounts[typeIdx];				//静的配列から値を取得して格納			
+			if (count > 0) {												//1以上の時
+				ItemType iType = static_cast<ItemType>(typeIdx);		//アイテムの種類を格納
+				bm->LaunchItem(x, y, iType, count, 35.0f);				//ボス座標から半径35.0f以内にランダムに散布してドロップ
+			}
+		}
+
 		if (phases[currentIdx].clearOnEnd) {
 			bm->ConvertEnemyBulletsToItems();												//現在のphaseでclearOnEndフラグが立っているならbmに弾消し申請
 		}

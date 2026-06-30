@@ -149,10 +149,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				stageManager.GetFairies()
 			);
 
+			bool isAutoCollect = (stageManager.GetPlayer().GetY() < PlayArea::ItemCollectionLine);						//自機が上部回収ラインより上の時、isAutoCollectをtrueへ
+
+			if (Input::IsTrigger(KEY_INPUT_X) && stageManager.GetPlayer().GetBomb() > 0) {								// X押下且つ残ボムがある場合
+				if (stageManager.GetPlayer().IsDeathTimerActive() || !stageManager.GetPlayer().IsInvincible()) {		//喰らいボム通常ボム発動した場合
+					isAutoCollect = true;																				//回収モードオン
+				}
+			}
+
 			bm.UpdateItems(
 				stageManager.GetPlayer().GetX(),
 				stageManager.GetPlayer().GetY(),
-				50.0f
+				50.0f,
+				isAutoCollect
 			);
 
 			bool isDead = stageManager.GetBoss().CheckCollision(stageManager.GetPlayer(), bm);
