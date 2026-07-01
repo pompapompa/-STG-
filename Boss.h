@@ -15,6 +15,12 @@ struct BossParameter {
 	float SpawnRate_Y;									//初期Y座標比率
 };
 
+enum class BossState {
+	ACTIVE,												//戦闘中
+	WAITING,											//フェーズ間の待機中
+	CHARGING											//チャージ演出中
+};
+
 class Boss : public Enemy {
 private:
 	
@@ -28,10 +34,17 @@ private:
 		0.25f											//SpawnRate_Y：プレイ領域Y軸の上端を0、下端を1とした時の比率
 	};
 
+	static constexpr int PHASE_WAIT_FRAME = 120;		//フェーズ間の待機フレーム数
+	static constexpr int PHASE_CHARGE_FRAME = 60;		//体力ゲージが溜まるチャージ演出にかかるフレーム数
+
 	int currentIdx = 0;									//現在のフェーズ番号
 	int phaseTimer = 0;									//フェーズ開始からの経過時間
 	float phaseMaxHp;									//現在のフェーズの初期HP
+	
+	BossState state;									//ボスの現在の状態を保持する変数
+	int waitTimer = 0;									//待機時間をカウントするタイマ
 
+	int chargeTimer = 0;								//チャージ演出の経過時間をカウントするタイマ
 	int BossGraphs[20];									//画像番号を格納する箱
 
 	
@@ -58,20 +71,20 @@ private:
 	/*  {phaseNum, hpLimit, limitTime,弾幕数,{{type,	sr,		ss,		si,		way,	広角,		回転速度,	基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム}}　*/
 	
 			/*	通1　*/
-			{ 0,	600.0f,		3600,	1,		{
+			{ 0,	600.0f,		1200,	1,		{
 									{PT::RotateAll,		4.0f,	0.6f,	5,		12,		360.0f,		0.5f,		90,			0}
 			},false,},
 
 
 			/*　通1の2段階目(発狂)　*/
-			{ 1,	900.0f,		5400,	2,		{
+			{ 1,	900.0f,		3000,	2,		{
 									{PT::RotateAll,		4.0f,	3.5f,	10,		18,		360.0f,		0.2f,		90,			3},
 									{PT::RotateAll,		4.0f,	2.0f,	48,		64,		360.0f,		0.0f,		90,			7}
 			},true, {0,5, 3,0,0}},
 	  
 			
 			/*　通2　*/
-			{ 2,	600.0f,		3600,	4,		{
+			{ 2,	600.0f,		1800,	4,		{
 									{PT::RotateAll,		3.0f,	1.6f,	5,		17,		360.0f,		5.5f,		90,			0},
 									{PT::RotateAll,		3.0f,	1.6f,	5,		17,		360.0f,		-5.5f,		90,			0},
 									{PT::RotateAll,		4.0f,	3.0f,	20,		15,		360.0f,		10.0f,		90,			2},
@@ -80,19 +93,19 @@ private:
 			},true, {0,10,8,1,0}},
 	
 			/*　天上天下の照國(3枚目)　*/
-			{ 3,	900.0f,		6000,	3,		{
+			{ 3,	900.0f,		3600,	3,		{
 									{PT::RotateAll,		4.0f,	5.0f,	8,		16,		360.0f,		2.8f,		90,			10},
 									{PT::RotateAll,		4.0f,	5.0f,	8,		16,		360.0f,		-2.8f,		90,			10},
 									{PT::RotateAll,		4.0f,	2.0f,	45,		64,		360.0f,		0.0f,		90,			4}
 			},true, {0,10,5,0,1}},
 			
 			/*　フィットフルナイトメア　*/
-			{ 4,	600.0f,		100,	1,		{
+			{ 4,	600.0f,		3600,	1,		{
 									{PT::RotateAll,		4.0f,	8.0f,	5,		45,		360.0f,		0.191,		90,			9}
 			},true, {0,10,0,0,0}},
 			
 			/*　ラストスペル　*/
-			{ 5,	800.0f,		3600,	4,		{
+			{ 5,	800.0f,		4000,	4,		{
 									{PT::NWay,			4.0f,	15.0f,	3,		12,		180.0f,		0.5f,		90,			9},
 									{PT::RotateAll,		6.0f,	2.5f,	7,		18,		360.0f,		5.0f,		90,			1},
 									{PT::RotateAll,		6.0f,	2.5f,	7,		18,		360.0f,		-5.0f,		90,			0},
@@ -121,6 +134,8 @@ public:
 	void SetDamage(float d) { hp -= d; }											
 	float GetHp() { return hp; }						
 	float GetHpRate() { return(phaseMaxHp > 0.0f) ? (hp / phaseMaxHp) : 0.0f; }		//そのフェーズの残りhpを円弧のUIで表現する時用の比率
+
+	int GetRemainingPhaseTimer() const;												//外部(UI描画等)から現在のフェーズの制限時間の残りフレーム数を取得するためのゲッタ
 
 	bool CheckCollision(class Player& player, class BulletManager& bm);				//冒頭でインクルードしなかったのは循環参照を防ぐため。それより、ここで前方宣言をする。
 

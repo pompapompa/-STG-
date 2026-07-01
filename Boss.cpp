@@ -21,69 +21,99 @@ void Boss::Spawn(float in_x, float in_y) {
 	Encount(in_x, in_y, para.r, 0.0f, 0.0f, 0, dummyConf, false);							//hpの引数はボスの場合hpロジックが独自の為ダミーの0を入力している。その後上書きされる為何でも良い。
 
 	currentIdx = 0;
-	this->hp = phases[currentIdx].hpLimit;								//そのフェーズのHPをthis->hpに入れる
-	this->phaseMaxHp = this->hp;										//フェーズの最大HPへthis->hpを代入
+	
+	this->phaseMaxHp = phases[currentIdx].hpLimit;						//フェーズの最大HPをセット
+	this->hp = 0.0f;													//初期スポーン時のhpチャージ演出の起点とするため,hp=0.0fとしておく
 
 	this->timer = 0;
 	this->phaseTimer = 0;
 	this->flag = true;
+	this->state = BossState::WAITING;									//スポーン時は待機状態として初期化
+	this->waitTimer = 0;
+	this->chargeTimer = 0;
+
 }
 
 void Boss::Update(const Player& player, BulletManager* bm) {									//BulletManagerを使って弾を撃つ
 	using namespace PlayArea;
 	if (!flag) return;
 
-	timer++;
-	phaseTimer++;
+	if (state == BossState::ACTIVE) {		//戦闘状態
+		timer++;
+		phaseTimer++;
 
 
-	x = PlayArea::DefaultBossX;
-	//y = PlayArea::DefaultBossY;
-	y = PlayArea::FitfullBossY;
-	const BossPhase& p = phases[currentIdx];
-	
-	
-	for (int i = 0; i < p.shotCount; i++) {
-		const auto& conf = p.shots[i];
+		x = PlayArea::DefaultBossX;
+		//y = PlayArea::DefaultBossY;
+		y = PlayArea::FitfullBossY;
+		const BossPhase& p = phases[currentIdx];
 
-		if (phaseTimer % conf.interval == 0) {
-			if (conf.type == PT::RotateAll) {
-				float baseAngleDeg = (timer * conf.rotSpeed) * 180.0f / DX_PI_F;
-				BulletPattern::NWayShot(x, y, conf.radius, conf.speed, conf.way, conf.totalAngle, baseAngleDeg, bm, conf.graphicType);
+
+		for (int i = 0; i < p.shotCount; i++) {
+			const auto& conf = p.shots[i];
+
+			if (phaseTimer % conf.interval == 0) {
+				if (conf.type == PT::RotateAll) {
+					float baseAngleDeg = (timer * conf.rotSpeed) * 180.0f / DX_PI_F;
+					BulletPattern::NWayShot(x, y, conf.radius, conf.speed, conf.way, conf.totalAngle, baseAngleDeg, bm, conf.graphicType);
+				}
+				else {
+					BulletPattern::ExecShot(x, y, conf, player, bm);
+				}
+			}
+		}
+
+
+		if (hp <= 0 || phaseTimer >= p.limitTime) {							//フェーズのhpがなくなるか、limitTimer(制限時間)を越えた場合
+
+			for (int typeIdx = 0; typeIdx < 5; typeIdx++) {					//アイテム全種類のループ
+				int count = phases[currentIdx].dropCounts[typeIdx];				//静的配列から値を取得して格納			
+				if (count > 0) {												//1以上の時
+					ItemType iType = static_cast<ItemType>(typeIdx);		//アイテムの種類を格納
+					bm->LaunchItem(x, y, iType, count, 35.0f);				//ボス座標から半径35.0f以内にランダムに散布してドロップ
+				}
+			}
+
+			if (phases[currentIdx].clearOnEnd) {
+				bm->ConvertEnemyBulletsToItems();												//現在のphaseでclearOnEndフラグが立っているならbmに弾消し申請
+			}
+
+			currentIdx++;															//現在のフェーズを次の段階へ
+			if (currentIdx < PHASE_MAX) {											//フェーズが全て終わっていない場合
+				state = BossState::WAITING;									//待機状態遷移
+				waitTimer = 0;												//待機時間タイマを初期化
+
+				this->phaseMaxHp = phases[currentIdx].hpLimit;				//フェーズの最大hp変数にそのフェーズの最大hpを格納
+				this->hp = 0.0f;											//hpチャージ演出の起点とするため,hp=0.0fとしておく
 			}
 			else {
-				BulletPattern::ExecShot(x, y, conf, player, bm);
+				bm->ConvertEnemyBulletsToItems();									//全スペカ終了で弾全消し
+				flag = false;														//全スペカ終了でボスフラグを消す
 			}
 		}
 	}
-	
+	else if (state == BossState::WAITING) {		//待機状態
+		waitTimer++;															//待機時間タイマのカウントアップ開始
 
-	if (hp <= 0) {																//フェーズのhpがなくなった場合
-		
-		for (int typeIdx = 0; typeIdx < 5; typeIdx++) {					//アイテム全種類のループ
-			int count = phases[currentIdx].dropCounts[typeIdx];				//静的配列から値を取得して格納			
-			if (count > 0) {												//1以上の時
-				ItemType iType = static_cast<ItemType>(typeIdx);		//アイテムの種類を格納
-				bm->LaunchItem(x, y, iType, count, 35.0f);				//ボス座標から半径35.0f以内にランダムに散布してドロップ
-			}
-		}
+		this->hp = 0;
 
-		if (phases[currentIdx].clearOnEnd) {
-			bm->ConvertEnemyBulletsToItems();												//現在のphaseでclearOnEndフラグが立っているならbmに弾消し申請
+		if (waitTimer >= PHASE_WAIT_FRAME) {	//待機時間タイマのカウントがフェーズの待機フレーム以上に成った場合
+			state = BossState::CHARGING;						//待機状態が終わったらチャージ状態へ遷移
+			chargeTimer = 0;								//チャージタイマをリセット
 		}
-		
-		currentIdx++;															//現在のフェーズを次の段階へ
-		if (currentIdx < PHASE_MAX) {											//フェーズが全て終わっていない場合
-			this->hp = phases[currentIdx].hpLimit;								//次のフェーズのhpへ更新
-			this->phaseMaxHp = this->hp;										//同様
+	}
+	else if (state == BossState::CHARGING) {
+		chargeTimer++;
+		this->hp= this->phaseMaxHp * ((float)chargeTimer / PHASE_CHARGE_FRAME);	//hpチャージ演出(0からphaseMaxHpまで、PHASE_CHARGE_FRAMEをかけて線形補間で増加させる)
+
+		if (chargeTimer >= PHASE_CHARGE_FRAME) {
+			this->hp = this->phaseMaxHp;										//hpに確実に最大値を格納
 			this->phaseTimer = 0;												//フェーズタイマーの初期化
-		}
-		else {
-			bm->ConvertEnemyBulletsToItems();												//全スペカ終了で弾全消し
-			flag = false;														//全スペカ終了でボスフラグを消す
+			state = BossState::ACTIVE;											//戦闘状態へ遷移
 		}
 	}
 }
+
 
 void Boss::Draw() {
 	if (!flag)return;
@@ -101,8 +131,7 @@ void Boss::Draw() {
 		DrawCircle(x, y, r, GetColor(255, 0, 0), TRUE);
 	}
 
-	if (phaseMaxHp > 0) {
-		
+	if ((state == BossState::ACTIVE || state == BossState::CHARGING) && phaseMaxHp > 0) {			//戦闘状態か(チャージ状態且つ体力が0以上)の場合
 		for (int i = 0; i < para.GaugeSegments; i++) {									//多角形の角数だけ繰り返す
 			float a1 = para.StartAngle - (DX_PI_F * 2.0f * i / para.GaugeSegments);			//現在の点の角度
 			float a2 = para.StartAngle - (DX_PI_F * 2.0f * (i + 1) / para.GaugeSegments);	//次点の角度
@@ -114,7 +143,7 @@ void Boss::Draw() {
 
 			DrawLine(x1, y1, x2, y2, GetColor(64, 64, 64), para.GaugeThickness);				//グレーの体力ゲージ(体力に依存しない)の描画
 		}
-		
+
 		float hp_rate = GetHpRate();										//hpの比率計算	
 		int draw_limit = (int)(para.GaugeSegments * hp_rate);					//残HP分の角を描画
 
@@ -141,12 +170,15 @@ bool Boss::CheckCollision(Player& player, BulletManager& bm) {
 		if (!b.flag) continue;										//その弾flagが立っていないなら以下の判定を飛ばす
 
 		if (Collision::CheckCircle(x, y, r, b.x, b.y, b.r)) {		//ボスのx,y,rと自機弾のx,y,rを引数とする
-			SetDamage(1.0f);										//1弾あたりのダメージ量
+			if (state == BossState::ACTIVE) {
+				SetDamage(1.0f);										//1弾あたりのダメージ量
+			}
 			b.flag = false;											//当たった弾フラグは消す
 		}
 	}
-	if (hp <= 0.0f && currentIdx >= PHASE_MAX - 1) {				//ボスhpが0未満になって且つ全段階終了時にボスフラグを消す
-		return true;												//倒したフラグを立てる
+
+	if (state == BossState::ACTIVE && hp <= 0.0f && currentIdx >= PHASE_MAX - 1) {				//ボスhpが0未満になって且つ全段階終了時且つhpが0以下になったときだけボスフラグを消す
+		return true;																			//倒したフラグを立てる
 	}
 	return false;
 }
@@ -160,4 +192,12 @@ void Boss::JumpToPhase(int phaseIdx) {
 	hp = phaseMaxHp;
 
 	flag = true;
+	state = BossState::WAITING;								//フェーズジャンプ時も待機状態からスタート
+	waitTimer = 0;
+}
+
+int Boss::GetRemainingPhaseTimer() const {			//外部から残り時間を取得するゲッタ関数
+	if (state == BossState::WAITING) return 0;					//待機状態では0を返す
+	int remain = phases[currentIdx].limitTime - phaseTimer;		//そのフェーズの制限時間 - そのフェーズが開始してからの時間
+	return (remain < 0) ? 0 : remain;							//制限時間よりも経過時間が大きくなったらremain<0より0を返し、そうでなければその差分の時間を返す
 }
