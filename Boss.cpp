@@ -5,6 +5,7 @@
 #include "Player.h"
 #include "BulletManager.h"
 #include "Collision.h"
+#include "FPSManager.h"
 #include <math.h>
 
 
@@ -159,6 +160,16 @@ void Boss::Draw() {
 
 			DrawLine(x1, y1, x2, y2, GetColor(255, 255, 255), para.GaugeThickness);				//体力ゲージの描画
 		}
+	}
+
+	if (state == BossState::ACTIVE) {			//ボスが戦闘状態中の場合
+		int remainingFrames = GetRemainingPhaseTimer();			//そのフェーズの制限時間(整数)を格納
+		int targetFPS = FPSManager::GetTargetFPS();				//1秒間のフレーム数(整数)を取得
+		int seconds = remainingFrames / targetFPS;				//[s]=[F]/[F/s]
+		unsigned int timeColor = ObjectColor::Get(ObjectColor::Type::WHITE);		//通常時の描画色
+		if (seconds <= PhaseTimerColorChangeSeconds) timeColor = ObjectColor::Get(ObjectColor::Type::RED);		//5秒以下の描画色
+
+		DrawFormatString(PhaseTimerX, PhaseTimerY, timeColor, "%02d", seconds);		//整数2桁で適当な色と位置で描画する(%02は2桁固定)
 	}
 }
 

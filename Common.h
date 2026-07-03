@@ -4,7 +4,7 @@
 #include "math.h"
 
 
-namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書かねばならないが、これだと使用する関数内でusing namespace PlayArea;と一度宣言すればその関数内限定で使えるようになるから便利ってこと
+namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書かねばならないが、これだと使用する関数内でusing namespace PlayArea;と一度宣言すればその関数内限定で使えるようになるので便利である
 	static constexpr int Left = 32;					      //！因みにconstexprだと実行する前からすでに分かっている定数ということらしい。constは引数とか実行時に取得するような定数らしい
 	static constexpr int Right = 416;			//32+384で384=128*3
 	static constexpr int Top = 16;
@@ -22,6 +22,8 @@ namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書かねばならない
 
 	static constexpr float Margin = 15.0f;									//ゲームオーバーシーンでのプレイ領域に被せる黒いモヤの遊び
 	static constexpr float ItemCollectionLine = Top + 150.0f;				//アイテム上部回収ライン
+	static constexpr float PhaseTimerX = Right - 25.0f;						
+	static constexpr float PhaseTimerY = Top + 10.0f;						//フェーズタイマのUI描画座標
 };
 
 
@@ -74,7 +76,7 @@ struct BossPhase {
 };
 
 
-struct BulletColor {
+struct ObjectColor {
 	enum class Type {
 		BLACK,							//0
 		RED,							//1

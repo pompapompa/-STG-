@@ -25,31 +25,32 @@ class Boss : public Enemy {
 private:
 	
 	static constexpr BossParameter para{
-		30.0f,											//r：ボス半径
-		25.0f,											//GaugeOffset_R：体力ゲージの半径		
-		512,											//GaugeSegment：体力ゲージ円弧の分割数
-		5.0f,											//GaugeThickness：体力ゲージの線の太さ
-		-DX_PI_F / 2.0f,								//StartAngle：体力ゲージの開始角度。DX_PI_FはπでFはfloat型を示す。-π/2して真上を始点とする。
-		0.5f,											//SpawnRate_X：プレイ領域X軸の左端を0、右端を1とした時の比率
-		0.25f											//SpawnRate_Y：プレイ領域Y軸の上端を0、下端を1とした時の比率
+		30.0f,													//r：ボス半径
+		25.0f,													//GaugeOffset_R：体力ゲージの半径		
+		512,													//GaugeSegment：体力ゲージ円弧の分割数
+		5.0f,													//GaugeThickness：体力ゲージの線の太さ
+		-DX_PI_F / 2.0f,										//StartAngle：体力ゲージの開始角度。DX_PI_FはπでFはfloat型を示す。-π/2して真上を始点とする。
+		0.5f,													//SpawnRate_X：プレイ領域X軸の左端を0、右端を1とした時の比率
+		0.25f													//SpawnRate_Y：プレイ領域Y軸の上端を0、下端を1とした時の比率
 	};
 
-	static constexpr int PHASE_WAIT_FRAME = 120;		//フェーズ間の待機フレーム数
-	static constexpr int PHASE_CHARGE_FRAME = 60;		//体力ゲージが溜まるチャージ演出にかかるフレーム数
+	static constexpr int PHASE_WAIT_FRAME = 120;				//フェーズ間の待機フレーム数
+	static constexpr int PHASE_CHARGE_FRAME = 60;				//体力ゲージが溜まるチャージ演出にかかるフレーム数
+	static constexpr int PhaseTimerColorChangeSeconds = 5;		//フェーズタイマの色の変化が起こる残り秒数
 
-	int currentIdx = 0;									//現在のフェーズ番号
-	int phaseTimer = 0;									//フェーズ開始からの経過時間
-	float phaseMaxHp;									//現在のフェーズの初期HP
+	int currentIdx = 0;											//現在のフェーズ番号
+	int phaseTimer = 0;											//フェーズ開始からの経過時間
+	float phaseMaxHp;											//現在のフェーズの初期HP
+						
+	BossState state;											//ボスの現在の状態を保持する変数
+	int waitTimer = 0;											//待機時間をカウントするタイマ
+
+	int chargeTimer = 0;										//チャージ演出の経過時間をカウントするタイマ
+	int BossGraphs[20];											//画像番号を格納する箱
+
 	
-	BossState state;									//ボスの現在の状態を保持する変数
-	int waitTimer = 0;									//待機時間をカウントするタイマ
 
-	int chargeTimer = 0;								//チャージ演出の経過時間をカウントするタイマ
-	int BossGraphs[20];									//画像番号を格納する箱
-
-	
-
-	static constexpr BossPhase phases[] = {				//通常こうげきとスペカのデータを配列で定義
+	static constexpr BossPhase phases[] = {						//通常こうげきとスペカのデータを配列で定義
 		/*
 	
 		0:青円

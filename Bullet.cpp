@@ -32,8 +32,8 @@ void Bullet::Draw(int scaleGraph) {
 	if (!flag) return;
 
 	if (owner == OwnerType::PLAYER) {																//é©ã@íeÇÃêF
-		DrawCircle((int)x, (int)y, (int)r, BulletColor::Get(BulletColor::Type::RED), true);
-		DrawCircle((int)x, (int)y, (int)r, BulletColor::Get(BulletColor::Type::WHITE), false);
+		DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::RED), true);
+		DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::WHITE), false);
 	}
 	else {
 		switch (type) {
@@ -90,14 +90,14 @@ void Bullet::Draw(int scaleGraph) {
 
 		case 1:			//ê‘â~
 		
-			DrawCircle((int)x, (int)y, (int)r, BulletColor::Get(BulletColor::Type::RED), true);
-			DrawCircle((int)x, (int)y, (int)r, BulletColor::Get(BulletColor::Type::WHITE), false);
+			DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::RED), true);
+			DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::WHITE), false);
 			break;
 
 		case 0:
 		default:		//ê¬â~
-			DrawCircle((int)x, (int)y, (int)r, BulletColor::Get(BulletColor::Type::WHITE), true);
-			DrawCircle((int)x, (int)y, (int)r, BulletColor::Get(BulletColor::Type::BLUE), false);
+			DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::WHITE), true);
+			DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::BLUE), false);
 		}
 	}
 }

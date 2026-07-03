@@ -13,4 +13,6 @@ public:
 	static void Update();
 	static void Draw();
 	static void Wait();			//fps安定のためのdelay用関数
+
+	static int GetTargetFPS() { return N; }		//ゲームがターゲットとしている1秒間のフレーム数を返すゲッタ
 };

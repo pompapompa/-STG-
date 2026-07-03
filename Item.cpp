@@ -98,18 +98,18 @@ void Item::Draw() {
 
 	switch (type) {
 	case ItemType::MINI_SCORE:
-		color = BulletColor::Get(BulletColor::Type::CYAN);    size = 3; break;
+		color = ObjectColor::Get(ObjectColor::Type::CYAN);    size = 3; break;
 	case ItemType::SCORE:
-		color = BulletColor::Get(BulletColor::Type::BLUE);    size = 10; break;
+		color = ObjectColor::Get(ObjectColor::Type::BLUE);    size = 10; break;
 	case ItemType::POWER:
-		color = BulletColor::Get(BulletColor::Type::RED);     size = 10; break;
+		color = ObjectColor::Get(ObjectColor::Type::RED);     size = 10; break;
 	case ItemType::ZANKI:
-		color = BulletColor::Get(BulletColor::Type::MAGENTA); size = 12; break;
+		color = ObjectColor::Get(ObjectColor::Type::MAGENTA); size = 12; break;
 	case ItemType::BOMB:
-		color = BulletColor::Get(BulletColor::Type::GREEN);   size = 12; break;
+		color = ObjectColor::Get(ObjectColor::Type::GREEN);   size = 12; break;
 	default:
-		color = BulletColor::Get(BulletColor::Type::WHITE);   break;
+		color = ObjectColor::Get(ObjectColor::Type::WHITE);   break;
 	}
 	DrawCircle((int)x, (int)y, size, color, TRUE);
-	DrawCircle((int)x, (int)y, size, BulletColor::Get(BulletColor::Type::WHITE), FALSE);	//“h‚è‚Â‚Ô‚µ‚Ì‰~‚Æ”’˜g•`‰æ
+	DrawCircle((int)x, (int)y, size, ObjectColor::Get(ObjectColor::Type::WHITE), FALSE);	//“h‚è‚Â‚Ô‚µ‚Ì‰~‚Æ”’˜g•`‰æ
 }
