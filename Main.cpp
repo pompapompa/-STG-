@@ -10,6 +10,7 @@
 #include "Enemy.h"
 #include "Boss.h"
 #include "MenuManager.h"
+#include "ImageEditor.h"
 #include <math.h>
 
 using namespace DxLib;									//IntelliSenseの勘違い防止
@@ -24,7 +25,8 @@ enum SceneType {
 	SCENE_GAMEOVER,
 	SCENE_CLEAR,
 	SCENE_PAUSE,
-	SCENE_QUIT_CONFIRM
+	SCENE_QUIT_CONFIRM,
+	SCENE_EDITOR
 };
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
@@ -36,8 +38,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (DxLib_Init() == -1) return -1;					//エラーが発生したら終了
 
 	BulletManager bm;
-	MenuManager TitleMenu(4);							//引数が必要なクラスなのでインスタンスにも引数を与える
-	MenuManager PracticeMenu(7);						
+	MenuManager TitleMenu(5);							//引数が必要なクラスなのでインスタンスにも引数を与える
+	MenuManager PracticeMenu(7);
 	MenuManager PauseMenu(3);
 	MenuManager QuitMenu(2);
 	MenuManager GameOverMenu(2);
@@ -45,13 +47,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	StageManager stageManager;
 	HUD hud;
 	hud.Init();
-	
-	int lastSelectedStage = 1;							
+	InitEditor();										//エディタパレットの設定と過去データのロードを実行
+
+	int lastSelectedStage = 1;
 	int lastSelectedPhase = 0;							//これらはリトライで適切なステージとフェーズに飛べる用に保存
 	bool playingPractice = false;						//プラクティス経由かどうかを判定するフラグ(前使っていたplayintPracticeとは用途はちがくなっている)
 
 	while (ProcessMessage() == 0 && ClearDrawScreen() == 0) {						//メインループ
-		Input::Update();		
+		Input::Update();
 		FPSManager::Update();														//fps計算の更新
 
 		if (Input::IsTrigger(KEY_INPUT_F)) {
@@ -71,8 +74,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawString(250, 210, "東 方 酔 々 夢", GetColor(255, 255, 255));
 			DrawString(270, 270, (TitleMenu.GetSelect() == 0 ? "> Start" : "Start"), GetColor(255, 255, 255));
 			DrawString(270, 300, (TitleMenu.GetSelect() == 1 ? "> Practice Start" : "Practice Start"), GetColor(255, 255, 255));
-			DrawString(270, 330, (TitleMenu.GetSelect() == 2 ? "> Replay" : "Replay"), GetColor(255, 255, 255));
-			DrawString(270, 360, (TitleMenu.GetSelect() == 3 ? "> Quit" : "Quit"), GetColor(255, 255, 255));
+			DrawString(270, 330, (TitleMenu.GetSelect() == 2 ? "> GraphicEditor" : "GraphicEditor"), GetColor(255, 255, 255));
+			DrawString(270, 360, (TitleMenu.GetSelect() == 3 ? "> Replay" : "Replay"), GetColor(255, 255, 255));
+			DrawString(270, 390, (TitleMenu.GetSelect() == 4 ? "> Quit" : "Quit"), GetColor(255, 255, 255));
 			DrawString(30, 450, "決定：Z or Enter　　フルスクリーン/ウィンドウ：F", GetColor(0, 255, 0));
 
 
@@ -96,8 +100,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (select == 1) {
 					scene = SCENE_PRACTICE;
 				}
-				if (select == 2) scene = SCENE_QUIT_CONFIRM;
+				if (select == 2) scene = SCENE_EDITOR;
 				if (select == 3) scene = SCENE_QUIT_CONFIRM;
+				if (select == 4) scene = SCENE_QUIT_CONFIRM;
 			}
 			if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
 				TitleMenu.SetSelect(3);
@@ -122,14 +127,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (Input::IsPress(KEY_INPUT_ESCAPE)) scene = SCENE_TITLE;
 
 			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
-				lastSelectedStage=1;
+				lastSelectedStage = 1;
 				lastSelectedPhase = PracticeMenu.GetSelect();
-				playingPractice = true;			
+				playingPractice = true;
 
 				bm.ClearAllBullets();
 				bm.ClearAllItems();
 				stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase, playingPractice);
-				scene=SCENE_STAGE;
+				scene = SCENE_STAGE;
 			}
 			break;
 
@@ -181,7 +186,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			if (stageManager.GetPlayer().GetLife() < 0) {		//残機(整数型)が負即ち残機0で被弾した状態の場合
 				GameOverMenu.SetSelect(0);							//ゲームオーバーシーンのカーソルの初期化
-				scene = SCENE_GAMEOVER;								
+				scene = SCENE_GAMEOVER;
 			}
 
 			bm.DrawItems();
@@ -199,7 +204,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					bm.ConvertEnemyBulletsToItems();														//敵弾を小スコアへ変換
 					stageManager.GetPlayer().ComsumeBomb();													//ボム消費
 				}
-				else if (!stageManager.GetPlayer().IsInvincible()){									//無敵状態でなければ通常ボム消費	
+				else if (!stageManager.GetPlayer().IsInvincible()) {									//無敵状態でなければ通常ボム消費	
 					bm.ConvertEnemyBulletsToItems();														//敵弾を小スコアへ変換
 					stageManager.GetPlayer().ComsumeBomb();													//ボム消費
 				}
@@ -220,7 +225,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		case SCENE_GAMEOVER:
 		{
 			using namespace PlayArea;
-			
+
 			bm.DrawItems();
 			stageManager.Draw(&bm);					//敵や自機本体の描画
 			bm.Draw();								//弾の描画
@@ -237,7 +242,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			DrawString(Left + 160, Top + 240, "はい", GameOverMenu.GetSelect() == 0 ? GetColor(255, 255, 0) : GetColor(128, 128, 128));
 			DrawString(Left + 160, Top + 270, "いいえ", GameOverMenu.GetSelect() == 1 ? GetColor(255, 255, 0) : GetColor(128, 128, 128));
-		
+
 			if (Input::IsTrigger(KEY_INPUT_UP)) { GameOverMenu.Prev(); }
 			if (Input::IsTrigger(KEY_INPUT_DOWN)) { GameOverMenu.Next(); }
 			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
@@ -248,7 +253,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					stageManager.GetPlayer().loadingBomb();		//基準ボム数のセット
 					stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());
 					scene = SCENE_STAGE;
-					bm.ClearEnemyBullets();					
+					bm.ClearEnemyBullets();
 					stageManager.GetPlayer().Reset(playingPractice);
 				}
 				if (select == 1) {					//諦める場合
@@ -271,14 +276,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		case(SCENE_PAUSE):
 			using namespace PlayArea;
-			
+
 			DrawString(470, 220, "一時停止", GetColor(0, 255, 255));
 			DrawString(470, 270, (PauseMenu.GetSelect() == 0 ? "> 続ける" : "続ける"), GetColor(255, 255, 255));
 			DrawString(470, 300, (PauseMenu.GetSelect() == 1 ? "> タイトルに戻る" : "タイトルに戻る"), GetColor(255, 255, 255));
 			DrawString(470, 330, (PauseMenu.GetSelect() == 2 ? "> やり直す" : "やり直す"), GetColor(255, 255, 255));
 
 			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
-		
+
 			bm.DrawItems();
 			stageManager.Draw(&bm);					//敵や自機本体の描画
 			bm.Draw();								//弾の描画
@@ -330,11 +335,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (select == 1) DxLib::DxLib_End();
 			}
 			break;
+
+		case(SCENE_EDITOR):
+			UpdateEditor();
+			DrawEditor();
+			if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
+				SaveAllCustomGraphics();
+				scene = SCENE_TITLE;
+			}
+			break;
 		}
-		FPSManager::Draw();																		//fpsの描画。ゲームのどの描画よりも前に描画する為ScreenFlipの直前に記述
+		FPSManager::Draw();
 		DxLib::ScreenFlip();
-		FPSManager::Wait();																		//fps固定
+		FPSManager::Wait();
 	}
+	FPSManager::Draw();																		//fpsの描画。ゲームのどの描画よりも前に描画する為ScreenFlipの直前に記述
+	DxLib::ScreenFlip();
+	FPSManager::Wait();																		//fps固定
 	DxLib::DxLib_End();
 	return 0;
 }

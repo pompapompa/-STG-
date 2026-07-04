@@ -102,3 +102,8 @@ struct ObjectColor {
 	}
 };
 
+struct CustomGraphicsData {
+	unsigned int playerCanvas[3][16][16];		//自機何種で何×何グリッドか
+	unsigned int itemCanvas[5][16][16];			//アイテム何種で何×何グリッドか
+};
+

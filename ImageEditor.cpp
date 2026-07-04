@@ -1,0 +1,180 @@
+﻿#define _CRT_SECURE_NO_WARNINGS				//古い形式のファイル操作関数を使用すると発生するセキュリティ警告を無視するための言葉
+#include "ImageEditor.h"
+#include "Common.h"
+#include "Input.h"
+#include "DxLib.h"
+#include <stdio.h>
+
+
+constexpr int PLAYER_TYPE_MAX = 3;						//自機の最大スロット数
+constexpr int ITEM_TYPE_MAX = 5;						//アイテムの最大スロット数
+constexpr int PALETTE_COLOR_MAX = 8;					//パレットの最大色数
+static constexpr int GRID_SIZE = 16;					//16×16の格子
+static constexpr int DOT_SIZE = 25;						//キャンバス上の1ドットの大きさ
+static constexpr int PALETTE_X = 420;					//画面右側に表示するカラーパレットの最左上端のX座標位置
+static constexpr int PALETTE_SIZE = 40;					//パレットの1マスの1辺
+//↑のこれらの定数等はエディタ内でしか使用しないため、ソースに記述。ヘッダに記述すると、ImageEditor.hをインクルードしてる他の全ファイルにも読み込ませてしまい無駄な依存関係が出来てしまうのでそれの防止。
+
+static constexpr int UI_PALETTE_TITLE_Y = 20;			//パレットタイトルのY座標
+static constexpr int UI_PALETTE_START_Y = 50;			//マウスのクリック判定を計算するための、パレット領域の一番上のY座標
+static constexpr int UI_PALETTE_DRAW_Y = 40;			//iパレットの四角を描画する際の最上端のY座標
+static constexpr int UI_PALETTE_MARGIN = 10;			//色ごとの四角間の隙間のマージン
+static constexpr int UI_SELECTOR_OFFSET = 3;			//現在選択している色を囲む太枠を四角よりどれだけ広げて描画するか(pixel)
+static constexpr int UI_STATUS_TEXT_X = 75;				
+static constexpr int UI_STATUS_TEXT_Y = 410;			//画面下部の現在のカテゴリ、アセット名を表示するUIテキストのX,Y座標
+static constexpr int UI_HELP_TEXT_Y = 440;				
+static constexpr int UI_HELP_TEXT_X = 50;				//最下部にある操作方法のテキストを表示するテキストのX,Y座標
+
+
+
+static unsigned int currentColor;					//現在のパレット選択色
+static unsigned int colorPalette[PALETTE_COLOR_MAX];				//パレットに表示する色数の分だけカラーコードを保存しておく配列
+
+static CustomGraphicsData g_CustomData;				//ゲーム全体で使う自機・アイテムのすべてのドット絵データを一元管理する構造体の実体
+
+static EditCategory g_CurrentCategory = EditCategory::PLAYER;	//現在編集している対象が、自機（PLAYER）かアイテム（ITEM）かを記憶する変数（初期値は自機）
+static int g_CurrentTypeIdx = 0;								//現在編集している対象のカテゴリ内の番号（自機なら0〜2、アイテムなら0〜4）を記憶する変数
+
+void SaveAllCustomGraphics() {
+	FILE* fp = fopen("CustomGraphics.dat", "wb");					//CustomGraphics.datをwb(バイナリ書き込みモード)でopen
+	if (fp) {
+		fwrite(&g_CustomData, sizeof(CustomGraphicsData), 1, fp);	//g_CustomDataのメモリブロックを構造体のサイズ分だけ1回ファイルに書き込む
+		fclose(fp);													//書き込み終了後、ファイルをclose
+	}
+}
+
+void LoadAllCustomGraphics() {
+	FILE* fp = fopen("CustomGraphics.dat", "rb");					//CustomGraphics.datをrb(バイナリ読み込みモード)でopen
+	if (fp) {
+		fread(&g_CustomData, sizeof(CustomGraphicsData), 1, fp);	//ファイルから構造体のサイズ分だけデータを読み込み、g_CustomDataに上書き復元
+		fclose(fp);													//読み込み終了後、ファイルをclose
+	}
+	else {
+		for (int p = 0; p < PLAYER_TYPE_MAX; p++) {		//自機のスロット数ループ
+			for (int y = 0; y < GRID_SIZE; y++) {				//格子の数だけy軸方向に繰り返す
+				for (int x = 0; x < GRID_SIZE; x++) {					//格子の数だけx軸方向に繰り返す
+					g_CustomData.playerCanvas[p][y][x] = GetColor(0, 0, 0);		//全てのマスを黒色(初期状態)で塗りつぶし
+				}
+			}
+		}
+		for (int i = 0; i < ITEM_TYPE_MAX; i++) {		//アイテムのスロット数ループ
+			for (int y = 0; y < GRID_SIZE; y++) {
+				for (int x = 0; x < GRID_SIZE; x++) {
+					g_CustomData.itemCanvas[i][y][x] = GetColor(0, 0, 0);
+				}
+			}
+		}
+	}
+}
+
+unsigned int GetCustomPixel(EditCategory category, int typeIdx, int y, int x) {
+	if (category == EditCategory::PLAYER) return g_CustomData.playerCanvas[typeIdx][y][x];		//カテゴリが自機の場合
+	return g_CustomData.itemCanvas[typeIdx][y][x];						//自機用の3次元配列から該当するピクセルの色を返す
+}
+
+void InitEditor() {
+	for (int i = 0; i < PALETTE_COLOR_MAX; i++) {
+		int r = (i & 1) ? 255 : 0;			//iの1ビット目が1ならrをON
+		int g = (i & 2) ? 255 : 0;			//iの2ビット目が1ならgをON
+		int b = (i & 4) ? 255 : 0;			//iの3ビット目が1ならbをON
+		colorPalette[i] = GetColor(r, g, b);
+	}
+	currentColor = colorPalette[PALETTE_COLOR_MAX - 1]; // 初期選択は白色
+	LoadAllCustomGraphics();
+}
+
+
+void UpdateEditor() {
+	int mX, mY;										//マウスのX,Y座標を格納する変数
+	int mInput = GetMouseInput();					//マウスの押下入力状態を取得して格納
+	GetMousePoint(&mX, &mY);						//現在のマウスカーソルの画面上のピクセル座標を取得し格納
+
+	int gx = mX / DOT_SIZE;
+	int gy = mY / DOT_SIZE;							//マウスのピクセル座標をドット1マスの大きさで割り、現在マウスがどこを指しているかを算出
+
+	if (mInput & MOUSE_INPUT_LEFT) {				//マウスの左ボタンが押下されている場合(マウスの入力情報はビット演算子により取得している)
+		for (int i = 0; i < PALETTE_COLOR_MAX; i++) {									//パレットの色数分繰り返し、マウスがどの色の枠をクリックしたか調べる
+			int px = PALETTE_X;																		//パレットのX座標
+			int py = UI_PALETTE_START_Y + i * (PALETTE_SIZE + UI_PALETTE_MARGIN);					//パレットのY座標(色に対応したiごとに位置を更新していく)
+			if (mX >= px && mX <= (px + PALETTE_SIZE) && mY >= py && mY <= (py + PALETTE_SIZE)) {	//マウスの座標がパレットの四角の中に収まっている場合
+				currentColor = colorPalette[i];														//現在の色に選択したパレットの色を格納
+			}
+		}
+	}
+
+	if (gx >= 0 && gx < GRID_SIZE && gy >= 0 && gy < GRID_SIZE) {	//グリッド座標がキャンバス中に収まっている場合
+		if (g_CurrentCategory == EditCategory::PLAYER) {					//カテゴリが自機の場合
+			if (mInput & MOUSE_INPUT_LEFT) {
+				g_CustomData.playerCanvas[g_CurrentTypeIdx][gy][gx] = currentColor;			//左クリックしたら自機用の配列の該当マスに現在の色を塗る
+			}
+			else if (mInput & MOUSE_INPUT_RIGHT) {
+				g_CustomData.playerCanvas[g_CurrentTypeIdx][gy][gx] = GetColor(0, 0, 0);	//右クリックで、該当マスに黒色を塗る
+			}
+		}
+		else {
+			if (mInput & MOUSE_INPUT_LEFT) {
+				g_CustomData.itemCanvas[g_CurrentTypeIdx][gy][gx] = currentColor;
+			}
+			else if (mInput & MOUSE_INPUT_RIGHT) {
+				g_CustomData.itemCanvas[g_CurrentTypeIdx][gy][gx] = GetColor(0, 0, 0);
+			}
+		}
+	}
+
+	if (Input::IsTrigger(KEY_INPUT_LEFT) || Input::IsTrigger(KEY_INPUT_RIGHT)) {		//左または右キー押下の場合
+		g_CurrentCategory = (g_CurrentCategory == EditCategory::PLAYER) ? EditCategory::ITEM : EditCategory::PLAYER;	//現在のカテゴリが自機ならアイテム、違うなら自機へ切り替える
+		g_CurrentTypeIdx = 0;																							//カテゴリを切り替えたら編集するID(種類番号)を初期化
+	}
+
+	int maxIdx = (g_CurrentCategory == EditCategory::PLAYER) ? PLAYER_TYPE_MAX : ITEM_TYPE_MAX;		//現在のカテゴリに合わせてIDの最大数を定数から取得し切り替える
+
+	if (Input::IsTrigger(KEY_INPUT_UP)) {
+		g_CurrentTypeIdx = (g_CurrentTypeIdx + 1) % maxIdx;				//上キー押下の場合、現在のIDをインクリメントして最大数で割った余りでループ
+	}
+	if (Input::IsTrigger(KEY_INPUT_DOWN)) {
+		g_CurrentTypeIdx = (g_CurrentTypeIdx - 1 + maxIdx) % maxIdx;	//下キー押下の場合、デクリメントして同様にする
+	}
+
+	if (Input::IsTrigger(KEY_INPUT_R)) {	//Rキー押下の場合
+		for (int y = 0; y < GRID_SIZE; y++) {
+			for (int x = 0; x < GRID_SIZE; x++) {		//格子の数だけx,yともに繰り返す
+				if (g_CurrentCategory == EditCategory::PLAYER) {
+					g_CustomData.playerCanvas[g_CurrentTypeIdx][y][x] = GetColor(0, 0, 0);		//キャンバスの該当マスを黒色(初期色)で塗りつぶす
+				}
+				else {
+					g_CustomData.itemCanvas[g_CurrentTypeIdx][y][x] = GetColor(0, 0, 0);
+				}
+			}
+		}
+	}
+}
+
+void DrawEditor() {
+	for (int y = 0; y < GRID_SIZE; y++) {
+		for (int x = 0; x < GRID_SIZE; x++) {
+			unsigned int color = (g_CurrentCategory == EditCategory::PLAYER) ? 
+				g_CustomData.playerCanvas[g_CurrentTypeIdx][y][x] : g_CustomData.itemCanvas[g_CurrentTypeIdx][y][x];		//描画する色を、現在のカテゴリとIDに応じて取得
+			DrawBox(x * DOT_SIZE, y * DOT_SIZE, (x + 1) * DOT_SIZE, (y + 1) * DOT_SIZE, color, TRUE);						//グリッドを塗りつぶして四角形描画
+			DrawBox(x * DOT_SIZE, y * DOT_SIZE, (x + 1) * DOT_SIZE, (y + 1) * DOT_SIZE, GetColor(100, 100, 100), FALSE);	//falseでグリッド線描画
+		}
+	}
+
+	DrawString(PALETTE_X, UI_PALETTE_TITLE_Y, "パレット", GetColor(255, 255, 255));
+
+	for (int i = 0; i < PALETTE_COLOR_MAX; i++) {
+		int px = PALETTE_X;
+		int py = UI_PALETTE_DRAW_Y + i * (PALETTE_SIZE + UI_PALETTE_MARGIN);
+		DrawBox(px, py, px + PALETTE_SIZE, py + PALETTE_SIZE, colorPalette[i], TRUE);
+		if (colorPalette[i] == currentColor) {
+			DrawBox(px - 3, py - 3, px + PALETTE_SIZE + 3, py + PALETTE_SIZE + 3, GetColor(255, 215, 0), FALSE);
+		}
+	}
+
+	const char* catName = (g_CurrentCategory == EditCategory::PLAYER) ? "自機" : "アイテム";
+	const char* typeNames_Player[] = { "霊夢", "魔理沙", "咲夜" };
+	const char* typeNames_Item[] = { "小スコア", "スコア", "パワー", "1UP", "ボム" };
+	const char* currentName = (g_CurrentCategory == EditCategory::PLAYER) ? typeNames_Player[g_CurrentTypeIdx] : typeNames_Item[g_CurrentTypeIdx];
+
+	DrawFormatString(UI_STATUS_TEXT_X, UI_STATUS_TEXT_Y, GetColor(255, 255, 255), "カテゴリ: %s | ID: %d (%s)", catName, g_CurrentTypeIdx, currentName);
+	DrawString(UI_HELP_TEXT_X, UI_HELP_TEXT_Y, "←→: カテゴリ切替 | ↑↓: ID切替 | ESC: 保存してタイトルに戻る", GetColor(0, 255, 0));
+}

@@ -144,6 +144,7 @@
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="FpsManager.cpp" />
     <ClCompile Include="HUD.cpp" />
+    <ClCompile Include="ImageEditor.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="FpsManager.h" />
     <ClInclude Include="HUD.h" />
+    <ClInclude Include="ImageEditor.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="MenuManager.h" />
