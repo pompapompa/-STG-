@@ -167,6 +167,11 @@ void Boss::Draw() {
 		int remainingFrames = GetRemainingPhaseTimer();			//そのフェーズの制限時間(整数)を格納
 		int targetFPS = FPSManager::GetTargetFPS();				//1秒間のフレーム数(整数)を取得
 		int seconds = remainingFrames / targetFPS;				//[s]=[F]/[F/s]
+		
+		if (seconds > 99) {
+			seconds = 99;
+		}
+
 		unsigned int timeColor = ObjectColor::Get(ObjectColor::Type::WHITE);		//通常時の描画色
 		if (seconds <= PhaseTimerColorChangeSeconds) timeColor = ObjectColor::Get(ObjectColor::Type::RED);		//5秒以下の描画色
 
