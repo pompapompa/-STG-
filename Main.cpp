@@ -205,7 +205,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 			}
 
-			if (isDead) {											//ボスを倒したフラグが返されたらタイトルに戻る
+			if (stageManager.GetBoss().IsStageClear()) {											//ボスを倒したフラグが返されたらタイトルに戻る
 				while (Input::IsTrigger(KEY_INPUT_F)) ProcessMessage();		//z,enterキーを長押し状態でCLEARに遷移してきた時に離したらそのままタイトルに行くのを防ぐ為の文
 				scene = SCENE_CLEAR;
 			}

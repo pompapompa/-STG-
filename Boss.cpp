@@ -188,7 +188,7 @@ bool Boss::CheckCollision(Player& player, BulletManager& bm) {
 		}
 	}
 
-	if (state == BossState::ACTIVE && hp <= 0.0f && currentIdx >= PHASE_MAX - 1) {				//ボスhpが0未満になって且つ全段階終了時且つhpが0以下になったときだけボスフラグを消す
+	if (state == BossState::ACTIVE && hp <= 0.0f) {				//hpが0以下になった時にtrueを返す
 		return true;																			//倒したフラグを立てる
 	}
 	return false;

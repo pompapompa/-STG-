@@ -137,6 +137,7 @@ public:
 	float GetHpRate() { return(phaseMaxHp > 0.0f) ? (hp / phaseMaxHp) : 0.0f; }		//そのフェーズの残りhpを円弧のUIで表現する時用の比率
 
 	int GetRemainingPhaseTimer() const;												//外部(UI描画等)から現在のフェーズの制限時間の残りフレーム数を取得するためのゲッタ
+	bool IsStageClear() const { return (!flag && currentIdx >= PHASE_MAX); }		//ボスフラグが折れたかフェーズが最大(ラストスペルの次のフェーズ遷移)でクリア判定を返すゲッタ
 
 	bool CheckCollision(class Player& player, class BulletManager& bm);				//冒頭でインクルードしなかったのは循環参照を防ぐため。それより、ここで前方宣言をする。
 
