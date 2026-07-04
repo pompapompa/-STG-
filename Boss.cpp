@@ -64,8 +64,9 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 			}
 		}
 
+		int maxFrames = (int)(p.limitTimeSeconds * FPSManager::GetTargetFPS());		//maxFrames[F]=制限時間[s]*FPS[F/s]
 
-		if (hp <= 0 || phaseTimer >= p.limitTime) {							//フェーズのhpがなくなるか、limitTimer(制限時間)を越えた場合
+		if (hp <= 0 || phaseTimer >= maxFrames) {							//フェーズのhpがなくなるか、limitTimer(制限時間)を越えた場合
 
 			for (int typeIdx = 0; typeIdx < 5; typeIdx++) {					//アイテム全種類のループ
 				int count = phases[currentIdx].dropCounts[typeIdx];				//静的配列から値を取得して格納			
@@ -209,6 +210,8 @@ void Boss::JumpToPhase(int phaseIdx) {
 
 int Boss::GetRemainingPhaseTimer() const {			//外部から残り時間を取得するゲッタ関数
 	if (state == BossState::WAITING) return 0;					//待機状態では0を返す
-	int remain = phases[currentIdx].limitTime - phaseTimer;		//そのフェーズの制限時間 - そのフェーズが開始してからの時間
+	
+	int maxFrames = (int)(phases[currentIdx].limitTimeSeconds * FPSManager::GetTargetFPS());	//制限時間[F]=制限時間[s]*FPS[F/s]
+	int remain = maxFrames - phaseTimer;		//そのフェーズの制限時間 - そのフェーズが開始してからの時間
 	return (remain < 0) ? 0 : remain;							//制限時間よりも経過時間が大きくなったらremain<0より0を返し、そうでなければその差分の時間を返す
 }

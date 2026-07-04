@@ -69,23 +69,23 @@ private:
 
 	*/
 
-	/*  {phaseNum, hpLimit, limitTime,弾幕数,{{type,	sr,		ss,		si,		way,	広角,		回転速度,	基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム}}　*/
+	/*  {phaseNum, hpLimit, limitTime[s],弾幕数,{{type,	sr,		ss,		si,		way,	広角,		回転速度,	基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム}}　*/
 	
 			/*	通1　*/
-			{ 0,	600.0f,		1200,	1,		{
+			{ 0,	600.0f,		10.0f,	1,		{
 									{PT::RotateAll,		4.0f,	0.6f,	5,		12,		360.0f,		0.5f,		90,			0}
 			},false,},
 
 
 			/*　通1の2段階目(発狂)　*/
-			{ 1,	900.0f,		3000,	2,		{
+			{ 1,	900.0f,		50.0f,	2,		{
 									{PT::RotateAll,		4.0f,	3.5f,	10,		18,		360.0f,		0.2f,		90,			3},
 									{PT::RotateAll,		4.0f,	2.0f,	48,		64,		360.0f,		0.0f,		90,			7}
 			},true, {0,5, 3,0,0}},
 	  
 			
 			/*　通2　*/
-			{ 2,	600.0f,		1800,	4,		{
+			{ 2,	600.0f,		30.0f,	4,		{
 									{PT::RotateAll,		3.0f,	1.6f,	5,		17,		360.0f,		5.5f,		90,			0},
 									{PT::RotateAll,		3.0f,	1.6f,	5,		17,		360.0f,		-5.5f,		90,			0},
 									{PT::RotateAll,		4.0f,	3.0f,	20,		15,		360.0f,		10.0f,		90,			2},
@@ -94,19 +94,19 @@ private:
 			},true, {0,10,8,1,0}},
 	
 			/*　天上天下の照國(3枚目)　*/
-			{ 3,	900.0f,		3600,	3,		{
+			{ 3,	900.0f,		60.0f,	3,		{
 									{PT::RotateAll,		4.0f,	5.0f,	8,		16,		360.0f,		2.8f,		90,			10},
 									{PT::RotateAll,		4.0f,	5.0f,	8,		16,		360.0f,		-2.8f,		90,			10},
 									{PT::RotateAll,		4.0f,	2.0f,	45,		64,		360.0f,		0.0f,		90,			4}
 			},true, {0,10,5,0,1}},
 			
 			/*　フィットフルナイトメア　*/
-			{ 4,	600.0f,		3600,	1,		{
+			{ 4,	600.0f,		60.0f,	1,		{
 									{PT::RotateAll,		4.0f,	8.0f,	5,		45,		360.0f,		0.191,		90,			9}
 			},true, {0,10,0,0,0}},
 			
 			/*　ラストスペル　*/
-			{ 5,	800.0f,		4000,	4,		{
+			{ 5,	800.0f,		70.0f,	4,		{
 									{PT::NWay,			4.0f,	15.0f,	3,		12,		180.0f,		0.5f,		90,			9},
 									{PT::RotateAll,		6.0f,	2.5f,	7,		18,		360.0f,		5.0f,		90,			1},
 									{PT::RotateAll,		6.0f,	2.5f,	7,		18,		360.0f,		-5.0f,		90,			0},
@@ -137,7 +137,7 @@ public:
 	float GetHpRate() { return(phaseMaxHp > 0.0f) ? (hp / phaseMaxHp) : 0.0f; }		//そのフェーズの残りhpを円弧のUIで表現する時用の比率
 
 	int GetRemainingPhaseTimer() const;												//外部(UI描画等)から現在のフェーズの制限時間の残りフレーム数を取得するためのゲッタ
-	bool IsStageClear() const { return (!flag && currentIdx >= PHASE_MAX); }		//ボスフラグが折れたかフェーズが最大(ラストスペルの次のフェーズ遷移)でクリア判定を返すゲッタ
+	bool IsStageClear() const { return (!flag && currentIdx >= PHASE_MAX); }		//ボスフラグが折れていてフェーズが最大(ラストスペルの次のフェーズ遷移)でクリア判定を返すゲッタ
 
 	bool CheckCollision(class Player& player, class BulletManager& bm);				//冒頭でインクルードしなかったのは循環参照を防ぐため。それより、ここで前方宣言をする。
 

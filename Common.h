@@ -68,7 +68,7 @@ struct HomingShotData {
 struct BossPhase {
 	int		phaseNum;					//0:通常1,1:スペカ1枚目,2:通常2,3:スペカ2枚目…のようにする
 	float	hpLimit;					//そのフェーズのHP
-	int		limitTime;					//そのフェーズの制限時間
+	float	limitTimeSeconds;			//そのフェーズの制限時間[s]
 	int shotCount;
 	BulletPattern::ShotConfig shots[5];	//弾パラメータ
 	bool clearOnEnd;					//Phase終了時に弾消しを行うか
