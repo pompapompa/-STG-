@@ -3,6 +3,7 @@
 #include "FpsManager.h"
 #include "HUD.h"
 #include "Common.h"
+#include "ImageEditor.h"
 #include "StageManager.h"
 #include "BulletManager.h"
 #include "Bullet.h"
@@ -45,6 +46,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	StageManager stageManager;
 	HUD hud;
 	hud.Init();
+	InitCustomGraphics();
 	
 	int lastSelectedStage = 1;							
 	int lastSelectedPhase = 0;							//これらはリトライで適切なステージとフェーズに飛べる用に保存
@@ -61,6 +63,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			bm.ReloadGraphic();
 			stageManager.ReloadGraphic();
 			hud.ReloadFont();
+			RefreshAllCustomGraphs();
 			SetDrawScreen(DX_SCREEN_BACK);
 		}
 

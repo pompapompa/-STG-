@@ -1,7 +1,8 @@
 #include "Player.h"			//自分のヘッダを最初にインクルード
 #include "DxLib.h"
 #include "Input.h"
-#include "BulletManager.h"	//使う部品
+#include "BulletManager.h"	
+#include "ImageEditor.h"	//使う部品
 #include "Common.h"			//共通設定
 #include <math.h>			//システムという順番が良いらしい
 
@@ -112,11 +113,12 @@ void Player::Reset(bool isPractice) {
 
 
 void Player::Draw() {
-
 	if (IsInvincible() && (invincibleTimer % para.blinkCycle < para.blinkThreshold)) {
 		return;												//無敵判定がtrue且つ無敵時間全体を周期で割ってそれがblinkThresholdよりも小さい時に描画処理をreturnでスキップすることで点滅させる
 	}
-	DrawCircle(x, y, para.r, GetColor(0, 255, 0), true);
+
+	int drawHandle = GetCustomGraphHandle(EditCategory::PLAYER, 0);
+	DrawRotaGraph((int)x, (int)y, para.drawScale, 0.0f, drawHandle, TRUE);
 }
 
 void Player::DrawHitBox(){
