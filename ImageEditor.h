@@ -18,3 +18,6 @@ void LoadAllCustomGraphics();				//•Û‘¶‚³‚ê‚Ä‚¢‚éƒoƒCƒiƒŠƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚İAƒƒ
 
 unsigned int GetCustomPixel(EditCategory category, int typeIdxm, int y, int x);
 
+void RefreshAllCustomGraphs();
+int GetCustomGraphHandle(EditCategory categry, int typeIdx);
+

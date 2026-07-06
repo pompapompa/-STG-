@@ -1,6 +1,7 @@
 #include "Item.h"
 #include "DxLib.h"
 #include "Collision.h"
+#include "ImageEditor.h"
 #include <math.h>
 #include "Common.h"
 
@@ -60,8 +61,8 @@ void Item::Update(float playerX, float playerY, float collectRadius) {
 	}
 	else {							//âÒé˚ÉÇÅ[ÉhÇ≈ÇÕÇ»Ç¢éû
 		if (vy < 0.0f) {
-				vy += gravity;			//â¡ë¨
-				y += vy;				//à íuÇâ¡éZ
+			vy += gravity;			//â¡ë¨
+			y += vy;				//à íuÇâ¡éZ
 		}
 		else {
 			if (type == ItemType::MINI_SCORE) {
@@ -74,7 +75,7 @@ void Item::Update(float playerX, float playerY, float collectRadius) {
 			else {
 				vy += gravity;
 				if (vy > fallSpeed) {
-						vy = fallSpeed;
+					vy = fallSpeed;
 				}
 				y += vy;
 
@@ -93,23 +94,29 @@ void Item::Update(float playerX, float playerY, float collectRadius) {
 void Item::Draw() {
 	if (!isExist) return;			//ë∂ç›ÇµÇ»Ç¢Ç»ÇÁï`âÊÇÕÉXÉLÉbÉv
 
-	unsigned int color;
-	int size = 5;
-
-	switch (type) {
-	case ItemType::MINI_SCORE:
-		color = ObjectColor::Get(ObjectColor::Type::CYAN);    size = 3; break;
-	case ItemType::SCORE:
-		color = ObjectColor::Get(ObjectColor::Type::BLUE);    size = 10; break;
-	case ItemType::POWER:
-		color = ObjectColor::Get(ObjectColor::Type::RED);     size = 10; break;
-	case ItemType::ZANKI:
-		color = ObjectColor::Get(ObjectColor::Type::MAGENTA); size = 12; break;
-	case ItemType::BOMB:
-		color = ObjectColor::Get(ObjectColor::Type::GREEN);   size = 12; break;
-	default:
-		color = ObjectColor::Get(ObjectColor::Type::WHITE);   break;
+	int gh = GetCustomGraphHandle(EditCategory::ITEM, static_cast<int>(type));
+	if (gh != -1) {
+		DrawRotaGraph((int)x, (int)y, 1.0, 0.0, gh, TRUE);
 	}
-	DrawCircle((int)x, (int)y, size, color, TRUE);
-	DrawCircle((int)x, (int)y, size, ObjectColor::Get(ObjectColor::Type::WHITE), FALSE);	//ìhÇËÇ¬Ç‘ÇµÇÃâ~Ç∆îíògï`âÊ
+	else {
+		unsigned int color;
+		int size = 5;
+
+		switch (type) {
+		case ItemType::MINI_SCORE:
+			color = ObjectColor::Get(ObjectColor::Type::CYAN);    size = 3; break;
+		case ItemType::SCORE:
+			color = ObjectColor::Get(ObjectColor::Type::BLUE);    size = 10; break;
+		case ItemType::POWER:
+			color = ObjectColor::Get(ObjectColor::Type::RED);     size = 10; break;
+		case ItemType::ZANKI:
+			color = ObjectColor::Get(ObjectColor::Type::MAGENTA); size = 12; break;
+		case ItemType::BOMB:
+			color = ObjectColor::Get(ObjectColor::Type::GREEN);   size = 12; break;
+		default:
+			color = ObjectColor::Get(ObjectColor::Type::WHITE);   break;
+		}
+		DrawCircle((int)x, (int)y, size, color, TRUE);
+		DrawCircle((int)x, (int)y, size, ObjectColor::Get(ObjectColor::Type::WHITE), FALSE);	//ìhÇËÇ¬Ç‘ÇµÇÃâ~Ç∆îíògï`âÊ
+	}
 }

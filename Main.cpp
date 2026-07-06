@@ -64,6 +64,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			bm.ReloadGraphic();
 			stageManager.ReloadGraphic();
 			hud.ReloadFont();
+			RefreshAllCustomGraphs();
 			SetDrawScreen(DX_SCREEN_BACK);
 		}
 
@@ -105,7 +106,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (select == 4) scene = SCENE_QUIT_CONFIRM;
 			}
 			if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
-				TitleMenu.SetSelect(3);
+				TitleMenu.SetSelect(4);
 			}
 
 			break;
@@ -341,6 +342,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawEditor();
 			if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
 				SaveAllCustomGraphics();
+				RefreshAllCustomGraphs();				//エディタから抜ける時に最新のアセットを焼き直す
 				scene = SCENE_TITLE;
 			}
 			break;
