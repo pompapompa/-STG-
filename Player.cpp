@@ -119,7 +119,7 @@ void Player::Draw() {
 	}
 	int gh = GetCustomGraphHandle(EditCategory::PLAYER, 0); // ※現状は0番固定、拡張に合わせてインデックスを可変に変更予定
 	if (gh != -1) {
-		DrawRotaGraph((int)x, (int)y, 1.0, 0.0, gh, TRUE);
+		DrawRotaGraph((int)x, (int)y, (double)para.drawScale, 0.0, gh, TRUE);
 	}
 	else {
 		DrawCircle(x, y, para.r, GetColor(0, 255, 0), true);

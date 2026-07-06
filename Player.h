@@ -22,6 +22,7 @@ struct PlayerParameter {
 	int   blinkCycle;						//点滅の周期
 	int   blinkThreshold;					//消える時間(この数値以下のときは消灯)
 	int   MAX_DEATH_TIME;					//喰らいボム受付時間(フレーム)
+	float drawScale;						//自機グラフィックの描画拡大率
 };
 
 
@@ -49,7 +50,8 @@ private:
 		120,								//invincibleTime：被弾時の無敵時間
 		10,									//blinkCycle；点滅の周期
 		7,									//blinkThreshold；消える時間
-		8									//MAX_DEATH_TIME：//喰らいボム受付時間
+		8,									//MAX_DEATH_TIME：//喰らいボム受付時間
+		2.0f								//drawScale：自機グラフィックのの描画拡大率
 	};
 
 	static constexpr StraightShotData MainShot{
