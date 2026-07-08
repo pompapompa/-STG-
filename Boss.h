@@ -143,6 +143,7 @@ public:
 
 	void Reset() {
 		flag = false;
+		currentIdx = 0;
 	}
 
 	void JumpToPhase(int phaseIdx);
