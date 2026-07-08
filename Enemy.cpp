@@ -9,7 +9,7 @@
 #include <math.h>
 
 
-void Enemy::Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy, int in_hp, const BulletPattern::ShotConfig& conf, bool in_clear) {
+void Enemy::Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy, int in_hp, const BulletPattern::ShotConfig& conf, bool in_clear, const int* in_dropCounts) {
 	x = in_x;
 	y = in_y;
 	r = in_r;
@@ -17,8 +17,16 @@ void Enemy::Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy
 	vy = in_vy;
 	hp = in_hp;
 	m_shotConf = conf;
-	flag = true;				//フラグを立てる
+	flag = true;				
 	clearOnDeath = in_clear;
+	for (int i = 0; i < 5; i++) {
+		if (in_dropCounts != nullptr) {
+			m_dropCounts[i] = in_dropCounts[i];
+		}
+		else {
+			m_dropCounts[i] = 0;
+		}
+	}
 }
 
 void Enemy::Update(const Player& player, BulletManager* bm) {	//playerからはパラメータを参照するだけなので書き換えないconstと参照の&で、bmは書き換えたりするので*を使う
@@ -41,7 +49,7 @@ void Enemy::Draw() {
 
 bool Enemy::CheckCollision(BulletManager* bm) {
 	if (!flag) return false;											//フラグの立ってない敵は当たらない
-
+	
 	for (int i = 0; i < bm->GetPlayerBulletMax(); i++) {
 		Bullet& b = bm->GetPlayerBullet(i);								//自機弾各々が持つ検体番号を格納
 		if (!b.GetFlag()) continue;										//自機フラグが立っていない時飛ばす
@@ -52,6 +60,13 @@ bool Enemy::CheckCollision(BulletManager* bm) {
 
 			if (hp <= 0) {
 				flag = false;							//妖精消す
+				for (int typeIdx = 0; typeIdx < 5; typeIdx++) {
+					int count = m_dropCounts[typeIdx];
+					if (count > 0) {
+						ItemType iType = static_cast<ItemType>(typeIdx);
+						bm->LaunchItem(x, y, iType, count, ItemScatterRadius);
+					}
+				}
 				return true;							//被弾判定を返す
 			}
 		}

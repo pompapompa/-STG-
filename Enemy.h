@@ -17,6 +17,7 @@ protected:								//Bossから変数にアクセスできるようにする
 	BulletPattern::ShotConfig m_shotConf;
 	bool flag = false;
 	bool clearOnDeath = false;
+	int m_dropCounts[5] = {0};			//-1:ドロップなし、0:小スコア、1:スコア、2:パワー、3:残機、4:ボム
 	
 
 public:
@@ -30,7 +31,7 @@ public:
 	 * @param in_hp 敵HP
 	 * @param conf 弾パラメータ
 	 */
-	virtual void Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy, int in_hp, const BulletPattern::ShotConfig& conf, bool in_clear);
+	virtual void Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy, int in_hp, const BulletPattern::ShotConfig& conf, bool in_clear, const int* in_dropCounts = nullptr);	//nullptrを初期値にすることでボス側で引数省略可
 	virtual void Update(const Player& player, BulletManager* bm);																		//後でボスが上書きできるようにする
 	virtual void Draw();
 	void SetFlag(bool f) {flag = f;}
@@ -43,4 +44,5 @@ public:
 	float GetY() { return y; }
 	float GetR() { return r; }
 	static constexpr int EnemyMax = 100;
+	static constexpr float ItemScatterRadius = 15.0f;		//撃破時のアイテム散布半径
 };
