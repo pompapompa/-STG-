@@ -2,6 +2,7 @@
 #include "DxLib.h"
 #include "Collision.h"
 #include "ImageEditor.h"
+#include "Player.h"
 #include <math.h>
 #include "Common.h"
 
@@ -37,8 +38,11 @@ void Item::Spawn(float startX, float startY, ItemType itemType) {
 	}
 }
 
-void Item::Update(float playerX, float playerY, float collectRadius) {
+void Item::Update(Player& player, float collectRadius) {
 	if (!isExist) return;			//存在フラグが立っていないならスキップ
+
+	float playerX = player.GetX();
+	float playerY = player.GetY();
 
 	vy += gravity;					//加速
 
@@ -49,6 +53,14 @@ void Item::Update(float playerX, float playerY, float collectRadius) {
 			x = playerX;
 			y = playerY;
 			isExist = false;
+
+			switch (type) {
+			case ItemType::MINI_SCORE:	player.AddScore(10);	break;		//小スコア： +10点
+			case ItemType::SCORE:		player.AddScore(1000);	break;		//　スコア： +1000点
+			case ItemType::POWER:		player.AddPower(1);		break;		//　パワー： +1
+			case ItemType::ZANKI:	break;
+			case ItemType::BOMB:	break;
+			}
 		}
 		else {						//距離が離れてるならすり抜けない速度(BASE_SPEED_CAP)で自機を追尾
 			x += ((playerX - x) / toPlayerDist) * BASE_SPEED_CAP;
@@ -57,6 +69,14 @@ void Item::Update(float playerX, float playerY, float collectRadius) {
 
 		if (Collision::CheckCircle(playerX, playerY, PLAYER_MIN_HIT_R, x, y, r)) {
 			isExist = false;
+
+			switch (type) {
+			case ItemType::MINI_SCORE:	player.AddScore(10);	break;		//小スコア： +10点
+			case ItemType::SCORE:		player.AddScore(1000);	break;		//　スコア： +1000点
+			case ItemType::POWER:		player.AddPower(1);		break;		//　パワー： +1
+			case ItemType::ZANKI:	break;
+			case ItemType::BOMB:	break;
+			}
 		}
 	}
 	else {							//回収モードではない時

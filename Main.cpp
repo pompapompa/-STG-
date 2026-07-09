@@ -161,8 +161,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 
 			bm.UpdateItems(
-				stageManager.GetPlayer().GetX(),
-				stageManager.GetPlayer().GetY(),
+				stageManager.GetPlayer(),
 				50.0f,
 				isAutoCollect
 			);

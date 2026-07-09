@@ -3,6 +3,7 @@
 #include "Item.h"
 
 class Enemy;																	//前方宣言
+class Player;
 
 class BulletManager {
 private:
@@ -92,6 +93,6 @@ public:
 	}
 
 	void LaunchItem(float x, float y, ItemType type, int count, float scatterRadius);			
-	void UpdateItems(float playerX, float playerY, float collectRadius, bool isAutoCollect);		//アイテムの更新を行う関数		
+	void UpdateItems(Player& player, float collectRadius, bool isAutoCollect);		//アイテムの更新を行う関数		
 	void DrawItems();																				//アイテムの描画を司令する関数
 };

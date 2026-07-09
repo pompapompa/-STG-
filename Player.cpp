@@ -127,6 +127,19 @@ void Player::Reset(bool isPractice) {
 
 	mLife = (isPractice ? stdPracLife : stdLife);			//プラクティスモードではstdPracLife,通常モードならstdLifeを初期残機として代入
 	mBomb = stdBomb;										//初期残ボム数
+
+	if (isPractice) {			//プラクティスモード
+		mScore = 0;
+		mDisplayScore = 0;
+		mPower = POWER_MAX;				//プラクティスでは最初からパワー最大
+		mDisplayPower;
+	}
+	else {						//通常スタート
+		mScore = 0;
+		mDisplayScore = 0;
+		mPower = 0;
+		mDisplayPower = 0;
+	}
 }
 
 

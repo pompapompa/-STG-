@@ -159,13 +159,13 @@ void BulletManager::LaunchItem(float x, float y, ItemType type, int count, float
 	}
 }
 
-void BulletManager::UpdateItems(float playerX, float playerY, float collectRadius, bool isAutoCollect) {
+void BulletManager::UpdateItems(Player& player, float collectRadius, bool isAutoCollect) {
 	for (int i = 0; i < BulletManager::MAX_ITEMS; i++) {
 		if (items[i].isExist) {
 			if (isAutoCollect && !items[i].isTargeted) {	//上部回収フラグオンで、まだ回収モードに成ってないアイテムがある場合
 				items[i].isTargeted = true;						//アイテムの回収モードON
 			}
-			items[i].Update(playerX, playerY, collectRadius);
+			items[i].Update(player, collectRadius);
 		}
 	}
 }

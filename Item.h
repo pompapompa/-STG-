@@ -1,5 +1,7 @@
 #pragma once
 
+class Player;
+
 enum class ItemType {
 	MINI_SCORE,
 	SCORE,
@@ -39,7 +41,6 @@ public:
 
 	void Spawn(float startX, float startY, ItemType itemType);
 
-	void Update(float playerX, float playerY, float collectRadius);
-
+	void Update(Player& player, float collectRadius);
 	void Draw();
 };

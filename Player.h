@@ -38,10 +38,10 @@ private:
 	static constexpr int stdBomb = 3;							//StandardBomb(基準ボム数)
 	static constexpr int stdPracLife = 8;						//StandardPracticeLife(プラクティスモードでの基準残機数)
 	
-	static constexpr int SCORE_ROLLUP_LARGE_THRESHOLD = 1000;	//残りの加算値が1000点以上ある場合は表示遅延を防ぐため、加算を加速させる閾値
-	static constexpr int SCORE_ROLLUP_LARGE_STEP = 100;			//加速時の単位フレームあたりのスコア加算量
-	static constexpr int SCORE_ROLLUP_SMALLSTEP = 10;			//通常時の単位フレームあたりのスコア加算量
-	static constexpr int POWER_MAX = 128;						//パワーの最大値						
+	static constexpr int SCORE_ROLLUP_LARGE_THRESHOLD =600;	//残りの加算値が1000点以上ある場合は表示遅延を防ぐため、加算を加速させる閾値
+	static constexpr int SCORE_ROLLUP_LARGE_STEP = 400;		//加速時の単位フレームあたりのスコア加算量
+	static constexpr int SCORE_ROLLUP_SMALLSTEP = 10;		//通常時の単位フレームあたりのスコア加算量
+	static constexpr int POWER_MAX = 128;					//パワーの最大値						
 
 	static constexpr PlayerParameter para{	//ここで同時にインスタンス宣言も行っている
 		4.0f,								//vn:通常速度
