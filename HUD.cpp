@@ -25,8 +25,8 @@ void HUD::Update() {
 void HUD::Draw(const Player* player) {
 	using namespace PlayArea;
 	DrawStringToHandle(Right + 30, 50, "SCORE", GetColor(255, 255, 255), mScoreFont);
-	DrawStringToHandle(Right + 30, 80, "00000000", GetColor(255, 255, 255), mScoreFont);			//HUD:Score
-
+	DrawFormatStringToHandle(Right + 30, 80, GetColor(255, 255, 255), mScoreFont, "%08d", player->GetDisplayScore());			//HUD:Score(8桁ゼロ埋め)
+	
 	DrawStringToHandle(Right + 15, 150, "PLAYER", GetColor(255, 255, 255), mMainFont);
 	int lifeCount = player->GetLife();
 	for (int i = 0; i < lifeCount; i++) {						//プレイヤクラスから取得した残機数まで繰り返す

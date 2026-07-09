@@ -38,6 +38,10 @@ private:
 	static constexpr int stdBomb = 3;							//StandardBomb(基準ボム数)
 	static constexpr int stdPracLife = 8;						//StandardPracticeLife(プラクティスモードでの基準残機数)
 	
+	static constexpr int SCORE_ROLLUP_LARGE_THRESHOLD = 1000;	//残りの加算値が1000点以上ある場合は表示遅延を防ぐため、加算を加速させる閾値
+	static constexpr int SCORE_ROLLUP_LARGE_STEP = 100;			//加速時の単位フレームあたりのスコア加算量
+	static constexpr int SCORE_ROLLUP_SMALLSTEP = 10;			//通常時の単位フレームあたりのスコア加算量
+	static constexpr int POWER_MAX = 128;						//パワーの最大値						
 
 	static constexpr PlayerParameter para{	//ここで同時にインスタンス宣言も行っている
 		4.0f,								//vn:通常速度
@@ -91,6 +95,11 @@ private:
 	int mLife = 0;							//残機数管理のメンバ変数
 	int mBomb = 0;							//残ボム数管理のメンバ変数
 
+	int mScore = 0;
+	int mPower = 0;
+
+	int mDisplayScore = 0;					//HUD表示用のスコア
+	int mDisplayPower = 0;				//HUD表示用のパワー
 
 	void ActivateWeapon(BurstController* slots, int count);		//指定したスロット配列の空きを探して弾をセットする。ヘルパー関数
 
@@ -115,6 +124,12 @@ public:
 	void StartDeathTimer() { deathTimer = para.MAX_DEATH_TIME; }		//喰らいボム受付時間のタイマを始動
 	void StopDeathTimer() { deathTimer = 0; }							//喰らいボム受付時間のタイマを停止
 	void DecrementDeathTimer() { if (deathTimer > 0)deathTimer--; }		//喰らいボム受付時間のタイマをデクリメント(ただしアンダーフロー防止の為1以上の時に限定)
+	void AddScore(int amount) { mScore += amount; }													
+	void AddPower(int amount) {											//外部から安全にScoreやPowerの数値を加算する為の関数
+		mPower += amount;									//実際のパワーをamountだけインクリメント
+		if (mPower > POWER_MAX) mPower = POWER_MAX;			//最大を越えたら最大に戻す 
+		mDisplayPower = mPower;								//パワーはロールアップせずに即座に反映
+	}																	
 
 	/*　　↓はprivateに書いた物を安全に読み込み専用でインスタンスから値のみ取得する　　*/
 	float GetX() const { return x; }								//ホーミング用にx座標を取得する
@@ -126,4 +141,7 @@ public:
 
 	int GetLife() const { return mLife; }							//現在の残機数の取得
 	int GetBomb() const { return mBomb; }							//現在の残ボム数の取得
+
+	int GetDisplayScore() const { return mDisplayScore; }			//HUD用のスコアゲッタ
+	int GetDisplayPower() const { return mDisplayPower; }			//HUD用のパワーゲッタ
 };

@@ -93,6 +93,24 @@ void Player::Update(BulletManager* bm) {
 			}
 		}
 	}
+	if (mDisplayScore < mScore) {
+		int diff = mScore - mDisplayScore;					//diff：実際のスコアと表示スコアの差
+		if (diff > SCORE_ROLLUP_LARGE_THRESHOLD) {			
+			mDisplayScore += SCORE_ROLLUP_LARGE_STEP;		//diff > THRESHOLD(差が大きい)の場合、一気に加算
+		}
+		else {
+			mDisplayScore += SCORE_ROLLUP_SMALLSTEP;		//基本はSMALLSTEPで加算
+		}
+
+		if (mDisplayScore > mScore) {
+			mDisplayScore = mScore;							//加算しすぎて越えたら実際のスコアに強制的に戻す
+		}
+	}
+
+	if (mDisplayPower < mPower) {								
+		mDisplayPower++;										//実際のパワーが表示よりも大きいときはインクリメント
+		if (mDisplayPower > mPower) mDisplayPower = mPower;		//越えたら戻す
+	}
 }
 
 
