@@ -55,11 +55,12 @@ void Item::Update(Player& player, float collectRadius) {
 			isExist = false;
 
 			switch (type) {
-			case ItemType::MINI_SCORE:	player.AddScore(10);	break;		//小スコア： +10点
-			case ItemType::SCORE:		player.AddScore(1000);	break;		//　スコア： +1000点
-			case ItemType::POWER:		player.AddPower(1); player.AddScore(10);		break;		//　パワー： +1
-			case ItemType::ZANKI:	player.Extend();			break;
-			case ItemType::BOMB:	player.AddBomb();			break;
+			case ItemType::MINI_SCORE:	player.AddScore(SCORE_VALUE_MINI);	break;		//小スコア： +10点
+			case ItemType::SCORE:		player.AddScore(SCORE_VALUE_NORMAL);	break;		//　スコア： +1000点
+			case ItemType::POWER:		player.AddPower(POWER_GAIN_NORMAL);		 player.AddScore(SCORE_VALUE_POWER);		break;		
+			case ItemType::ZANKI:		player.Extend();		break;
+			case ItemType::BOMB:		player.AddBomb();		break;
+			case ItemType::BIG_POWER:	player.AddPower(POWER_GAIN_BIG);		 player.AddScore(SCORE_VALUE_POWER);		break;
 			}
 		}
 		else {						//距離が離れてるならすり抜けない速度(BASE_SPEED_CAP)で自機を追尾
@@ -114,9 +115,17 @@ void Item::Update(Player& player, float collectRadius) {
 void Item::Draw() {
 	if (!isExist) return;			//存在しないなら描画はスキップ
 
-	int gh = GetCustomGraphHandle(EditCategory::ITEM, static_cast<int>(type));
+	int targetTypeIdx = static_cast<int>(type);
+	double scale = 1.0;
+
+	if (type == ItemType::BIG_POWER) {
+		targetTypeIdx = static_cast<int>(ItemType::POWER);
+		scale = BIG_POWER_SCALE;											//大パワーはパワーの画像を1.5倍に拡大して描画
+	}
+
+	int gh = GetCustomGraphHandle(EditCategory::ITEM, targetTypeIdx);
 	if (gh != -1) {
-		DrawRotaGraph((int)x, (int)y, 1.0, 0.0, gh, TRUE);
+		DrawRotaGraph((int)x, (int)y, scale, 0.0, gh, TRUE);
 	}
 	else {
 		unsigned int color;
@@ -134,6 +143,8 @@ void Item::Draw() {
 			color = ObjectColor::Get(ObjectColor::Type::MAGENTA); size = 12; break;		//残機
 		case ItemType::BOMB:
 			color = ObjectColor::Get(ObjectColor::Type::GREEN);   size = 12; break;		//ボム
+		case ItemType::BIG_POWER:
+			color = ObjectColor::Get(ObjectColor::Type::GREEN);	  size = 12; break;		//大パワー
 		default:
 			color = ObjectColor::Get(ObjectColor::Type::WHITE);   break;				//その他
 		}

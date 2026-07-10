@@ -64,7 +64,7 @@ struct HomingShotData {
 	float turn;							//旋回性能(PlayerHomingPowerに相当)
 };
 
-
+static constexpr int DROP_TYPE_MAX = 6;	//アイテム全種類数
 struct BossPhase {
 	int		phaseNum;					//0:通常1,1:スペカ1枚目,2:通常2,3:スペカ2枚目…のようにする
 	float	hpLimit;					//そのフェーズのHP
@@ -72,7 +72,7 @@ struct BossPhase {
 	int shotCount;
 	BulletPattern::ShotConfig shots[5];	//弾パラメータ
 	bool clearOnEnd;					//Phase終了時に弾消しを行うか
-	int dropCounts[5];					//ボスがドロップするアイテムの各個数(0：小スコア,　1：スコア,　2：パワー,　3：残機,　4：ボム)
+	int dropCounts[DROP_TYPE_MAX];					//ボスがドロップするアイテムの各個数(0：小スコア,　1：スコア,　2：パワー,　3：残機,　4：ボム, 5：大パワー)
 };
 
 

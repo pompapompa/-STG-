@@ -19,7 +19,7 @@ void Enemy::Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy
 	m_shotConf = conf;
 	flag = true;				
 	clearOnDeath = in_clear;
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < DROP_TYPE_MAX; i++) {
 		if (in_dropCounts != nullptr) {
 			m_dropCounts[i] = in_dropCounts[i];
 		}
@@ -62,7 +62,7 @@ bool Enemy::CheckCollision(Player& player, BulletManager* bm) {
 
 			if (hp <= 0) {
 				flag = false;							//—d¸Á‚·
-				for (int typeIdx = 0; typeIdx < 5; typeIdx++) {
+				for (int typeIdx = 0; typeIdx < DROP_TYPE_MAX; typeIdx++) {
 					int count = m_dropCounts[typeIdx];
 					if (count > 0) {
 						ItemType iType = static_cast<ItemType>(typeIdx);

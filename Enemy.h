@@ -17,7 +17,7 @@ protected:								//Bossから変数にアクセスできるようにする
 	BulletPattern::ShotConfig m_shotConf;
 	bool flag = false;
 	bool clearOnDeath = false;
-	int m_dropCounts[5] = {0};			//-1:ドロップなし、0:小スコア、1:スコア、2:パワー、3:残機、4:ボム
+	int m_dropCounts[DROP_TYPE_MAX] = {0};			//-1:ドロップなし、0:小スコア、1:スコア、2:パワー、3:残機、4:ボム
 	
 
 public:

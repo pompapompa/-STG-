@@ -7,7 +7,8 @@ enum class ItemType {
 	SCORE,
 	POWER,
 	ZANKI,
-	BOMB
+	BOMB,
+	BIG_POWER
 };
 
 class Item {
@@ -27,7 +28,19 @@ private:
 	static constexpr float DEFAULT_GRAVITY = 0.12f;			//アイテムの重力
 	static constexpr float PLAYER_MIN_HIT_R = 2.0f;			//自機側極小半径
 
+
 public:
+	/*		これらのコンパイル時定数は他クラスから触るかもしれないためpublic		*/			
+	static constexpr int SCORE_VALUE_MINI = 10;				//小スコア
+	static constexpr int SCORE_VALUE_NORMAL = 1000;			//スコア
+	static constexpr int SCORE_VALUE_POWER = 10;			//パワーのスコア利得
+
+	static constexpr int POWER_GAIN_NORMAL = 1;				//パワーの利得
+	static constexpr int POWER_GAIN_BIG = 8;				//大パワーの利得
+
+	static constexpr double BIG_POWER_SCALE = 1.5;			//大パワーの通常パワーに対する拡大率
+
+
 	float x, y;
 	float vy;					//垂直方向の速度
 	float gravity;
