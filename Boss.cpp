@@ -189,6 +189,9 @@ bool Boss::CheckCollision(Player& player, BulletManager& bm) {
 		if (Collision::CheckCircle(x, y, r, b.x, b.y, b.r)) {		//ボスのx,y,rと自機弾のx,y,rを引数とする
 			if (state == BossState::ACTIVE) {
 				SetDamage(1.0f);										//1弾あたりのダメージ量
+				
+				player.AddScore(10);
+
 			}
 			b.flag = false;											//当たった弾フラグは消す
 		}

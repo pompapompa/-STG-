@@ -4,6 +4,7 @@
 #include "Collision.h"
 #include "Bullet.h"
 #include "Enemy.h"
+#include "Player.h"
 
 
 BulletManager::BulletManager() {
@@ -99,12 +100,15 @@ void BulletManager::Update(float playerX, float playerY, float bossX, float boss
 
 
 
-bool BulletManager::CheckEnemyCollision(float ex, float ey, float er) {
+bool BulletManager::CheckEnemyCollision(float ex, float ey, float er, Player& player) {
 	for (int i = 0; i < PlayerBMax; i++) {
 		if (!p_bullets[i].GetFlag()) continue;
 
 		if (Collision::CheckCircle(ex, ey, er, p_bullets[i].x, p_bullets[i].y, p_bullets[i].r)) {		//CollisionƒNƒ‰ƒX‚ÌCheckCircleŠÖ”‚ÉŽ©‹@‚Æ“G’e‚»‚ê‚¼‚ê‚Ìx,y,r’l‚ð‹³‚¦‚é
 			p_bullets[i].flag = false;																	//“–‚½‚Á‚½’e‚ÍÁ‚·
+			
+			player.AddScore(10);
+
 			return true;
 		}
 	}

@@ -66,7 +66,7 @@ public:
 
 
 	bool CheckPlayerCollision(float px, float py, float pr);
-	bool CheckEnemyCollision(float ex, float ey, float er);	
+	bool CheckEnemyCollision(float ex, float ey, float er, Player& player);	
 	
 	void ClearPlayerBullets() {
 		for (int i = 0; i < PlayerBMax; i++) {

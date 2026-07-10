@@ -118,7 +118,7 @@ void StageManager::Draw(BulletManager* bm) {		//’e‚Æ‚©‚Ì•`‰æ
 
 	for (int i = 0; i < Enemy::EnemyMax; i++) {
 		if (fairies[i].GetFlag()) {
-			if (fairies[i].CheckCollision(bm)) {
+			if (fairies[i].CheckCollision(player, bm)) {
 				if (fairies[i].IsClearOnDeath()) {
 					bm->ConvertEnemyBulletsToItems();
 				}

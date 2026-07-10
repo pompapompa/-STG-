@@ -35,7 +35,7 @@ public:
 	virtual void Update(const Player& player, BulletManager* bm);																		//Œã‚Åƒ{ƒX‚ªã‘‚«‚Å‚«‚é‚æ‚¤‚É‚·‚é
 	virtual void Draw();
 	void SetFlag(bool f) {flag = f;}
-	bool CheckCollision(BulletManager* bm);
+	bool CheckCollision(class Player& player, BulletManager* bm);
 	bool IsClearOnDeath() { return clearOnDeath; }
 
 	int ShotTimer = 0;					//—d¸‚ª“oê‚µ‚Ä‚©‚ç‚ÌŠÔ

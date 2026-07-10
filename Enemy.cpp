@@ -47,7 +47,7 @@ void Enemy::Draw() {
 	}
 }
 
-bool Enemy::CheckCollision(BulletManager* bm) {
+bool Enemy::CheckCollision(Player& player, BulletManager* bm) {
 	if (!flag) return false;											//ƒtƒ‰ƒO‚Ì—§‚Á‚Ä‚È‚¢“G‚Í“–‚½‚ç‚È‚¢
 	
 	for (int i = 0; i < bm->GetPlayerBulletMax(); i++) {
@@ -57,6 +57,8 @@ bool Enemy::CheckCollision(BulletManager* bm) {
 		if (Collision::CheckCircle(x, y, r, b.x, b.y, b.r)) {			//
 			hp -= 1;								//hp‚ðƒfƒNƒŠƒƒ“ƒg
 			b.SetFlag(false);						//’e‚ðÁ‚·
+
+			if (bm->CheckEnemyCollision(x, y, r, player)) {}
 
 			if (hp <= 0) {
 				flag = false;							//—d¸Á‚·
