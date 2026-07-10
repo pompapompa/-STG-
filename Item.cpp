@@ -57,9 +57,9 @@ void Item::Update(Player& player, float collectRadius) {
 			switch (type) {
 			case ItemType::MINI_SCORE:	player.AddScore(10);	break;		//小スコア： +10点
 			case ItemType::SCORE:		player.AddScore(1000);	break;		//　スコア： +1000点
-			case ItemType::POWER:		player.AddPower(1);		break;		//　パワー： +1
-			case ItemType::ZANKI:	break;
-			case ItemType::BOMB:	break;
+			case ItemType::POWER:		player.AddPower(1); player.AddScore(10);		break;		//　パワー： +1
+			case ItemType::ZANKI:	player.Extend();			break;
+			case ItemType::BOMB:	player.AddBomb();			break;
 			}
 		}
 		else {						//距離が離れてるならすり抜けない速度(BASE_SPEED_CAP)で自機を追尾

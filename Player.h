@@ -129,7 +129,9 @@ public:
 		mPower += amount;									//実際のパワーをamountだけインクリメント
 		if (mPower > POWER_MAX) mPower = POWER_MAX;			//最大を越えたら最大に戻す 
 		mDisplayPower = mPower;								//パワーはロールアップせずに即座に反映
-	}																	
+	}				
+	void Extend() { mLife++; if (mLife > 8) mLife = 8; }	//エクステンド関数
+	void AddBomb() { mBomb++; if (mBomb > 8) mBomb = 8; }	//ボム追加関数
 
 	/*　　↓はprivateに書いた物を安全に読み込み専用でインスタンスから値のみ取得する　　*/
 	float GetX() const { return x; }								//ホーミング用にx座標を取得する
