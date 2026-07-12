@@ -76,6 +76,10 @@ void Player::Update(BulletManager* bm) {
 		shot_timer = scm;										//連打時のクールタイムに上書きする
 	}
 
+	if (mCurrentWeapon != nullptr) {
+		mCurrentWeapon->Update(*this, bm);						//ウェポンクラス側のスロット更新
+	}
+
 	/*
 
 	for (int s = 0; s < SLOT_MAX; s++) {														//画面上に同時に存在できるスロット数繰り返す
