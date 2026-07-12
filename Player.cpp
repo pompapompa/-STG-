@@ -2,11 +2,20 @@
 #include "DxLib.h"
 #include "Input.h"
 #include "BulletManager.h"	
+#include "ReimuB_Weapon.h"
 #include "ImageEditor.h"	//使う部品
 #include "Common.h"			//共通設定
 #include <math.h>			//システムという順番が良いらしい
 
 
+
+Player::Player() {
+	mCurrentWeapon = new ReimuB_Weapon();			//Playerのコンストラクタを明示し、初期のウェポンを生成
+}
+
+Player::~Player() {
+	delete mCurrentWeapon;							//Playerのデストラクタを明示し、動的に確保したウェポンクラスのメモリを解放
+}
 
 void Player::ActivateWeapon(BurstController* slots, int count) {
 	for (int i = 0; i < SLOT_MAX; i++) {
@@ -52,7 +61,11 @@ void Player::Update(BulletManager* bm) {
 	bool isSlow = (move_v == para.vs);																	//低速状態か
 
 	if (isPress && shot_timer <= 0) {							//発射ボタン押下されている状態且つショットクールタイムが0の場合
-		ActivateWeapon(MainSlot, MainShot.L);					//メインショット
+		//ActivateWeapon(MainSlot, MainShot.L);					//メインショット
+
+		if (mCurrentWeapon != nullptr) {
+			mCurrentWeapon->Fire(*this, bm);
+		}
 
 		if (!isSlow) {											//低速状態ではない場合
 			ActivateWeapon(SubSlot, SubHoming.L);				//サブショット(ホーミング弾追加)
@@ -63,6 +76,7 @@ void Player::Update(BulletManager* bm) {
 		shot_timer = scm;										//連打時のクールタイムに上書きする
 	}
 
+	/*
 
 	for (int s = 0; s < SLOT_MAX; s++) {														//画面上に同時に存在できるスロット数繰り返す
 		if (MainSlot[s].Tick(MainShot.LI)) {
@@ -70,6 +84,8 @@ void Player::Update(BulletManager* bm) {
 			bm->LaunchPlayerBullet(x + MainShot.sox, y, MainShot.sr, MainShot.ssx, MainShot.ssy, false, 0.0f);
 		}
 	}
+
+	*/
 
 	for (int s = 0; s < SLOT_MAX; s++) {
 		if (SubSlot[s].Tick(SubHoming.LI)) {
@@ -118,8 +134,12 @@ void Player::Reset(bool isPractice) {
 	x = (float)PlayArea::DefaultPlayerX;				//自機x座標初期化
 	y = (float)PlayArea::DefaultPlayerY;				//自機y座標初期化
 
+	if (mCurrentWeapon != nullptr) {
+		mCurrentWeapon->Reset();				//外部インスタンス側でもウェポンスロットの初期化
+	}
+
 	for (int i = 0; i < SLOT_MAX; i++) {
-		MainSlot[i].Reset();							//スロット内の残り弾数やら次までの残り時間を初期化
+		//MainSlot[i].Reset();							//スロット内の残り弾数やら次までの残り時間を初期化
 		SubSlot[i].Reset();								//上と同様
 	}
 	shot_timer = 15;										//ショットのクールタイムも初期化

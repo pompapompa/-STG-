@@ -6,7 +6,7 @@
   計算や更新するやつはprivateで外部から上書きされないようにする。*/
 
 class BulletManager;						//前方宣言でマネージャーの存在だけ教える
-
+class Weapon;								//同様
 
 using namespace PlayArea;			
 
@@ -26,10 +26,10 @@ struct PlayerParameter {
 };
 
 
+
 class Player {
 private:
 	static constexpr int SLOT_MAX = 30;		// 同時に重なっても良いバーストの最大数
-	BurstController MainSlot[SLOT_MAX];				//メインショット用スロット
 	BurstController SubSlot[SLOT_MAX];				//サブショット用スロット
 
 	static constexpr int sca = 20;								//ShotChargeAutomatic
@@ -58,6 +58,8 @@ private:
 		2.0f								//自機グラフィックの描画拡大率
 	};
 
+	/*
+
 	static constexpr StraightShotData MainShot{
 		15,									//L：1セット内の総発射弾数
 		2,									//LI：セット内の1発ごとの発射間隔のフレーム数
@@ -67,6 +69,8 @@ private:
 		3.0f								//sr：Shot半径
 	};
 
+	*/
+
 	static constexpr HomingShotData SubHoming{
 		15,									//L：1セット内の総発射弾数
 		3,									//LI：セット内の1発ごとの発射間隔のフレーム数
@@ -75,6 +79,8 @@ private:
 		0.15f								//turn：ホーミングの曲がりやすさのパラメータ
 	};
 
+	/*
+	
 	static constexpr StraightShotData wideSpread{
 		10,									//L：1セット内の総発射弾数,
 		3,									//LI：セット内の1発ごとの発射間隔のフレーム数
@@ -83,6 +89,10 @@ private:
 		-9.0f,								//ssy：ShotSpeed_Y
 		3.0f								//sr：Shot半径
 	};
+
+	*/
+
+	Weapon* mCurrentWeapon = nullptr;		//機体別ウェ本の動的切り替えに対応する為のポインタ
 
 	float x = PlayArea::DefaultPlayerX;
 	float y = PlayArea::DefaultPlayerY;
@@ -105,6 +115,9 @@ private:
 
 
 public:
+	Player();								//コンストラクタで初期の所有ウェ本を安全にインスタンス化
+	~Player();								//デストラクタでメモリ解放
+
 	void Update(BulletManager* bm);
 	void Reset(bool isPractice = false);
 	void Draw();
