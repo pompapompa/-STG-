@@ -38,6 +38,14 @@ void HUD::Draw(const Player* player) {
 	for (int i = 0; i < bombCount; i++) {						//プレイヤクラスから取得した残ボム数まで繰り返す
 		DrawStringToHandle(Right + 75 + (i * 18), 190, "★", GetColor(0, 255, 0), mMainFont);		//HUD:Bomb(20ずつx座標をずらして描画)
 	}
+	DrawStringToHandle(Right + 15, 230, " POWER", GetColor(255, 255, 255), mMainFont);
+	int currentPower = player->GetDisplayPower();
+	if (currentPower >= 128) {
+		DrawStringToHandle(Right + 75, 230, "MAX", GetColor(0, 255, 0), mMainFont);		
+	}
+	else {
+		DrawFormatStringToHandle(Right + 75, 230, GetColor(255, 255, 255), mMainFont, "%3d", currentPower);	//HUD:Power(最大未満は3桁右詰め数値描画)
+	}
 }
 
 void HUD::Release() {						//フォントハンドルの消去
