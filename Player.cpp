@@ -60,21 +60,54 @@ void Player::Update(BulletManager* bm) {
 	bool isPress = (Input::IsPress(KEY_INPUT_Z) || Input::IsPress(KEY_INPUT_SPACE));		//ショット発射ボタンを押しているか
 	bool isSlow = (move_v == para.vs);																	//低速状態か
 
-	if (isPress && shot_timer <= 0) {							//発射ボタン押下されている状態且つショットクールタイムが0の場合
-		//ActivateWeapon(MainSlot, MainShot.L);					//メインショット
-
+	if (isPress && needle_shot_timer <= 0) {							//発射ボタン押下されている状態且つショットクールタイムが0の場合
 		if (mCurrentWeapon != nullptr) {
-			mCurrentWeapon->Fire(*this, bm);
+			ReimuB_Weapon* rw = dynamic_cast<ReimuB_Weapon*>(mCurrentWeapon);
+			if (rw != nullptr) {
+				rw->ActivateNeedle();
+				needle_shot_timer = rw->GetNeedleSca(mDisplayPower);
+			}
+			//mCurrentWeapon->Fire(*this, bm);
 		}
-
 		if (!isSlow) {											//低速状態ではない場合
 			ActivateWeapon(SubSlot, SubHoming.L);				//サブショット(ホーミング弾追加)
 		}
-		shot_timer = sca;										//長押し時のクールタイム
+		//shot_timer = sca;										//長押し時のクールタイム
 	}
-	else if (!isPress && shot_timer > scm) {					//ショットボタンが離されて且つ連打時のクールタイムよりも現在のクールタイムが長い場合
-		shot_timer = scm;										//連打時のクールタイムに上書きする
+	else if (!isPress && needle_shot_timer > 0) {				
+		//shot_timer = scm;										//連打時のクールタイムに上書きする
+		if(mCurrentWeapon != nullptr) {
+			ReimuB_Weapon* rw = dynamic_cast<ReimuB_Weapon*>(mCurrentWeapon);
+			if (rw != nullptr) {
+				int targetScm = rw->GetNeedleScm(mDisplayPower);
+				if (needle_shot_timer > targetScm) {
+					needle_shot_timer = targetScm;
+				}
+			}
+		}
 	}
+
+	if (isPress && zabuton_shot_timer <= 0) {
+		if (mCurrentWeapon != nullptr) {
+			ReimuB_Weapon* rw = dynamic_cast<ReimuB_Weapon*>(mCurrentWeapon);
+			if (rw != nullptr) {
+				rw->ActivateZabuton();
+				zabuton_shot_timer = rw->GetZabutonSca(mDisplayPower);
+			}
+		}
+	}
+	else if (!isPress && zabuton_shot_timer > 0) {
+		if (mCurrentWeapon != nullptr) {
+			ReimuB_Weapon* rw = dynamic_cast<ReimuB_Weapon*>(mCurrentWeapon);
+			if (rw != nullptr) {
+				int targetScm = rw->GetZabutonScm(mDisplayPower);
+				if (zabuton_shot_timer > targetScm) {
+					zabuton_shot_timer = targetScm;
+				}
+			}
+		}
+	}
+
 
 	if (mCurrentWeapon != nullptr) {
 		mCurrentWeapon->Update(*this, bm);						//ウェポンクラス側のスロット更新
@@ -97,7 +130,10 @@ void Player::Update(BulletManager* bm) {
 		}
 	}
 
-	if (shot_timer > 0) shot_timer--;
+	//if (shot_timer > 0) shot_timer--;
+
+	if (needle_shot_timer > 0) needle_shot_timer--;
+	if (zabuton_shot_timer > 0) zabuton_shot_timer--;
 
 	if (IsDeathTimerActive()) {				//喰らいボム受付時間中の場合
 		DecrementDeathTimer();							//deathTimerのデクリメント
@@ -146,7 +182,8 @@ void Player::Reset(bool isPractice) {
 		//MainSlot[i].Reset();							//スロット内の残り弾数やら次までの残り時間を初期化
 		SubSlot[i].Reset();								//上と同様
 	}
-	shot_timer = 15;										//ショットのクールタイムも初期化
+	needle_shot_timer = 15;
+	zabuton_shot_timer = 15;										//ショットのクールタイムも初期化
 	invincibleTimer = 0;
 
 	mLife = (isPractice ? stdPracLife : stdLife);			//プラクティスモードではstdPracLife,通常モードならstdLifeを初期残機として代入

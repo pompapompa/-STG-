@@ -23,8 +23,10 @@ private:
 
 	struct WeaponPhaseConfig {
 		int powerThreshold;					//【この形態になるのに必要なパワーは◯】
-		int needleLI;					//【針のバースト"内"の発射間隔は◯フレーム】
-		int zabutonLI;				//【座布団のバーストないの発射間隔は◯フレーム】
+		int needle_sca;						//【(ShotChargeAutomatic)針ショットの長押し時のバースト処理を呼ぶのは◯フレーム】
+		int zabuton_sca;					//【座布団ショットの長押し時のバースト処理を呼ぶのは◯フレーム】
+		int needleLI;						//【針のバースト"内"の発射間隔は◯フレーム】
+		int zabutonLI;						//【座布団のバーストないの発射間隔は◯フレーム】
 		int needleCount;					//【針の同時発射数は◯初】
 		int zabutonCount;					//【座布団の同時発射数は◯発】
 		IndividualShotTrait needles[7];
@@ -37,9 +39,9 @@ private:
 	
 	static constexpr WeaponPhaseConfig REIMU_B_TABLE[] = {
 
-	//	{ パワー条件, 針LI, 座布団LI, 針数, 座布団数, {X軸オフセット, Y軸オフセット, X軸速度, Y軸速度}}
+	//	{ パワー条件, 針sca, 座布団sca, 針LI, 座布団LI, 針数, 座布団数, {X軸オフセット, Y軸オフセット, X軸速度, Y軸速度}}
 
-		{ 0,   5, 6,   2, 1,
+		{		0,		30,		30,		2,		2,		  2,	  1,
 			{	{-20.0f, 0.0f, 0.0f, -10.0f},			//針2セット
 				{ 20.0f, 0.0f, 0.0f, -10.0f}
 			},
@@ -48,7 +50,7 @@ private:
 			}
 		},
 
-		{ 8,   4, 6,   2, 1,
+		{		8,		30,		30,		2,		2,		  2,	  1,
 			{	{-20.0f, 0.0f, 0.0f, -10.0f},
 				{ 20.0f, 0.0f, 0.0f, -10.0f}
 			},
@@ -57,7 +59,7 @@ private:
 			}
 		},
 
-		{ 16,  3, 4,   2, 2,
+		{		16,		30,		30,		2,		2,		  2,	  2,
 			{	{-20.0f, 0.0f, 0.0f, -10.0f},
 				{ 20.0f, 0.0f, 0.0f, -10.0f}
 			},
@@ -67,21 +69,22 @@ private:
 			}
 		},
 
-		{ 32,  3, 4,   2, 3,
+		{		32,		30,		30,		2,		2,		  3,	  2,
 			{	{-20.0f, 0.0f, 0.0f, -10.0f},
+				{ 0.0f, 0.0f, 0.0f, -10.0f},
 				{ 20.0f, 0.0f, 0.0f, -10.0f}
 			},
 			
-			{	{0.0f, -5.0f, 0.0f, -8.0f},
-				{-15.0f, -5.0f, -1.5f, -7.5f},
+			{	{-15.0f, -5.0f, -1.5f, -7.5f},
 				{15.0f, -5.0f, 1.5f, -7.5f} 
 			}
 		},
 
-		{ 64,  3, 4,   4, 3,
+		{		64,		30,		30,		2,		2,		  5,	  3,
 			{	{-20.0f, 0.0f, 0.0f, -10.0f},
-				{-15.0f, 0.0f, 0.0f, -10.0f},
-				{ 15.0f, 0.0f, 0.0f, -10.0f}, 
+				{-10.0f, 0.0f, 0.0f, -10.0f},
+				{  0.0f, 0.0f, 0.0f, -10.0f},
+				{ 10.0f, 0.0f, 0.0f, -10.0f}, 
 				{ 20.0f, 0.0f, 0.0f, -10.0f}
 			},
 
@@ -91,22 +94,24 @@ private:
 			}
 		},
 
-		{ 80,  3, 4,   4, 5,
-			{	{-20.0f, 0.0f, 0.0f, -10.0f},
-				{-15.0f, 0.0f, 0.0f, -10.0f},
-				{ 15.0f, 0.0f, 0.0f, -10.0f},
-				{ 20.0f, 0.0f, 0.0f, -10.0f} 
+		{		80,		30,		30,		2,		2,		  7,	  4,
+			{	{-30.0f, 0.0f, 0.0f, -12.0f},
+				{-20.0f, 0.0f, 0.0f, -12.0f},
+				{-10.0f, 0.0f, 0.0f, -12.0f},
+				{ 0.0f,  0.0f, 0.0f, -12.0f},
+				{ 10.0f, 0.0f, 0.0f, -12.0f},
+				{ 20.0f, 0.0f, 0.0f, -12.0f},
+				{ 30.0f, 0.0f, 0.0f, -12.0f}
 			},
 
-			{	{0.0f, -5.0f, 0.0f, -8.0f},
-				{-15.0f, -5.0f, -1.5f, -7.5f},
-				{15.0f, -5.0f, 1.5f, -7.5f},
-				{-30.0f, -5.0f, -3.0f, -7.0f}, 
-				{30.0f, -5.0f, 3.0f, -7.0f} 
+			{	{-4.0f, -5.0f, -3.0f, -7.0f},
+				{-2.0f, -5.0f, -1.5f, -7.5f},
+				{ 2.0f, -5.0f, 1.5f, -7.5f}, 
+				{ 4.0f, -5.0f, 3.0f, -7.0f} 
 			}
 		},
 
-		{ 128, 20, 30,   7, 5,
+		{		128,	30,		 30,    2,		2,		  7,	  5,
 			{	{-30.0f, 0.0f, 0.0f, -12.0f},
 				{-20.0f, 0.0f, 0.0f, -12.0f},
 				{-10.0f, 0.0f, 0.0f, -12.0f},
@@ -141,6 +146,14 @@ private:
 	}
 
 public:
+	int GetNeedleSca(int currentPower) const { return GetConfig(currentPower).needle_sca; }
+	int GetZabutonSca(int currentPower) const { return GetConfig(currentPower).zabuton_sca; }
+	int GetNeedleScm(int currentPower) const { return GetConfig(currentPower).needle_sca - 5; }
+	int GetZabutonScm(int currentPower) const { return GetConfig(currentPower).zabuton_sca - 5; }		//針と座布団で各々個別のsca及びscmを返すゲッタ
+	
+	void ActivateNeedle();
+	void ActivateZabuton();
+	
 	void Fire(const Player& player, BulletManager* bm) override;
 	void Update(const Player& player, BulletManager* bm) override;
 	void Reset() override {

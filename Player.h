@@ -97,7 +97,10 @@ private:
 	float x = PlayArea::DefaultPlayerX;
 	float y = PlayArea::DefaultPlayerY;
 
-	int shot_timer = 0;
+	int needle_shot_timer = 0;				
+	int zabuton_shot_timer = 0;				//座布団と針のショットタイマ
+
+	//int shot_timer = 0;
 	int invincibleTimer = 0;				//0<Timerなら無敵
 	float move_v = 0;
 	int deathTimer = 0;						//喰らいボムの猶予

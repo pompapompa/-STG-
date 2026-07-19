@@ -3,6 +3,25 @@
 #include"BulletManager.h"
 #include "Common.h"
 
+void ReimuB_Weapon::ActivateNeedle() {			//安全に針用の空きスロットを探して起動するインターフェース
+	for (int i = 0; i < SLOT_MAX; i++) {
+		if (!NeedleSlot[i].IsActive()) {
+			NeedleSlot[i].Activate(BURST_COUNT);
+			break;
+		}
+	}
+}
+
+void ReimuB_Weapon::ActivateZabuton() {			//安全に座布団用の空きスロットを探して起動するインターフェース
+	for (int i = 0; i < SLOT_MAX; i++) {
+		if (!ZabutonSlot[i].IsActive()) {
+			ZabutonSlot[i].Activate(BURST_COUNT);
+			break;
+		}
+	}
+}
+
+
 
 void ReimuB_Weapon::Fire(const Player& player, BulletManager* bm) {
 	for (int i = 0; i < SLOT_MAX; i++) {				//針スロットの秋を探してアクティベート
