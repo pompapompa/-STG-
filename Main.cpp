@@ -15,17 +15,19 @@
 
 using namespace DxLib;									//IntelliSenseの勘違い防止
 
+WNDPROC OldWndProc = nullptr;								//DxLibの元のWndProcを保持するための変数
+
 LRESULT CALLBACK MyWndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)		//タスクマネージャ起動などの非アクティブ化を OS レベルで即時検知するための独自ウィンドウプロシージャ
 {
 	switch (msg)
 	{
 	case WM_ACTIVATEAPP:					//アプリがアクティブ/非アクティブに成った瞬間にOSが送るメッセージ
-		if (wp == FALSE) {			//非アクティブ化
+		if (wp == FALSE) {			//非アクティブ化時最小化
 			ShowWindow(hWnd, SW_MINIMIZE);		//GPU停止前に最小化する（DxLibのGetActiveFlag()より先に動く）、GetActiveFlag()は後から状態を知るので遅い
 		}
 		break;
 	}
-	return DefWindowProc(hWnd, msg, wp, lp);			//DefWindowProcに返すことで、他の標準処理を壊さないようにする
+	return CallWindowProc(OldWndProc, hWnd, msg, wp, lp);			//DefWindowProcに返すことで、他の標準処理を壊さないようにする
 }
 
 /*　ーーーーーDxLibのデフォ：画面サイズ(640,480)ーーーーー　*/
@@ -49,7 +51,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (DxLib_Init() == -1) return -1;					//エラーが発生したら終了
 
 	HWND hwnd = GetMainWindowHandle();								//GetMainWindowHandle()はDxLibが内部で作成したHWNDを取得する関数
-	SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)MyWndProc);		//SetWindowLongPtr()はOSに、このウィンドウがMyWndProcを使用すると登録する
+	OldWndProc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)MyWndProc);		//SetWindowLongPtr の戻り値（元の WndProc）を OldWndProc に保存する
 
 	BulletManager bm;
 	MenuManager TitleMenu(4);							//引数が必要なクラスなのでインスタンスにも引数を与える
