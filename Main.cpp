@@ -11,6 +11,8 @@
 #include "Enemy.h"
 #include "Boss.h"
 #include "MenuManager.h"
+#include "ScoreManager.h"
+#include <ctime>
 #include <math.h>
 
 using namespace DxLib;									//IntelliSense‚ÌŠ¨ˆá‚¢–h~
@@ -30,6 +32,18 @@ LRESULT CALLBACK MyWndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)		//ƒ^ƒXƒNƒ
 	return CallWindowProc(OldWndProc, hWnd, msg, wp, lp);			//DefWindowProc‚É•Ô‚·‚±‚Æ‚ÅA‘¼‚Ì•W€ˆ—‚ğ‰ó‚³‚È‚¢‚æ‚¤‚É‚·‚é
 }
 
+uint32_t GetCurrentDateAsInt() {
+	std::time_t t = std::time(nullptr);		//std::timeFC/C++‚Ì•W€ŒvŠÖ”A1970”N1Œ1“ú‚©‚ç‚ÌŒo‰ß•b”‚ğt‚ÖŠi”[
+	std::tm now;							//”NŒ“ú•ª•b‚É•ª‰ğ‚µ‚Ä•Û‚·‚é‚½‚ß‚Ì•W€\‘¢‘Ìstd::tm‚Ì•Ï”now
+	localtime_s(&now, &t);					//•b”ƒf[ƒ^t‚ğJST‚Ì”NŒ“ú‚É•ÏŠ·‚µ‚Änow‚É‘‚«‚Ş
+
+	uint32_t year = static_cast<uint32_t>(now.tm_year + 1900);	//1900”N‚©‚ç‚ÌŒo‰ß”N”‚ª“ü‚Á‚Ä‚¢‚é‚Ì‚Å1900‚ğ‰ÁZ
+	uint32_t month = static_cast<uint32_t>(now.tm_mon + 1);		//0~11‚ÅŒ‚ğ•\‚µ‚Ä‚¢‚é‚Ì‚Å1‚ğ‰ÁZ
+	uint32_t day = static_cast<uint32_t>(now.tm_mday);			//“ú‚É‚¿‚ğ’Šo‚µ‚Äday‚ÉŠi”[
+
+	return (year * 10000) + (month * 100) + day;				//”NŒ“ú‚ğ8Œ…‚ÉŒ‹‡‚·‚éŒvZ
+}
+
 /*@[[[[[DxLib‚ÌƒfƒtƒHF‰æ–ÊƒTƒCƒY(640,480)[[[[[@*/
 
 enum SceneType {
@@ -39,8 +53,12 @@ enum SceneType {
 	SCENE_GAMEOVER,
 	SCENE_CLEAR,
 	SCENE_PAUSE,
+	SCENE_RANKING,
+	SCENE_CORRUPTED_NOTICE,
 	SCENE_QUIT_CONFIRM
 };
+
+
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	bool isWindow = true;								//ƒEƒBƒ“ƒhƒE‚©ƒtƒ‹ƒXƒN‚©‚Ìó‘Ô‚ğ•Û‘¶‚·‚éƒtƒ‰ƒO
@@ -54,12 +72,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	OldWndProc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)MyWndProc);		//SetWindowLongPtr ‚Ì–ß‚è’liŒ³‚Ì WndProcj‚ğ OldWndProc ‚É•Û‘¶‚·‚é
 
 	BulletManager bm;
-	MenuManager TitleMenu(4);							//ˆø”‚ª•K—v‚ÈƒNƒ‰ƒX‚È‚Ì‚ÅƒCƒ“ƒXƒ^ƒ“ƒX‚É‚àˆø”‚ğ—^‚¦‚é
+	MenuManager TitleMenu(5);							//ˆø”‚ª•K—v‚ÈƒNƒ‰ƒX‚È‚Ì‚ÅƒCƒ“ƒXƒ^ƒ“ƒX‚É‚àˆø”‚ğ—^‚¦‚é
 	MenuManager PracticeMenu(7);						
 	MenuManager PauseMenu(3);
 	MenuManager QuitMenu(2);
 	MenuManager GameOverMenu(2);
-	SceneType scene = SCENE_TITLE;						//ê–Ê‚ğ‰Šú‰»(ƒ^ƒCƒgƒ‹)
+	ScoreManager scoreManager;
+	bool isScoreLoaded = scoreManager.Load();
+	SceneType scene = SCENE_TITLE;							//ê–Ê‚ğ‰Šú‰»(ƒ^ƒCƒgƒ‹)
+	if (!isScoreLoaded) scene = SCENE_CORRUPTED_NOTICE;		//‹N“®‚ÉƒXƒRƒAƒf[ƒ^‚ª³í‚Å–³‚¢‚ÆŒŸ’m‚³‚ê‚½ê‡‚Í”j‘¹’Ê’mƒV[ƒ“‚Ö‘@ˆÛ
 	StageManager stageManager;
 	HUD hud;
 	hud.Init();
@@ -91,8 +112,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawString(250, 210, "“Œ •û Œ X –²", GetColor(255, 255, 255));
 			DrawString(270, 270, (TitleMenu.GetSelect() == 0 ? "> Start" : "Start"), GetColor(255, 255, 255));
 			DrawString(270, 300, (TitleMenu.GetSelect() == 1 ? "> Practice Start" : "Practice Start"), GetColor(255, 255, 255));
-			DrawString(270, 330, (TitleMenu.GetSelect() == 2 ? "> Replay" : "Replay"), GetColor(255, 255, 255));
-			DrawString(270, 360, (TitleMenu.GetSelect() == 3 ? "> Quit" : "Quit"), GetColor(255, 255, 255));
+			DrawString(270, 330, (TitleMenu.GetSelect() == 2 ? "> Result" : "Result"), GetColor(255, 255, 255));
+			DrawString(270, 360, (TitleMenu.GetSelect() == 3 ? "> Replay" : "Replay"), GetColor(255, 255, 255));
+			DrawString(270, 390, (TitleMenu.GetSelect() == 4 ? "> Quit" : "Quit"), GetColor(255, 255, 255));
 			DrawString(30, 450, "Œˆ’èFZ or Enter@@ƒtƒ‹ƒXƒNƒŠ[ƒ“/ƒEƒBƒ“ƒhƒEFF", GetColor(0, 255, 0));
 
 
@@ -116,13 +138,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (select == 1) {
 					scene = SCENE_PRACTICE;
 				}
-				if (select == 2) scene = SCENE_QUIT_CONFIRM;
+				if (select == 2) scene = SCENE_RANKING;
 				if (select == 3) scene = SCENE_QUIT_CONFIRM;
+				if (select == 4) scene = SCENE_QUIT_CONFIRM;
 			}
 			if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
-				TitleMenu.SetSelect(3);
+				TitleMenu.SetSelect(4);
 			}
-
 			break;
 
 
@@ -226,6 +248,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			if (stageManager.GetBoss().IsStageClear()) {											//ƒ{ƒX‚ğ“|‚µ‚½ƒtƒ‰ƒO‚ª•Ô‚³‚ê‚½‚çƒ^ƒCƒgƒ‹‚É–ß‚é
 				while (Input::IsTrigger(KEY_INPUT_F)) ProcessMessage();		//z,enterƒL[‚ğ’·‰Ÿ‚µó‘Ô‚ÅCLEAR‚É‘JˆÚ‚µ‚Ä‚«‚½‚É—£‚µ‚½‚ç‚»‚Ì‚Ü‚Üƒ^ƒCƒgƒ‹‚És‚­‚Ì‚ğ–h‚®ˆ×‚Ì•¶
+				if (!playingPractice) {
+					scoreManager.AddScore("PLR", stageManager.GetPlayer().GetDisplayScore(), 1, 1, GetCurrentDateAsInt());
+				}
 				scene = SCENE_CLEAR;
 			}
 
@@ -271,6 +296,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					stageManager.GetPlayer().Reset(playingPractice);
 				}
 				if (select == 1) {					//’ú‚ß‚éê‡
+					if (!playingPractice) {
+						scoreManager.AddScore("PLR", stageManager.GetPlayer().GetDisplayScore(), 1, 1, GetCurrentDateAsInt());
+					}
 					scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
 				}
 			}
@@ -334,6 +362,33 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
 			}
 
+			break;
+
+		case(SCENE_RANKING):
+			DrawString(240, 80, "HIGH SCORE RANKING", GetColor(255, 255, 255));
+			for (int i = 0; i < ScoreConfig::RANKING_MAX; ++i) {
+				const HighScoreEntry& entry = scoreManager.GetEntry(i);
+				
+				uint32_t y = entry.date / 10000;			
+				uint32_t m = (entry.date % 10000) / 100;
+				uint32_t d = entry.date % 100;					//”NŒ“ú‚ğ‚»‚ê‚¼‚ê’Šo
+
+				DrawFormatString(160, 140 + (i * 35), GetColor(255, 255, 255),"No.%d   %-10s   %09lld %04u/%02u/%02u", i + 1, entry.name, entry.score, y, m, d);
+			}
+			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN) || Input::IsTrigger(KEY_INPUT_ESCAPE)) {
+				scene = SCENE_TITLE;
+			}
+			break;
+
+		case SCENE_CORRUPTED_NOTICE:
+			DrawString(180, 150, ":(", GetColor(255, 0, 0));
+			DrawString(180, 180, "ƒXƒRƒAƒf[ƒ^‚ª”j‘¹‚µ‚Ä‚¢‚Ü‚·", GetColor(255, 0, 0));
+			DrawString(160, 240, "ƒ‰ƒ“ƒLƒ“ƒO‚ğ‰Šú‰»‚µ‚Äì‚è’¼‚µ‚Ü‚·", GetColor(255, 255, 255));
+			DrawString(200, 300, "Z‚©EnterƒL[‚ğ‰Ÿ‚µ‚Ä‘±s", GetColor(0, 255, 0));
+
+			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
+				scene = SCENE_TITLE;
+			}
 			break;
 
 		case(SCENE_QUIT_CONFIRM):
