@@ -151,6 +151,7 @@
     <ClCompile Include="MenuManager.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="ReimuB_Weapon.cpp" />
+    <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="StageManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -172,6 +173,8 @@
     <ClInclude Include="MenuManager.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="ReimuB_Weapon.h" />
+    <ClInclude Include="ScoreData.h" />
+    <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="StageManager.h" />
     <ClInclude Include="Weapon.h" />
   </ItemGroup>
