@@ -3,6 +3,7 @@
 #include <array>
 
 namespace ScoreConfig {
+	constexpr int MAX_NAME_CHARS = 10;		//プレイヤ入力文字数の上限
 	constexpr int MAX_NAME_BYTES = 32;		//UTF-8用として何バイト確保するか
 	constexpr int RANKING_MAX = 5;			//ランキング保持可能数
 
@@ -25,10 +26,23 @@ namespace ScoreConfig {
 		"Player05"
 	};
 
+	constexpr const char* EMPTY_NAME_FALLBACK = "NO_NAME";		//名前入力欄が空の場合に補填するデフォルト文字列
+
 	/*　デフォルトパラメータ　*/
 	constexpr uint8_t DEFAULT_STAGE = 1;				//初期データの到達ステージ(面)
 	constexpr uint8_t DEFAULT_DIFFICULTY = 1;			//初期データの難易度
 	constexpr uint32_t DEFAULT_DATE = 20260101;			//初期データの達成日
+
+	constexpr int ENTRY_UI_TITLE_X = 200;				//タイトル描画X
+	constexpr int ENTRY_UI_TITLE_Y = 140;				//タイトル描画Y
+	constexpr int ENTRY_UI_MSG_X = 160;					//メッセージ描画X
+	constexpr int ENTRY_UI_MSG_Y = 180;					//メッセージ描画Y
+	constexpr int ENTRY_UI_INPUT_X = 240;				//入力文字描画X
+	constexpr int ENTRY_UI_INPUT_Y = 240;				//入力文字描画Y
+	constexpr int ENTRY_UI_SCORE_X = 200;				//スコア描画X
+	constexpr int ENTRY_UI_SCORE_Y = 300;				//スコア描画Y
+	constexpr int ENTRY_UI_HELP_X = 180;				//ヘルプ描画X
+	constexpr int ENTRY_UI_HELP_Y = 380;				//ヘルプ描画Y
 }
 
 struct HighScoreEntry {			//スコアデータの構造体

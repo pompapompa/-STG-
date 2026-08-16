@@ -1911,6 +1911,9 @@ public:
 #include "Enemy.h"
 #include "Boss.h"
 #include "MenuManager.h"
+#include "ScoreManager.h"
+#include <ctime>
+#include <string>
 #include <math.h>
 
 using namespace DxLib;									//IntelliSenseの勘違い防止
@@ -1930,6 +1933,18 @@ LRESULT CALLBACK MyWndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)		//タス�
 	return CallWindowProc(OldWndProc, hWnd, msg, wp, lp);			//DefWindowProcに返すことで、他の標準処理を壊さないようにする
 }
 
+uint32_t GetCurrentDateAsInt() {
+	std::time_t t = std::time(nullptr);		//std::time：C/C++の標準時計関数、1970年1月1日からの経過秒数をtへ格納
+	std::tm now;							//年月日時分秒に分解して保持するための標準構造体std::tmの変数now
+	localtime_s(&now, &t);					//秒数データtをJSTの年月日に変換してnowに書き込む
+
+	uint32_t year = static_cast<uint32_t>(now.tm_year + 1900);	//1900年からの経過年数が入っているので1900を加算
+	uint32_t month = static_cast<uint32_t>(now.tm_mon + 1);		//0~11で月を表しているので1を加算
+	uint32_t day = static_cast<uint32_t>(now.tm_mday);			//日にちを抽出してdayに格納
+
+	return (year * 10000) + (month * 100) + day;				//年月日を8桁に結合する計算
+}
+
 /*　ーーーーーDxLibのデフォ：画面サイズ(640,480)ーーーーー　*/
 
 enum SceneType {
@@ -1939,8 +1954,13 @@ enum SceneType {
 	SCENE_GAMEOVER,
 	SCENE_CLEAR,
 	SCENE_PAUSE,
+	SCENE_RANKING,
+	SCENE_NAME_ENTRY,
+	SCENE_CORRUPTED_NOTICE,
 	SCENE_QUIT_CONFIRM
 };
+
+
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	bool isWindow = true;								//ウィンドウかフルスクかの状態を保存するフラグ
@@ -1954,26 +1974,31 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	OldWndProc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)MyWndProc);		//SetWindowLongPtr の戻り値（元の WndProc）を OldWndProc に保存する
 
 	BulletManager bm;
-	MenuManager TitleMenu(4);							//引数が必要なクラスなのでインスタンスにも引数を与える
+	MenuManager TitleMenu(5);							//引数が必要なクラスなのでインスタンスにも引数を与える
 	MenuManager PracticeMenu(7);						
 	MenuManager PauseMenu(3);
 	MenuManager QuitMenu(2);
 	MenuManager GameOverMenu(2);
-	SceneType scene = SCENE_TITLE;						//場面を初期化(タイトル)
+	ScoreManager scoreManager;
+	bool isScoreLoaded = scoreManager.Load();
+	SceneType scene = SCENE_TITLE;							//場面を初期化(タイトル)
+	if (!isScoreLoaded) scene = SCENE_CORRUPTED_NOTICE;		//起動時にスコアデータが正常で無いと検知された場合は破損通知シーンへ繊維
 	StageManager stageManager;
 	HUD hud;
 	hud.Init();
 	InitCustomGraphics();
 	
 	int lastSelectedStage = 1;							
-	int lastSelectedPhase = 0;							//これらはリトライで適切なステージとフェーズに飛べる用に保存
-	bool playingPractice = false;						//プラクティス経由かどうかを判定するフラグ(前使っていたplayintPracticeとは用途はちがくなっている)
+	int lastSelectedPhase = 0;												//これらはリトライで適切なステージとフェーズに飛べる用に保存
+	bool playingPractice = false;											//プラクティス経由かどうかを判定するフラグ(前使っていたplayintPracticeとは用途はちがくなっている)
+	std::string inputName = ScoreConfig::DEFAULT_NAMES[0];					//入力中の文字列を保持するバッファ変数
+	HighScoreEntry currentResultEntry = {};									//今回のプレイ結果を保持
 
 	while (ProcessMessage() == 0 && ClearDrawScreen() == 0) {						//メインループ
 		Input::Update();		
 		FPSManager::Update();														//fps計算の更新
 
-		if (Input::IsTrigger(KEY_INPUT_F)) {
+		if (scene != SCENE_NAME_ENTRY && Input::IsTrigger(KEY_INPUT_F)) {			//名前入力シーンではFが入力出来るように除外
 			isWindow = !isWindow;							//trueとfalseの状態を交互に交換する
 			ChangeWindowMode(isWindow ? TRUE : FALSE);
 
@@ -1991,8 +2016,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DrawString(250, 210, "東 方 酔 々 夢", GetColor(255, 255, 255));
 			DrawString(270, 270, (TitleMenu.GetSelect() == 0 ? "> Start" : "Start"), GetColor(255, 255, 255));
 			DrawString(270, 300, (TitleMenu.GetSelect() == 1 ? "> Practice Start" : "Practice Start"), GetColor(255, 255, 255));
-			DrawString(270, 330, (TitleMenu.GetSelect() == 2 ? "> Replay" : "Replay"), GetColor(255, 255, 255));
-			DrawString(270, 360, (TitleMenu.GetSelect() == 3 ? "> Quit" : "Quit"), GetColor(255, 255, 255));
+			DrawString(270, 330, (TitleMenu.GetSelect() == 2 ? "> Result" : "Result"), GetColor(255, 255, 255));
+			DrawString(270, 360, (TitleMenu.GetSelect() == 3 ? "> Replay" : "Replay"), GetColor(255, 255, 255));
+			DrawString(270, 390, (TitleMenu.GetSelect() == 4 ? "> Quit" : "Quit"), GetColor(255, 255, 255));
 			DrawString(30, 450, "決定：Z or Enter　　フルスクリーン/ウィンドウ：F", GetColor(0, 255, 0));
 
 
@@ -2016,13 +2042,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if (select == 1) {
 					scene = SCENE_PRACTICE;
 				}
-				if (select == 2) scene = SCENE_QUIT_CONFIRM;
+				if (select == 2) scene = SCENE_RANKING;
 				if (select == 3) scene = SCENE_QUIT_CONFIRM;
+				if (select == 4) scene = SCENE_QUIT_CONFIRM;
 			}
 			if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
-				TitleMenu.SetSelect(3);
+				TitleMenu.SetSelect(4);
 			}
-
 			break;
 
 
@@ -2126,7 +2152,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			if (stageManager.GetBoss().IsStageClear()) {											//ボスを倒したフラグが返されたらタイトルに戻る
 				while (Input::IsTrigger(KEY_INPUT_F)) ProcessMessage();		//z,enterキーを長押し状態でCLEARに遷移してきた時に離したらそのままタイトルに行くのを防ぐ為の文
-				scene = SCENE_CLEAR;
+				ClearInputCharBuf();				//画面遷移前にキー入力バッファを完全クリアして、入力画面でも予約されたキー入力が起きないように対策
+				if (!playingPractice) {
+					inputName = "";
+					scene = SCENE_NAME_ENTRY;
+				}
+				else {
+					scene = SCENE_CLEAR;
+				}
 			}
 
 			if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
@@ -2171,6 +2204,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					stageManager.GetPlayer().Reset(playingPractice);
 				}
 				if (select == 1) {					//諦める場合
+					if (!playingPractice) {
+						inputName = "";
+						scene = SCENE_NAME_ENTRY;
+					}
+					else{
+						scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
+
+						
+						scoreManager.AddScore("PLR", stageManager.GetPlayer().GetDisplayScore(), 1, 1, GetCurrentDateAsInt());
+					}
 					scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
 				}
 			}
@@ -2235,6 +2278,108 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			}
 
 			break;
+
+		case(SCENE_RANKING):
+			DrawString(240, 80, "HIGH SCORE RANKING", GetColor(255, 255, 255));
+			for (int i = 0; i < ScoreConfig::RANKING_MAX; ++i) {
+				const HighScoreEntry& entry = scoreManager.GetEntry(i);
+				
+				uint32_t y = entry.date / 10000;			
+				uint32_t m = (entry.date % 10000) / 100;
+				uint32_t d = entry.date % 100;					//年月日をそれぞれ抽出
+
+				DrawFormatString(160, 140 + (i * 35), GetColor(255, 255, 255),"No.%d   %-10s   %09lld %04u/%02u/%02u", i + 1, entry.name, entry.score, y, m, d);
+			}
+
+			if (currentResultEntry.name[0] != '\0') {
+				uint32_t y = currentResultEntry.date / 10000;
+				uint32_t m = (currentResultEntry.date % 10000) / 100;
+				uint32_t d = currentResultEntry.date % 100;
+
+				DrawString(160, 310, "---------------------------------------------", GetColor(128, 128, 128));
+				DrawString(160, 330, "YOUR SCORE:", GetColor(0, 255, 255));
+				DrawFormatString(160, 350, GetColor(0, 255, 255), "       %-10s   %09lld %04u/%02u/%02u", currentResultEntry.name, currentResultEntry.score, y, m, d);
+			}
+
+			DrawString(200, 420, "Z or Enter : タイトルへ戻る", GetColor(0, 255, 0));
+
+			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN) || Input::IsTrigger(KEY_INPUT_ESCAPE)) {
+				scene = SCENE_TITLE;
+			}
+			break;
+
+		case SCENE_CORRUPTED_NOTICE:
+			DrawString(180, 150, ":(", GetColor(255, 0, 0));
+			DrawString(180, 180, "スコアデータが破損しています", GetColor(255, 0, 0));
+			DrawString(160, 240, "ランキングを初期化して作り直します", GetColor(255, 255, 255));
+			DrawString(200, 300, "ZかEnterキーを押して続行", GetColor(0, 255, 0));
+
+			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
+				scene = SCENE_TITLE;
+			}
+			break;
+
+		case SCENE_NAME_ENTRY:
+		{
+			char c = GetInputChar(TRUE);
+			static int backspaceHoldCount = 0;			//BS長押しカウンタ
+
+			if (c != 0 && std::isalnum(static_cast<unsigned char>(c))) {	//アルファベットまたは数字の場合のみ追加 (std::isalnum を使用)
+				char upperChar = static_cast<char>(std::toupper(c));
+
+				if (inputName.length() < ScoreConfig::MAX_NAME_CHARS) {
+					inputName += upperChar;									//文字数未満なら末尾に追加
+				}
+				else if (!inputName.empty()) {								
+					inputName.back() = upperChar;							//文字数上限に達している場合は末尾の文字を上書き
+				}
+			}
+
+			if (Input::IsTrigger(KEY_INPUT_SPACE)) {
+				if (inputName.length() < ScoreConfig::MAX_NAME_CHARS) {
+					inputName += ' ';
+				}
+				else if(!inputName.empty()){
+					inputName.back() = ' ';									//スペースキーでも上書き対応
+				}
+			}
+			if (Input::IsPress(KEY_INPUT_BACK)) {
+				backspaceHoldCount++;
+				if (backspaceHoldCount == 1 || (backspaceHoldCount > 15 && backspaceHoldCount % 4 == 0)) {	//最初の1フレーム、又は0.5秒長押し後に4フレームごとに連打
+					if (!inputName.empty()) {
+						inputName.pop_back();
+					}
+				}
+			}
+			else {
+				backspaceHoldCount = 0;		//キーを離したら初期化
+			}
+
+
+			if (Input::IsTrigger(KEY_INPUT_RETURN)) {
+				std::string finalName = inputName.empty() ? ScoreConfig::EMPTY_NAME_FALLBACK : inputName;
+				int64_t finalScore = stageManager.GetPlayer().GetDisplayScore();
+				uint32_t currentDate = GetCurrentDateAsInt();
+
+				memset(&currentResultEntry, 0, sizeof(currentResultEntry));									//今回の結果情報を保持しておく
+				strncpy_s(currentResultEntry.name, finalName.c_str(), ScoreConfig::MAX_NAME_BYTES - 1);
+				currentResultEntry.score = finalScore;
+				currentResultEntry.date = currentDate;
+
+				scoreManager.AddScore(finalName, finalScore, 1, 1, currentDate);							//ランク外なら内部でソートせず弾く
+
+				scene = SCENE_RANKING;
+			}
+			DrawString(ScoreConfig::ENTRY_UI_TITLE_X, ScoreConfig::ENTRY_UI_TITLE_Y, "NEW HIGH SCORE!", GetColor(255, 255, 0));
+			DrawString(ScoreConfig::ENTRY_UI_MSG_X, ScoreConfig::ENTRY_UI_MSG_Y, "ENTER YOUR NAME", GetColor(255, 255, 255));
+
+			std::string displayName = inputName + "_";
+			DrawFormatString(ScoreConfig::ENTRY_UI_INPUT_X, ScoreConfig::ENTRY_UI_INPUT_Y, GetColor(0, 255, 255), "> %-9s", displayName.c_str());
+
+			DrawFormatString(ScoreConfig::ENTRY_UI_SCORE_X, ScoreConfig::ENTRY_UI_SCORE_Y, GetColor(255, 255, 255), "SCORE: %09d", stageManager.GetPlayer().GetDisplayScore());
+			DrawString(ScoreConfig::ENTRY_UI_HELP_X, ScoreConfig::ENTRY_UI_HELP_Y, "Enter : 確定   BS : 削除", GetColor(0, 255, 0));
+		}
+		break;
 
 		case(SCENE_QUIT_CONFIRM):
 			DrawString(240, 210, "終了しますか？", GetColor(0, 255, 255));
@@ -2932,6 +3077,195 @@ public:
 			ZabutonSlot[i].Reset();
 		}
 	}
+};
+// === File: ScoreData.h ===
+
+#pragma once
+#include <cstdint>
+#include <array>
+
+namespace ScoreConfig {
+	constexpr int MAX_NAME_CHARS = 10;		//プレイヤ入力文字数の上限
+	constexpr int MAX_NAME_BYTES = 32;		//UTF-8用として何バイト確保するか
+	constexpr int RANKING_MAX = 5;			//ランキング保持可能数
+
+	constexpr std::array<char, 4> FILE_HEADER = { 'T', 'H', 'S', 'D' };		//ファイル識別用マジックナンバー(TouHou Score Data)
+	constexpr uint16_t FILE_VERSION = 100;				//データ構造のバージョン
+
+	constexpr int64_t DEFAULT_SCORES[RANKING_MAX] = {			//ファウルの初回生成時に自動でセットされるハイスコアの初期値テーブル
+		00000000,
+		00000000,
+		00000000,
+		00000000,
+		00000000
+	};
+
+	constexpr const char* DEFAULT_NAMES[RANKING_MAX] = {		//プレイヤ名の初期値テーブル
+		"Player01",
+		"Player02",
+		"Player03",
+		"Player04",
+		"Player05"
+	};
+
+	constexpr const char* EMPTY_NAME_FALLBACK = "NO_NAME";		//名前入力欄が空の場合に補填するデフォルト文字列
+
+	/*　デフォルトパラメータ　*/
+	constexpr uint8_t DEFAULT_STAGE = 1;				//初期データの到達ステージ(面)
+	constexpr uint8_t DEFAULT_DIFFICULTY = 1;			//初期データの難易度
+	constexpr uint32_t DEFAULT_DATE = 20260101;			//初期データの達成日
+
+	constexpr int ENTRY_UI_TITLE_X = 200;				//タイトル描画X
+	constexpr int ENTRY_UI_TITLE_Y = 140;				//タイトル描画Y
+	constexpr int ENTRY_UI_MSG_X = 160;					//メッセージ描画X
+	constexpr int ENTRY_UI_MSG_Y = 180;					//メッセージ描画Y
+	constexpr int ENTRY_UI_INPUT_X = 240;				//入力文字描画X
+	constexpr int ENTRY_UI_INPUT_Y = 240;				//入力文字描画Y
+	constexpr int ENTRY_UI_SCORE_X = 200;				//スコア描画X
+	constexpr int ENTRY_UI_SCORE_Y = 300;				//スコア描画Y
+	constexpr int ENTRY_UI_HELP_X = 180;				//ヘルプ描画X
+	constexpr int ENTRY_UI_HELP_Y = 380;				//ヘルプ描画Y
+}
+
+struct HighScoreEntry {			//スコアデータの構造体
+	char name[ScoreConfig::MAX_NAME_BYTES];	//プレイヤ名を保持する文字配列(UTF-8文字列)
+	int64_t score;				//スコア値
+	uint8_t stage;				//到達ステージ番号
+	uint8_t difficulty;			//難易度設定値
+	uint32_t date;				//達成日(年月日)
+};
+
+
+struct ScoreDataFile {		//score.datにバイナリとして丸ごと書き出す最外枠の構造体
+	char header[4];										//ファイル先頭の識別子のバイト数
+	uint16_t version;									//ファイル構造バージョン識別子
+	HighScoreEntry rank[ScoreConfig::RANKING_MAX];		//構造体を5件分並べた配列
+};
+// === File: ScoreManager.cpp ===
+
+#include "ScoreManager.h"
+#include <fstream>
+#include <cstring>
+#include <algorithm>
+
+ScoreManager::ScoreManager(const std::string& filePath)		//ScoreManagerを生成する瞬間に自動で呼び出されるコンストラクタの開始でファイル名を受け取る
+	: m_filePath(filePath) {		//受け取ったファイル名をクラス内部のm_filePathに保存
+	SetDefaultScores();				//ファイルが読めなかった場合、初期状態のスコアでランキングを埋める
+	Load();
+}
+
+void ScoreManager::SetDefaultScores() {		
+	std::memcpy(m_scoreData.header, ScoreConfig::FILE_HEADER.data(), ScoreConfig::FILE_HEADER.size());	//スコアデータの先頭識別子領域にファイルヘッダをセット
+	m_scoreData.version = ScoreConfig::FILE_VERSION;		//スコアデータのバージョン番号スペースにバージョンを格納
+
+	for (int i = 0; i < ScoreConfig::RANKING_MAX; ++i) {			//ランキングの枠数分ループ
+		std::memset(m_scoreData.rank[i].name, 0, ScoreConfig::MAX_NAME_BYTES);			//名前格納領域をゼロクリア
+		strncpy_s(m_scoreData.rank[i].name, ScoreConfig::DEFAULT_NAMES[i], ScoreConfig::MAX_NAME_BYTES - 1);	//初期ランキングネームセット
+		m_scoreData.rank[i].score = ScoreConfig::DEFAULT_SCORES[i];				//初期スコアセット
+		m_scoreData.rank[i].stage = ScoreConfig::DEFAULT_STAGE;					//初期到達ステージ番号セット
+		m_scoreData.rank[i].difficulty = ScoreConfig::DEFAULT_DIFFICULTY;		//初期難易度番号セット
+		m_scoreData.rank[i].date = ScoreConfig::DEFAULT_DATE;					//初期日付セット
+	}
+}
+
+
+bool ScoreManager::Load() {
+	std::ifstream ifs(m_filePath, std::ios::binary);		//ファイルをバイナリモードで開く準備
+	if (!ifs.is_open()) {									//ファイルが開封できなかった(ファイル未作成)場合は初期スコアを新規ファイルとして書き出して作成して関数を途中終了
+		Save();
+		return false;
+	}
+
+	ScoreDataFile temp;			//ファイルから受け取ったデータを一時的に確認する為の作業用スペース
+	ifs.read(reinterpret_cast<char*>(&temp), sizeof(ScoreDataFile));		//開いたファイルから、スコアデータ全体を一気に読み込みtempに入れる
+	ifs.close();	//ファイルを閉じる
+
+	if (std::memcmp(temp.header, ScoreConfig::FILE_HEADER.data(), ScoreConfig::FILE_HEADER.size()) != 0) {	//読み込んだヘッダが正しい識別子と不一致(データ破損か別のファイルである)場合
+		SetDefaultScores();		//データ破損の為、メモリの中身を初期スコアに上書きして正常な状態に復旧して、初期化したことを通知して関数を途中終了
+		Save();
+		return false;
+	}
+
+	m_scoreData = temp;		//ヘッダが正常であるため、読み込んだデータを採用して関数を終了
+	return true;
+}
+
+bool ScoreManager::Save() {		//メモリ上のスコアをファイルに書き出し保存する関数
+	std::ofstream ofs(m_filePath, std::ios::binary);		//ファイルに書き込む為の準備をバイナリモードで開く
+	if (!ofs.is_open()) {		//ファイルが開けなかった場合、保存に失敗したことを通知して関数を途中終了
+		return false;
+	}
+
+	ofs.write(reinterpret_cast<const char*>(&m_scoreData), sizeof(ScoreDataFile));	//現在メモリにあるスコアデータ全体をファイルに丸ごと書き込む
+	ofs.close();	//ファイルを閉じて、正常に保存できたことを通知して関数を終了
+	return true;
+}
+
+bool ScoreManager::IsRankIn(int64_t score) const {	//今回のスコアがランクインしているかを確認する関数
+	return score > m_scoreData.rank[ScoreConfig::RANKING_MAX - 1].score;	//今回のスコアが現在の一番低いスコアより大きいかを判定し、大きければtrueを返す
+}
+
+int ScoreManager::AddScore(const std::string& name, int64_t score, uint8_t stage, uint8_t difficulty, uint32_t date) {	//新規ランクインしたスコアを追加して並び替えて保存する関数
+	if (!IsRankIn(score)) {		
+		return -1;			//ランク外であれば関数終了
+	}
+
+	HighScoreEntry& last = m_scoreData.rank[ScoreConfig::RANKING_MAX - 1];	//一番低いデータを直接書き換えるので、その場所を示す
+	std::memset(last.name, 0, ScoreConfig::MAX_NAME_BYTES);					//名前の記憶領域をゼロクリア
+	strncpy_s(last.name, name.c_str(), ScoreConfig::MAX_NAME_BYTES - 1);	//今回の新規ネームを書き込む
+	last.score = score;														//↓取得スコア、到達ステージ、難易度、達成年月日書き込み
+	last.stage = stage;														
+	last.difficulty = difficulty;											
+	last.date = date;														
+
+	std::sort(m_scoreData.rank, m_scoreData.rank + ScoreConfig::RANKING_MAX,	//ランキングデータを降順でソートする関数
+		[](const HighScoreEntry& a, const HighScoreEntry& b) {		//a,bを比較
+			return a.score > b.score;		//スコアが大きい方を前へ
+		});
+
+	int rankedIndex = -1;		//今回のデータが何位かを格納
+	for (int i = 0; i < ScoreConfig::RANKING_MAX; ++i) {	//ランキングの大きさだけ繰り返す
+		if (m_scoreData.rank[i].score == score && std::strcmp(m_scoreData.rank[i].name, name.c_str()) == 0) {	//i番目のスコアが今回のスコアと等しく且つ、名前も一致していた場合
+			rankedIndex = i;	//その場所の番号を格納してループ脱却
+			break;
+		}
+	}
+
+	Save();					//更新されたランキングをファイルへ上書き保存して、順位を返して関数終了
+	return rankedIndex;
+}
+
+const HighScoreEntry& ScoreManager::GetEntry(int rankIndex) const {		//画面に描画する為に、指定した順位のデータを取り出す関数
+	if (rankIndex < 0 || rankIndex >= ScoreConfig::RANKING_MAX) {
+		return m_scoreData.rank[0];		//指定された順位番号が負、又はランキング枠の大きさを超過している場合、エラーを防止する代わりに1位(Indexが0)を返す
+	}
+	return m_scoreData.rank[rankIndex];		//正常な番号であれば指定された順位データを返す
+}
+// === File: ScoreManager.h ===
+
+#pragma once
+#include "ScoreData.h"
+#include <string>
+
+class ScoreManager {
+private:
+	ScoreDataFile m_scoreData;				//現在メモリ上に保持しているスコアデータ
+	const std::string m_filePath;			//読み書き対象のファイルパス
+
+	void SetDefaultScores();				//データを初期化する関数
+
+public:
+	ScoreManager(const std::string& filePath = "score.dat");	//コンストラクタ
+	~ScoreManager() = default;									//デストラクタ
+
+	bool Load();		//ファイルから読み込む関数
+	bool Save();		//メモリ上のスコアをファイルへ書き出す関数
+
+	bool IsRankIn(int64_t score) const;				//引数のスコアが表示可能の順位内に入っているか判定する関数
+	int AddScore(const std::string& name, int64_t score, uint8_t stage, uint8_t difficulty, uint32_t date);		//新規のスコアを追加してソートして保存する関数(返し値は高い順に0からの順位)
+
+	const HighScoreEntry& GetEntry(int rankIndex) const;				//指定順位のスコア情報を取得する関数
+	const ScoreDataFile& GetScoreData() const { return m_scoreData; }	//スコアデータ構造体全体の参照を取得するインライン関数
 };
 // === File: StageManager.cpp ===
 
