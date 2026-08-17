@@ -57,6 +57,14 @@ void SceneManager::Update() {
 		if (Input::IsTrigger(KEY_INPUT_DOWN)) {
 			TitleMenu.Next();
 		}
+		if (Input::IsTrigger(KEY_INPUT_T)) {
+			m_bm->ClearAllBullets();
+			m_bm->ClearAllItems();
+			playingBulletTest = true;				//テストシーンであることを示すフラグ
+			testScene.Init();
+			scene = SCENE_BULLET_TEST;
+		}
+
 		if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
 			int select = TitleMenu.GetSelect();											//上で計算し終わって決定する直前のmenu_cursorを利用
 			if (select == 0) {
@@ -65,6 +73,7 @@ void SceneManager::Update() {
 				m_bm->ClearAllBullets();
 				m_bm->ClearAllItems();
 				playingPractice = false;											//通常スタート時はフラグを折る
+				playingBulletTest = false;											//同様にテストシーンフラグを折る
 				m_stageManager->Init(m_bm, lastSelectedStage, lastSelectedPhase, playingPractice);
 				scene = SCENE_STAGE;
 			}
@@ -82,6 +91,23 @@ void SceneManager::Update() {
 
 
 
+	case SCENE_BULLET_TEST:
+	{
+		bool isGameOver = testScene.Update(m_bm);
+		if (isGameOver) {
+			GameOverMenu.SetSelect(0);		//ゲームオーバーメニューでのカーソルを初期化
+			scene = SCENE_GAMEOVER;
+		}
+		if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
+			m_bm->ClearAllBullets();
+			playingBulletTest = false;		//抜ける時は弾全消しして、テストシーンフラグを折る
+			scene = SCENE_TITLE;
+		}
+	}
+	break;
+
+
+
 	case SCENE_PRACTICE:
 		if (Input::IsTrigger(KEY_INPUT_UP)) PracticeMenu.Prev();
 		if (Input::IsTrigger(KEY_INPUT_DOWN)) PracticeMenu.Next();
@@ -91,6 +117,7 @@ void SceneManager::Update() {
 			lastSelectedStage = 1;
 			lastSelectedPhase = PracticeMenu.GetSelect();
 			playingPractice = true;
+			playingBulletTest = false;									//プラクティススタート時はテストフラグを折る
 
 			m_bm->ClearAllBullets();
 			m_bm->ClearAllItems();
@@ -188,15 +215,28 @@ void SceneManager::Update() {
 			int select = GameOverMenu.GetSelect();
 
 			if (select == 0) {					//コンティニューする場合
-				m_stageManager->GetPlayer().loadingLife();		//基準残機数のセット
-				m_stageManager->GetPlayer().loadingBomb();		//基準ボム数のセット
-				m_stageManager->GetPlayer().SetInVincible(m_stageManager->GetPlayer().GetInvincibleTime());
-				scene = SCENE_STAGE;
-				m_bm->ClearEnemyBullets();
-				m_stageManager->GetPlayer().Reset(playingPractice);
+				if (playingBulletTest) {	//テストシーンの時
+					testScene.GetPlayer().Reset(true);		//Practiceモード同様の残機残ボムのセット
+					//testScene.GetPlayer().SetInVincible(testScene.GetPlayer().GetInvincibleTime());
+					m_bm->ClearEnemyBullets();
+					scene = SCENE_BULLET_TEST;
+				}
+				else {
+					m_stageManager->GetPlayer().loadingLife();		//基準残機数のセット
+					m_stageManager->GetPlayer().loadingBomb();		//基準ボム数のセット
+					m_stageManager->GetPlayer().SetInVincible(m_stageManager->GetPlayer().GetInvincibleTime());
+					scene = SCENE_STAGE;
+					m_bm->ClearEnemyBullets();
+					m_stageManager->GetPlayer().Reset(playingPractice);
+				}
 			}
+
 			if (select == 1) {					//諦める場合
-				if (!playingPractice) {
+				if (playingBulletTest) {	//テストシーンの時
+					playingBulletTest = false;
+					scene = SCENE_TITLE;
+				}
+				else if (!playingPractice) {					//通常プレイの時のみ名前入力
 					inputName = "";
 					scene = SCENE_NAME_ENTRY;
 				}
@@ -206,7 +246,7 @@ void SceneManager::Update() {
 
 					m_scoreManager->AddScore("PLR", m_stageManager->GetPlayer().GetDisplayScore(), 1, 1, GetCurrentDateAsInt());
 				}
-				scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
+				//scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
 			}
 		}
 		break;
@@ -336,6 +376,11 @@ void SceneManager::Update() {
 }
 
 
+
+
+
+
+
 void SceneManager::Draw() {
 	switch (scene) {
 	case SCENE_TITLE:
@@ -350,7 +395,6 @@ void SceneManager::Draw() {
 
 
 
-
 	case SCENE_PRACTICE:
 		DrawString(170, 100, "～～～ スペルプラクティスモード ～～～", GetColor(0, 255, 0));
 		DrawString(230, 150, (PracticeMenu.GetSelect() == 0 ? "> 1面道中" : "1面道中"), GetColor(255, 255, 255));
@@ -361,6 +405,13 @@ void SceneManager::Draw() {
 		DrawString(230, 300, (PracticeMenu.GetSelect() == 5 ? "> 1ボス　フィットフルナイトメア(笑)" : "フィットフルナイトメア(笑)"), GetColor(255, 255, 255));
 		DrawString(230, 330, (PracticeMenu.GetSelect() == 6 ? "> 1ボスラスペ" : "1ボスラスペ"), GetColor(255, 255, 255));
 		break;
+
+
+
+	case SCENE_BULLET_TEST:
+		testScene.Draw(m_bm, m_hud);
+		break;
+
 
 
 	case SCENE_STAGE:

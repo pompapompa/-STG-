@@ -2,6 +2,7 @@
 #include <string>
 #include "MenuManager.h"
 #include "ScoreData.h"
+#include "BulletTestScene.h"
 
 
 class BulletManager;
@@ -20,7 +21,8 @@ enum SceneType {
 	SCENE_RANKING,
 	SCENE_NAME_ENTRY,
 	SCENE_CORRUPTED_NOTICE,
-	SCENE_QUIT_CONFIRM
+	SCENE_QUIT_CONFIRM,
+	SCENE_BULLET_TEST
 };
 
 
@@ -36,11 +38,16 @@ private:
 	MenuManager PauseMenu;
 	MenuManager QuitMenu;
 	MenuManager GameOverMenu;		//メニュー管理インスタンス
+	
+	BulletTestScene testScene;
 
 	SceneType scene;
 	int lastSelectedStage;
 	int lastSelectedPhase;
 	bool playingPractice;
+
+	bool playingBulletTest = false;	//テストシーン経由のゲームオーバー判定フラグ
+	
 	std::string inputName;
 	HighScoreEntry currentResultEntry;
 	int backspaceHoldCount;
