@@ -540,6 +540,9 @@ public:
 	OwnerType owner;															//インスタンス宣言
 	bool isHoming = false;														//ホーミング弾フラグ
 
+	float charge = 0.0f;				//電荷
+	float mass = 1.0f;					//質量
+
 	float turnSpeed = 0.0f;							//弾自身の旋回しやすさを格納する変数
 
 	float x = 0;
@@ -856,6 +859,9 @@ public:
 	int GetPlayerBulletMax() const { return PlayerBMax; }
 	Bullet& GetPlayerBullet(int index) { return p_bullets[index]; }
 
+	int GetEnemyBulletMax() const { return EnemyBMax; }					
+	Bullet& GetEnemyBullet(int index) { return e_bullets[index]; }			//敵弾に直接アクセスするためのゲッタ
+
 
 	bool CheckPlayerCollision(float px, float py, float pr);
 	bool CheckEnemyCollision(float ex, float ey, float er, Player& player);	
@@ -1044,6 +1050,330 @@ namespace BulletPattern {
 	void ExecShot(float ex, float ey, const ShotConfig& conf, const Player& player, BulletManager* bm);
 #pragma endregion
 }
+// === File: BulletTestScene.cpp ===
+
+#include "BulletTestScene.h"
+#include "DxLib.h"
+#include "Common.h"
+#include "BulletPattern.h"
+#include "HUD.h"
+#include <math.h>
+
+
+
+BulletTestScene::BulletTestScene() {
+	using namespace PlayArea;
+	originX = CenterX;
+	originY = CenterY;										//弾幕発射地点の座標
+	testTimer = 0;
+	testState = 0;
+
+	/*
+	laserStartX = (float)CenterX;									//レーザ始点x座標はプレイ領域中央
+	laserStartY = (float)Top;										//レーザ始点y座標はプレイ領域上端
+	*/
+
+	laserStartX = (float)Left;
+	laserStartY = (float)CenterY;
+	
+	/*
+	laserDirX = 0.0f;										
+	laserDirY = 1.0f;
+	*/
+
+	laserDirX = 1.0f;
+	laserDirY = 0.0f;
+
+	currentParamIdx = 0;
+	
+	isTuningMode = false;											//チューニングモードフラグの初期化
+	InitParams();
+}
+
+
+void BulletTestScene::InitParams() {
+	params.clear();
+	//{					名前,				初期値, 1入力あたりの変化量,	最小値,		最大値 }
+	params.push_back({ "Current I",         2.000f,		0.100f,				-20.0f,		20.0f });
+	params.push_back({ "Flux Coeff (K)",    0.030f,		0.005f,				0.0f,		1.0f });
+	params.push_back({ "Softening (r0)",   20.000f,		1.000f,				1.0f,		100.0f });
+	params.push_back({ "Max Turn (BzCap)",  0.080f,		0.005f,				0.01f,		0.5f });
+	params.push_back({ "Bullet Speed",      3.000f,		0.100f,				0.5f,		10.0f });
+}
+
+
+void BulletTestScene::Init() {
+	testPlayer.Reset(true);									//プラクティス仕様でリセット
+	testTimer = 0;
+	testState = 0;
+	isTuningMode = false;
+}
+
+
+void BulletTestScene::UpdateParams() {
+	if (Input::IsTrigger(KEY_INPUT_TAB)) {
+		isTuningMode = !isTuningMode;
+	}
+
+	if (!isTuningMode || params.empty()) return;
+
+	// カーソル上下でパラメータ選択
+	if (Input::IsTrigger(KEY_INPUT_UP)) {
+		currentParamIdx = (currentParamIdx - 1 + (int)params.size()) % (int)params.size();
+	}
+	if (Input::IsTrigger(KEY_INPUT_DOWN)) {
+		currentParamIdx = (currentParamIdx + 1) % (int)params.size();						//↑↓でパラメータの種類選択
+	}
+
+	// 左右キー（または長押し）で値変更
+	auto& p = params[currentParamIdx];
+	if (Input::IsPress(KEY_INPUT_LEFT)) {
+		p.value -= p.step;
+		if (p.value < p.minVal) p.value = p.minVal;
+	}
+	if (Input::IsPress(KEY_INPUT_RIGHT)) {
+		p.value += p.step;
+		if (p.value > p.maxVal) p.value = p.maxVal;											//←→で値変更
+	}
+}
+
+
+bool BulletTestScene::Update(BulletManager* bm) {
+	if (!isTuningMode) {
+		testPlayer.Update(bm);
+	}
+	testTimer++;
+
+	UpdateParams();											//パラメータ調整エディタ入力更新
+
+	if (Input::IsTrigger(KEY_INPUT_C)) {					//敵弾、アイテム全消し
+		bm->ClearAllBullets();
+		bm->ClearAllItems();
+		testTimer = 0;
+	}
+
+	
+	if (Input::IsTrigger(KEY_INPUT_SPACE)) {				//スペース押下で弾幕切替
+		testState = (testState + 1) % 2;				
+		testTimer = 0;
+		bm->ClearEnemyBullets();
+	}
+	
+	float currentI		= params[0].value;
+	float fluxK			= params[1].value;
+	float softeningR	= params[2].value;
+	float maxBzCap		= params[3].value;
+	float shotSpeed		= params[4].value;
+										
+	if (testState == 0) {										//弾幕切替の状態が0の場合
+		if (testTimer % 60 == 0) {
+			float aimAngle = atan2f(testPlayer.GetY() - originY, testPlayer.GetX() - originX) * 180.0f / DX_PI_F;
+			BulletPattern::NWayShot(originX, originY, 4.0f, shotSpeed, 9, 180.0f, aimAngle, bm, 0); //青(負電荷)
+			BulletPattern::NWayShot(originX, originY, 4.0f, shotSpeed, 9, 180.0f, aimAngle, bm, 1); //赤(正電荷)
+		}
+	}
+	else if (testState == 1) {
+		if (testTimer % 5 == 0) {
+			float baseAngleDeg = (testTimer * 1.5f);												//回転速度
+			int colorType = (testTimer % 10 == 0) ? 1 : 0;
+			BulletPattern::NWayShot(originX, originY, 4.0f, shotSpeed, 8, 360.0f, baseAngleDeg, bm, colorType);
+		}
+	}
+
+	bm->Update(testPlayer.GetX(), testPlayer.GetY(), originX, originY, true, nullptr);		//敵の配列はダミーなのでヌルポインタを渡す
+
+	for (int i = 0; i < bm->GetEnemyBulletMax(); i++) {
+		Bullet& b = bm->GetEnemyBullet(i);
+		if (!b.GetFlag()) continue;
+
+		if (b.type == 0) b.charge = -1.0f;
+		else if (b.type == 1) b.charge = 1.0f;
+		else b.charge = 0.0f;
+
+		if (b.charge != 0.0f && b.mass > 0.0f) {
+			float currentSpeed = sqrtf(b.vx * b.vx + b.vy * b.vy);
+			if (currentSpeed <= 0.001f) continue;
+
+			// 線電流方向ベクトル u
+			float u_x = laserDirX;
+			float u_y = laserDirY;
+
+			// 弾の位置ベクトル (レーザー始点基準)
+			float px = b.x - laserStartX;
+			float py = b.y - laserStartY;
+
+			// 直線への射影長 t
+			float t = px * u_x + py * u_y;
+
+			// 直線上の最近接点
+			float closestX = laserStartX + t * u_x;
+			float closestY = laserStartY + t * u_y;
+
+			// 最近接点から弾への法線ベクトル n
+			float nx = b.x - closestX;
+			float ny = b.y - closestY;
+
+			// 距離 r の算出とソフトニング
+			float distSq = nx * nx + ny * ny;
+			float softeningSq = softeningR * softeningR;
+			float rEff = sqrtf(distSq + softeningSq);
+
+			// 単位法線ベクトル
+			float rReal = sqrtf(distSq);
+			if (rReal > 0.001f) {
+				nx /= rReal;
+				ny /= rReal;
+			}
+			else {
+				nx = -u_y;
+				ny = u_x;
+			}
+
+			// 磁束密度 B_z = (K * I / r) * (u × n)_z
+			float Bz = (fluxK * currentI / rEff) * (u_x * ny - u_y * nx);
+
+			// 磁束密度の上限クランプ
+			if (Bz > maxBzCap) Bz = maxBzCap;
+			if (Bz < -maxBzCap) Bz = -maxBzCap;
+
+			// ローレンツ力 F = q(v × B)
+			float Fx = b.charge * (b.vy * Bz);
+			float Fy = b.charge * (-b.vx * Bz);
+
+			// 速度ベクトルの偏向
+			b.vx += Fx / b.mass;
+			b.vy += Fy / b.mass;
+
+			// 磁束密度による仕事はゼロのため、元の速さに再正規化（純粋旋回）
+			float newSpeed = sqrtf(b.vx * b.vx + b.vy * b.vy);
+			if (newSpeed > 0.001f) {
+				b.vx = (b.vx / newSpeed) * currentSpeed;
+				b.vy = (b.vy / newSpeed) * currentSpeed;
+			}
+		}
+	}
+
+	if (Input::IsTrigger(KEY_INPUT_X) && testPlayer.GetBomb() > 0) {				//ボム・喰らいボムの処理
+		if (testPlayer.IsDeathTimerActive()) {			//喰らいボムタイマがアクティブの場合
+			testPlayer.StopDeathTimer();									//喰らいボムタイマストップ
+			testPlayer.SetInVincible(testPlayer.GetInvincibleTime());		//点滅
+			bm->ConvertEnemyBulletsToItems();								//敵弾を小スコアアイテム変換
+			testPlayer.ComsumeBomb();										//ボム消費
+		}
+		else if (!testPlayer.IsInvincible()) {			//点滅していない時
+			bm->ConvertEnemyBulletsToItems();		//敵弾を小スコアアイテム変換
+			testPlayer.ComsumeBomb();				//ボム消費
+		}
+	}
+
+
+	if (!testPlayer.IsInvincible()) {		//点滅(無敵)中でない場合
+		bool isHit = bm->CheckPlayerCollision(testPlayer.GetX(), testPlayer.GetY(), testPlayer.GetHitR());	//当たり判定
+		if (isHit && !testPlayer.IsDeathTimerActive()) {			
+			testPlayer.StartDeathTimer();						//被弾して且つ、喰らいボムまでのタイマがインアクティブな場合に喰らいまでのボムタイマ起動
+		}
+	}
+
+	if (testPlayer.GetLife() < 0) {
+	/*	testPlayer.Reset(TRUE);									//残機数が負に成ったらデフォ(TRUE:プラクティス)の残機数をセットし直して何度でも被弾可能とする
+		bm->ClearAllBullets();									//復帰時の被弾ループ回避のために全敵弾消去	*/	
+		return true;
+	}
+	return false;
+}
+
+void BulletTestScene::Draw(BulletManager* bm, HUD* hud) {
+	using namespace PlayArea;
+
+
+	DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);		//プレイ領域の描画
+	DrawLine((int)laserStartX, (int)laserStartY,
+		(int)(laserStartX + laserDirX * 1000.0f), (int)(laserStartY + laserDirY * 1000.0f),
+		GetColor(255, 255, 0), 2);
+
+	testPlayer.Draw();			//自機描画
+	bm->Draw();					//弾の描画
+	testPlayer.DrawHitBox();	//当たり判定の描画
+
+	DrawCircle((int)originX, (int)originY, 15, GetColor(255, 0, 0), FALSE);		//発射源の描画
+
+	if (hud != nullptr) {
+		hud->Draw(&testPlayer);			//Drawの引数がダミーでなければHUDを描画
+	}
+
+	unsigned int titleColor = isTuningMode ? GetColor(255, 255, 0) : GetColor(0, 255, 255);
+	DrawString(Right + 15, 260, isTuningMode ? "== TUNING: ACTIVE ==" : "=== PARAM TUNER ===", titleColor);
+
+	for (size_t i = 0; i < params.size(); ++i) {
+		unsigned int color = GetColor(150, 150, 150);
+		if (isTuningMode) {
+			color = (i == (size_t)currentParamIdx) ? GetColor(255, 255, 0) : GetColor(220, 220, 220);
+		}
+		const char* cursor = (isTuningMode && i == (size_t)currentParamIdx) ? ">" : " ";
+		DrawFormatString(Right + 10, (int)(280 + i * 20), color, "%s %-16s:%6.3f", cursor, params[i].name.c_str(), params[i].value);
+	}
+
+	DrawString(Right + 15, 390, "Up/Down: 選択  Left/Right: 調整", GetColor(180, 180, 180));
+	DrawString(Right + 15, 410, "Space: 弾幕切替  C: 全消去", GetColor(180, 180, 180));
+	DrawString(Right + 15, 430, "Esc  : タイトルへ", GetColor(180, 180, 180));
+}
+
+// === File: BulletTestScene.h ===
+
+#pragma once
+#include "Player.h"
+#include "BulletManager.h"
+#include "Input.h"
+#include <string>
+#include <vector>
+
+class HUD;							//前方宣言
+
+struct DebugParam {
+	std::string name;	//パラメータ名
+	float value;		//現在値
+	float step;			//1回の変更量
+	float minVal;		//最小値
+	float maxVal;		//最大値
+
+	DebugParam(const std::string& in_name, float in_val, float in_step, float in_min, float in_max)
+		: name(in_name), value(in_val), step(in_step), minVal(in_min), maxVal(in_max) {}
+};
+
+
+class BulletTestScene {
+private:
+	Player testPlayer;				//テスト用の自機
+	float originX, originY;			//弾の発射源
+	int testTimer;					//テスト環境の経過フレーム
+	int testState;					//発射パターンの切替用状態
+
+	float laserStartX, laserStartY;	//レーザの始点座標
+	float laserDirX, laserDirY;		//レーザの方向ベクトル(正規化済み)
+
+
+	float magneticCoeffK;			//磁束密度係数 K
+	float softeningRadius;			//ソフトニング半径 (発散防止緩衝幅)
+
+	std::vector<DebugParam> params;	//調整パラメータ一覧
+	int currentParamIdx;			//現在選択中のパラメータ番号
+
+	bool isTuningMode;				//パラメータ調整モード中かどうかのフラグ
+
+	void InitParams();				//パラメータリスト初期化関数
+	void UpdateParams();			//パラメータ入力更新関数
+
+
+public:
+	BulletTestScene();
+
+	void Init();
+	bool Update(BulletManager* bm);							//ゲームオーバー判定用にbool
+	void Draw(BulletManager* bm, HUD* hud);		
+	Player& GetPlayer() { return testPlayer; }				//コンティニュー復帰時にPlayerの参照を取得するためのゲッタ
+};
+
+
 // === File: BurstController.h ===
 
 #pragma once
@@ -1346,7 +1676,7 @@ public:
 	static constexpr int EnemyMax = 100;
 	static constexpr float ItemScatterRadius = 15.0f;		//撃破時のアイテム散布半径
 };
-// === File: FPSManager.cpp ===
+// === File: FpsManager.cpp ===
 
 #include "FpsManager.h"
 
@@ -1385,7 +1715,7 @@ void FPSManager::Wait() {
 		WaitTimer(waitTime);												//idealTimeよりactualTimeが早かったら、waitTimeだけ待機
 	}
 }
-// === File: FPSManager.h ===
+// === File: FpsManager.h ===
 
 #pragma once
 #include "DxLib.h"
@@ -1906,16 +2236,8 @@ public:
 #include "ImageEditor.h"
 #include "StageManager.h"
 #include "BulletManager.h"
-#include "Bullet.h"
-#include "Player.h"
-#include "Enemy.h"
-#include "Boss.h"
-#include "MenuManager.h"
 #include "ScoreManager.h"
-#include <ctime>
-#include <string>
-#include <math.h>
-
+#include "SceneManager.h"
 using namespace DxLib;									//IntelliSenseの勘違い防止
 
 WNDPROC OldWndProc = nullptr;								//DxLibの元のWndProcを保持するための変数
@@ -1933,32 +2255,10 @@ LRESULT CALLBACK MyWndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)		//タス�
 	return CallWindowProc(OldWndProc, hWnd, msg, wp, lp);			//DefWindowProcに返すことで、他の標準処理を壊さないようにする
 }
 
-uint32_t GetCurrentDateAsInt() {
-	std::time_t t = std::time(nullptr);		//std::time：C/C++の標準時計関数、1970年1月1日からの経過秒数をtへ格納
-	std::tm now;							//年月日時分秒に分解して保持するための標準構造体std::tmの変数now
-	localtime_s(&now, &t);					//秒数データtをJSTの年月日に変換してnowに書き込む
 
-	uint32_t year = static_cast<uint32_t>(now.tm_year + 1900);	//1900年からの経過年数が入っているので1900を加算
-	uint32_t month = static_cast<uint32_t>(now.tm_mon + 1);		//0~11で月を表しているので1を加算
-	uint32_t day = static_cast<uint32_t>(now.tm_mday);			//日にちを抽出してdayに格納
-
-	return (year * 10000) + (month * 100) + day;				//年月日を8桁に結合する計算
-}
 
 /*　ーーーーーDxLibのデフォ：画面サイズ(640,480)ーーーーー　*/
 
-enum SceneType {
-	SCENE_TITLE,
-	SCENE_PRACTICE,
-	SCENE_STAGE,
-	SCENE_GAMEOVER,
-	SCENE_CLEAR,
-	SCENE_PAUSE,
-	SCENE_RANKING,
-	SCENE_NAME_ENTRY,
-	SCENE_CORRUPTED_NOTICE,
-	SCENE_QUIT_CONFIRM
-};
 
 
 
@@ -1974,32 +2274,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	OldWndProc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)MyWndProc);		//SetWindowLongPtr の戻り値（元の WndProc）を OldWndProc に保存する
 
 	BulletManager bm;
-	MenuManager TitleMenu(5);							//引数が必要なクラスなのでインスタンスにも引数を与える
-	MenuManager PracticeMenu(7);						
-	MenuManager PauseMenu(3);
-	MenuManager QuitMenu(2);
-	MenuManager GameOverMenu(2);
 	ScoreManager scoreManager;
 	bool isScoreLoaded = scoreManager.Load();
-	SceneType scene = SCENE_TITLE;							//場面を初期化(タイトル)
-	if (!isScoreLoaded) scene = SCENE_CORRUPTED_NOTICE;		//起動時にスコアデータが正常で無いと検知された場合は破損通知シーンへ繊維
 	StageManager stageManager;
 	HUD hud;
 	hud.Init();
-	InitCustomGraphics();
-	
-	int lastSelectedStage = 1;							
-	int lastSelectedPhase = 0;												//これらはリトライで適切なステージとフェーズに飛べる用に保存
-	bool playingPractice = false;											//プラクティス経由かどうかを判定するフラグ(前使っていたplayintPracticeとは用途はちがくなっている)
-	std::string inputName = ScoreConfig::DEFAULT_NAMES[0];					//入力中の文字列を保持するバッファ変数
-	HighScoreEntry currentResultEntry = {};									//今回のプレイ結果を保持
+	InitCustomGraphics();		
 
-	while (ProcessMessage() == 0 && ClearDrawScreen() == 0) {						//メインループ
+	SceneManager sceneManager(&bm, &scoreManager, &stageManager, &hud, isScoreLoaded);		//実体のポインタをSceneManagerに渡して初期化
+
+
+	while (ProcessMessage() == 0 && ClearDrawScreen() == 0) {								//メインループ
 		Input::Update();		
-		FPSManager::Update();														//fps計算の更新
+		FPSManager::Update();																//fps計算の更新
 
-		if (scene != SCENE_NAME_ENTRY && Input::IsTrigger(KEY_INPUT_F)) {			//名前入力シーンではFが入力出来るように除外
-			isWindow = !isWindow;							//trueとfalseの状態を交互に交換する
+		if (sceneManager.CanToggleFullscreen() && Input::IsTrigger(KEY_INPUT_F)) {			//名前入力シーンではFが入力出来るように除外
+			isWindow = !isWindow;													//trueとfalseの状態を交互に交換する
 			ChangeWindowMode(isWindow ? TRUE : FALSE);
 
 			bm.ReloadGraphic();
@@ -2008,393 +2298,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			RefreshAllCustomGraphs();
 			SetDrawScreen(DX_SCREEN_BACK);
 		}
-
-
-
-		switch (scene) {
-		case SCENE_TITLE:
-			DrawString(250, 210, "東 方 酔 々 夢", GetColor(255, 255, 255));
-			DrawString(270, 270, (TitleMenu.GetSelect() == 0 ? "> Start" : "Start"), GetColor(255, 255, 255));
-			DrawString(270, 300, (TitleMenu.GetSelect() == 1 ? "> Practice Start" : "Practice Start"), GetColor(255, 255, 255));
-			DrawString(270, 330, (TitleMenu.GetSelect() == 2 ? "> Result" : "Result"), GetColor(255, 255, 255));
-			DrawString(270, 360, (TitleMenu.GetSelect() == 3 ? "> Replay" : "Replay"), GetColor(255, 255, 255));
-			DrawString(270, 390, (TitleMenu.GetSelect() == 4 ? "> Quit" : "Quit"), GetColor(255, 255, 255));
-			DrawString(30, 450, "決定：Z or Enter　　フルスクリーン/ウィンドウ：F", GetColor(0, 255, 0));
-
-
-			if (Input::IsTrigger(KEY_INPUT_UP)) {
-				TitleMenu.Prev();
-			}
-			if (Input::IsTrigger(KEY_INPUT_DOWN)) {
-				TitleMenu.Next();
-			}
-			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
-				int select = TitleMenu.GetSelect();											//上で計算し終わって決定する直前のmenu_cursorを利用
-				if (select == 0) {
-					lastSelectedStage = 1;
-					lastSelectedPhase = 0;
-					bm.ClearAllBullets();
-					bm.ClearAllItems();
-					playingPractice = false;											//通常スタート時はフラグを折る
-					stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase, playingPractice);
-					scene = SCENE_STAGE;
-				}
-				if (select == 1) {
-					scene = SCENE_PRACTICE;
-				}
-				if (select == 2) scene = SCENE_RANKING;
-				if (select == 3) scene = SCENE_QUIT_CONFIRM;
-				if (select == 4) scene = SCENE_QUIT_CONFIRM;
-			}
-			if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
-				TitleMenu.SetSelect(4);
-			}
-			break;
-
-
-		case SCENE_PRACTICE:
-			DrawString(170, 100, "～～～ スペルプラクティスモード ～～～", GetColor(0, 255, 0));
-			DrawString(230, 150, (PracticeMenu.GetSelect() == 0 ? "> 1面道中" : "1面道中"), GetColor(255, 255, 255));
-			DrawString(230, 180, (PracticeMenu.GetSelect() == 1 ? "> 1ボス　通1" : "1ボス　通1"), GetColor(255, 255, 255));
-			DrawString(230, 210, (PracticeMenu.GetSelect() == 2 ? "> 1ボス　スペカ1" : "1ボス　スペカ1"), GetColor(255, 255, 255));
-			DrawString(230, 240, (PracticeMenu.GetSelect() == 3 ? "> 1ボス　通2" : "1ボス　通2"), GetColor(255, 255, 255));
-			DrawString(230, 270, (PracticeMenu.GetSelect() == 4 ? "> 1ボス　天上天下の照國(笑)" : "1ボス　天上天下の照國(笑)"), GetColor(255, 255, 255));
-			DrawString(230, 300, (PracticeMenu.GetSelect() == 5 ? "> 1ボス　フィットフルナイトメア(笑)" : "フィットフルナイトメア(笑)"), GetColor(255, 255, 255));
-			DrawString(230, 330, (PracticeMenu.GetSelect() == 6 ? "> 1ボスラスペ" : "1ボスラスペ"), GetColor(255, 255, 255));
-
-
-			if (Input::IsTrigger(KEY_INPUT_UP)) PracticeMenu.Prev();
-			if (Input::IsTrigger(KEY_INPUT_DOWN)) PracticeMenu.Next();
-			if (Input::IsPress(KEY_INPUT_ESCAPE)) scene = SCENE_TITLE;
-
-			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
-				lastSelectedStage=1;
-				lastSelectedPhase = PracticeMenu.GetSelect();
-				playingPractice = true;			
-
-				bm.ClearAllBullets();
-				bm.ClearAllItems();
-				stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase, playingPractice);
-				scene=SCENE_STAGE;
-			}
-			break;
-
-
-		case SCENE_STAGE:
-		{
-			using namespace PlayArea;											//これによりnamespaceのPlayArea内で定義したものがこの関数内限定で使用できるようになる
-
-			stageManager.Update(&bm);
-
-			bm.Update(
-				stageManager.GetPlayer().GetX(),
-				stageManager.GetPlayer().GetY(),
-				stageManager.GetBoss().GetX(),
-				stageManager.GetBoss().GetY(),
-				stageManager.GetBoss().GetFlag(),			//stageManagerからplayerとBossを借りてきて座標を渡す
-				stageManager.GetFairies()
-			);
-
-			bool isAutoCollect = (stageManager.GetPlayer().GetY() < PlayArea::ItemCollectionLine);						//自機が上部回収ラインより上の時、isAutoCollectをtrueへ
-
-			if (Input::IsTrigger(KEY_INPUT_X) && stageManager.GetPlayer().GetBomb() > 0) {								// X押下且つ残ボムがある場合
-				if (stageManager.GetPlayer().IsDeathTimerActive() || !stageManager.GetPlayer().IsInvincible()) {		//喰らいボム通常ボム発動した場合
-					isAutoCollect = true;																				//回収モードオン
-				}
-			}
-
-			bm.UpdateItems(
-				stageManager.GetPlayer(),
-				50.0f,
-				isAutoCollect
-			);
-
-			bool isDead = stageManager.GetBoss().CheckCollision(stageManager.GetPlayer(), bm);
-
-			bool isPlayerHit = false;
-			if (!stageManager.GetPlayer().IsInvincible()) {
-				isPlayerHit = bm.CheckPlayerCollision(
-					stageManager.GetPlayer().GetX(),
-					stageManager.GetPlayer().GetY(),
-					stageManager.GetPlayer().GetHitR()
-				);
-			}
-
-			if (isPlayerHit && !stageManager.GetPlayer().IsDeathTimerActive()) {	//被弾且つdeathTimerがアクティブではない時
-				stageManager.GetPlayer().StartDeathTimer();								//deathTimerを始動(アクティベート)
-			}
-
-			if (stageManager.GetPlayer().GetLife() < 0) {		//残機(整数型)が負即ち残機0で被弾した状態の場合
-				GameOverMenu.SetSelect(0);							//ゲームオーバーシーンのカーソルの初期化
-				scene = SCENE_GAMEOVER;								
-			}
-
-			bm.DrawItems();
-			stageManager.Draw(&bm);					//敵や自機本体の描画
-			bm.Draw();								//弾の描画
-			stageManager.GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
-			hud.Draw(&stageManager.GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
-
-			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
-
-			if (Input::IsTrigger(KEY_INPUT_X) && stageManager.GetPlayer().GetBomb() > 0) {// X押下且つボム数が1以上の時
-				if (stageManager.GetPlayer().IsDeathTimerActive()) {								//deathTimerがアクティブな時
-					stageManager.GetPlayer().StopDeathTimer();												//deathTimerを停止(inactivate)
-					stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());	//無敵時間をセット
-					bm.ConvertEnemyBulletsToItems();														//敵弾を小スコアへ変換
-					stageManager.GetPlayer().ComsumeBomb();													//ボム消費
-				}
-				else if (!stageManager.GetPlayer().IsInvincible()){									//無敵状態でなければ通常ボム消費	
-					bm.ConvertEnemyBulletsToItems();														//敵弾を小スコアへ変換
-					stageManager.GetPlayer().ComsumeBomb();													//ボム消費
-				}
-			}
-
-			if (stageManager.GetBoss().IsStageClear()) {											//ボスを倒したフラグが返されたらタイトルに戻る
-				while (Input::IsTrigger(KEY_INPUT_F)) ProcessMessage();		//z,enterキーを長押し状態でCLEARに遷移してきた時に離したらそのままタイトルに行くのを防ぐ為の文
-				ClearInputCharBuf();				//画面遷移前にキー入力バッファを完全クリアして、入力画面でも予約されたキー入力が起きないように対策
-				if (!playingPractice) {
-					inputName = "";
-					scene = SCENE_NAME_ENTRY;
-				}
-				else {
-					scene = SCENE_CLEAR;
-				}
-			}
-
-			if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
-				PauseMenu.SetSelect(0);								//ポーズ遷移前にポーズメニュのカーソルを初期化
-				scene = SCENE_PAUSE;
-			}
-		}															//case SCENE_STAGEの中身を囲うことで変数のスコープがその中限定となる
-		break;
-
-		case SCENE_GAMEOVER:
-		{
-			using namespace PlayArea;
-			
-			bm.DrawItems();
-			stageManager.Draw(&bm);					//敵や自機本体の描画
-			bm.Draw();								//弾の描画
-			stageManager.GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
-			hud.Draw(&stageManager.GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
-			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);	//プレイ領域描画
-
-			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 120);
-			DrawBox(Left - Margin, Top - Margin, Right + Margin, Bottom + Margin, GetColor(0, 0, 0), true);
-			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-
-			DrawString(Left + 150, Top + 150, "Game Over", GetColor(255, 0, 0));
-			DrawString(Left + 130, Top + 200, "コンティニュー", GetColor(255, 255, 255));
-
-			DrawString(Left + 160, Top + 240, "はい", GameOverMenu.GetSelect() == 0 ? GetColor(255, 255, 0) : GetColor(128, 128, 128));
-			DrawString(Left + 160, Top + 270, "いいえ", GameOverMenu.GetSelect() == 1 ? GetColor(255, 255, 0) : GetColor(128, 128, 128));
 		
-			if (Input::IsTrigger(KEY_INPUT_UP)) { GameOverMenu.Prev(); }
-			if (Input::IsTrigger(KEY_INPUT_DOWN)) { GameOverMenu.Next(); }
-			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
-				int select = GameOverMenu.GetSelect();
+		sceneManager.Update();
+		sceneManager.Draw();
 
-				if (select == 0) {					//コンティニューする場合
-					stageManager.GetPlayer().loadingLife();		//基準残機数のセット
-					stageManager.GetPlayer().loadingBomb();		//基準ボム数のセット
-					stageManager.GetPlayer().SetInVincible(stageManager.GetPlayer().GetInvincibleTime());
-					scene = SCENE_STAGE;
-					bm.ClearEnemyBullets();					
-					stageManager.GetPlayer().Reset(playingPractice);
-				}
-				if (select == 1) {					//諦める場合
-					if (!playingPractice) {
-						inputName = "";
-						scene = SCENE_NAME_ENTRY;
-					}
-					else{
-						scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
-
-						
-						scoreManager.AddScore("PLR", stageManager.GetPlayer().GetDisplayScore(), 1, 1, GetCurrentDateAsInt());
-					}
-					scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
-				}
-			}
-		}
-		break;
-
-		case SCENE_CLEAR:
-
-			DrawString(270, 240, "All Clear!!!", GetColor(0, 255, 0), false);
-			DrawString(180, 300, (playingPractice ? "プラクティスに戻るにはZかEnterキーを押してください" : "終了するにはZかEnterキーを押して下さい"), GetColor(0, 255, 0), false);
-
-			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
-				scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;													//三項演算子によりシーン遷移
-			}
-			break;
-
-
-		case(SCENE_PAUSE):
-			using namespace PlayArea;
-			
-			DrawString(470, 220, "一時停止", GetColor(0, 255, 255));
-			DrawString(470, 270, (PauseMenu.GetSelect() == 0 ? "> 続ける" : "続ける"), GetColor(255, 255, 255));
-			DrawString(470, 300, (PauseMenu.GetSelect() == 1 ? "> タイトルに戻る" : "タイトルに戻る"), GetColor(255, 255, 255));
-			DrawString(470, 330, (PauseMenu.GetSelect() == 2 ? "> やり直す" : "やり直す"), GetColor(255, 255, 255));
-
-			DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
-		
-			bm.DrawItems();
-			stageManager.Draw(&bm);					//敵や自機本体の描画
-			bm.Draw();								//弾の描画
-			stageManager.GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
-			hud.Draw(&stageManager.GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
-
-			if (Input::IsTrigger(KEY_INPUT_UP)) { PauseMenu.Prev(); }
-			if (Input::IsTrigger(KEY_INPUT_DOWN)) { PauseMenu.Next(); }
-
-			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
-				int select = PauseMenu.GetSelect();
-				if (select == 0) scene = SCENE_STAGE;
-				if (select == 1) { scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE; }
-				if (select == 2) {
-					bm.ClearAllBullets();
-					bm.ClearAllItems();
-					stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase, playingPractice);									//やり直しなのでリセット処理
-					scene = SCENE_STAGE;
-				}
-			}
-
-			if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
-				scene = SCENE_STAGE;
-			}
-
-			if (Input::IsRelease(KEY_INPUT_R)) {
-				bm.ClearAllBullets();
-				bm.ClearAllItems();
-				stageManager.Init(&bm, lastSelectedStage, lastSelectedPhase, playingPractice);
-				scene = SCENE_STAGE;
-			}
-
-			if (Input::IsTrigger(KEY_INPUT_Q)) {
-				scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
-			}
-
-			break;
-
-		case(SCENE_RANKING):
-			DrawString(240, 80, "HIGH SCORE RANKING", GetColor(255, 255, 255));
-			for (int i = 0; i < ScoreConfig::RANKING_MAX; ++i) {
-				const HighScoreEntry& entry = scoreManager.GetEntry(i);
-				
-				uint32_t y = entry.date / 10000;			
-				uint32_t m = (entry.date % 10000) / 100;
-				uint32_t d = entry.date % 100;					//年月日をそれぞれ抽出
-
-				DrawFormatString(160, 140 + (i * 35), GetColor(255, 255, 255),"No.%d   %-10s   %09lld %04u/%02u/%02u", i + 1, entry.name, entry.score, y, m, d);
-			}
-
-			if (currentResultEntry.name[0] != '\0') {
-				uint32_t y = currentResultEntry.date / 10000;
-				uint32_t m = (currentResultEntry.date % 10000) / 100;
-				uint32_t d = currentResultEntry.date % 100;
-
-				DrawString(160, 310, "---------------------------------------------", GetColor(128, 128, 128));
-				DrawString(160, 330, "YOUR SCORE:", GetColor(0, 255, 255));
-				DrawFormatString(160, 350, GetColor(0, 255, 255), "       %-10s   %09lld %04u/%02u/%02u", currentResultEntry.name, currentResultEntry.score, y, m, d);
-			}
-
-			DrawString(200, 420, "Z or Enter : タイトルへ戻る", GetColor(0, 255, 0));
-
-			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN) || Input::IsTrigger(KEY_INPUT_ESCAPE)) {
-				scene = SCENE_TITLE;
-			}
-			break;
-
-		case SCENE_CORRUPTED_NOTICE:
-			DrawString(180, 150, ":(", GetColor(255, 0, 0));
-			DrawString(180, 180, "スコアデータが破損しています", GetColor(255, 0, 0));
-			DrawString(160, 240, "ランキングを初期化して作り直します", GetColor(255, 255, 255));
-			DrawString(200, 300, "ZかEnterキーを押して続行", GetColor(0, 255, 0));
-
-			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
-				scene = SCENE_TITLE;
-			}
-			break;
-
-		case SCENE_NAME_ENTRY:
-		{
-			char c = GetInputChar(TRUE);
-			static int backspaceHoldCount = 0;			//BS長押しカウンタ
-
-			if (c != 0 && std::isalnum(static_cast<unsigned char>(c))) {	//アルファベットまたは数字の場合のみ追加 (std::isalnum を使用)
-				char upperChar = static_cast<char>(std::toupper(c));
-
-				if (inputName.length() < ScoreConfig::MAX_NAME_CHARS) {
-					inputName += upperChar;									//文字数未満なら末尾に追加
-				}
-				else if (!inputName.empty()) {								
-					inputName.back() = upperChar;							//文字数上限に達している場合は末尾の文字を上書き
-				}
-			}
-
-			if (Input::IsTrigger(KEY_INPUT_SPACE)) {
-				if (inputName.length() < ScoreConfig::MAX_NAME_CHARS) {
-					inputName += ' ';
-				}
-				else if(!inputName.empty()){
-					inputName.back() = ' ';									//スペースキーでも上書き対応
-				}
-			}
-			if (Input::IsPress(KEY_INPUT_BACK)) {
-				backspaceHoldCount++;
-				if (backspaceHoldCount == 1 || (backspaceHoldCount > 15 && backspaceHoldCount % 4 == 0)) {	//最初の1フレーム、又は0.5秒長押し後に4フレームごとに連打
-					if (!inputName.empty()) {
-						inputName.pop_back();
-					}
-				}
-			}
-			else {
-				backspaceHoldCount = 0;		//キーを離したら初期化
-			}
-
-
-			if (Input::IsTrigger(KEY_INPUT_RETURN)) {
-				std::string finalName = inputName.empty() ? ScoreConfig::EMPTY_NAME_FALLBACK : inputName;
-				int64_t finalScore = stageManager.GetPlayer().GetDisplayScore();
-				uint32_t currentDate = GetCurrentDateAsInt();
-
-				memset(&currentResultEntry, 0, sizeof(currentResultEntry));									//今回の結果情報を保持しておく
-				strncpy_s(currentResultEntry.name, finalName.c_str(), ScoreConfig::MAX_NAME_BYTES - 1);
-				currentResultEntry.score = finalScore;
-				currentResultEntry.date = currentDate;
-
-				scoreManager.AddScore(finalName, finalScore, 1, 1, currentDate);							//ランク外なら内部でソートせず弾く
-
-				scene = SCENE_RANKING;
-			}
-			DrawString(ScoreConfig::ENTRY_UI_TITLE_X, ScoreConfig::ENTRY_UI_TITLE_Y, "NEW HIGH SCORE!", GetColor(255, 255, 0));
-			DrawString(ScoreConfig::ENTRY_UI_MSG_X, ScoreConfig::ENTRY_UI_MSG_Y, "ENTER YOUR NAME", GetColor(255, 255, 255));
-
-			std::string displayName = inputName + "_";
-			DrawFormatString(ScoreConfig::ENTRY_UI_INPUT_X, ScoreConfig::ENTRY_UI_INPUT_Y, GetColor(0, 255, 255), "> %-9s", displayName.c_str());
-
-			DrawFormatString(ScoreConfig::ENTRY_UI_SCORE_X, ScoreConfig::ENTRY_UI_SCORE_Y, GetColor(255, 255, 255), "SCORE: %09d", stageManager.GetPlayer().GetDisplayScore());
-			DrawString(ScoreConfig::ENTRY_UI_HELP_X, ScoreConfig::ENTRY_UI_HELP_Y, "Enter : 確定   BS : 削除", GetColor(0, 255, 0));
-		}
-		break;
-
-		case(SCENE_QUIT_CONFIRM):
-			DrawString(240, 210, "終了しますか？", GetColor(0, 255, 255));
-			DrawString(240, 240, (QuitMenu.GetSelect() == 1 ? "> はい　　いいえ" : "はい　　>いいえ"), GetColor(0, 255, 255));
-
-			if (Input::IsTrigger(KEY_INPUT_LEFT)) QuitMenu.Prev();
-			if (Input::IsTrigger(KEY_INPUT_RIGHT)) QuitMenu.Next();
-
-			if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
-				int select = QuitMenu.GetSelect();
-				if (select == 0) scene = SCENE_TITLE;
-				if (select == 1) DxLib::DxLib_End();
-			}
-			break;
-		}
 		FPSManager::Draw();																		//fpsの描画。ゲームのどの描画よりも前に描画する為ScreenFlipの直前に記述
 		DxLib::ScreenFlip();
 		FPSManager::Wait();																		//fps固定
@@ -3078,6 +2985,624 @@ public:
 		}
 	}
 };
+// === File: SceneManager.cpp ===
+
+#include "SceneManager.h"
+#include "DxLib.h"
+#include "Input.h"
+#include "BulletManager.h"
+#include "ScoreManager.h"
+#include "StageManager.h"
+#include "HUD.h"
+#include "Common.h"
+#include "Player.h"
+#include "Boss.h"
+#include <ctime>
+#include <cctype>
+#include <cstring>
+
+
+static uint32_t GetCurrentDateAsInt() {
+	std::time_t t = std::time(nullptr);		//std::time：C/C++の標準時計関数、1970年1月1日からの経過秒数をtへ格納
+	std::tm now;							//年月日時分秒に分解して保持するための標準構造体std::tmの変数now
+	localtime_s(&now, &t);					//秒数データtをJSTの年月日に変換してnowに書き込む
+
+	uint32_t year = static_cast<uint32_t>(now.tm_year + 1900);	//1900年からの経過年数が入っているので1900を加算
+	uint32_t month = static_cast<uint32_t>(now.tm_mon + 1);		//0~11で月を表しているので1を加算
+	uint32_t day = static_cast<uint32_t>(now.tm_mday);			//日にちを抽出してdayに格納
+
+	return (year * 10000) + (month * 100) + day;				//年月日を8桁に結合する計算
+}
+
+SceneManager::SceneManager(BulletManager* bm, ScoreManager* sm, StageManager* stm, HUD* hud, bool isScoreLoaded)
+	: m_bm(bm),
+	m_scoreManager(sm),
+	m_stageManager(stm),
+	m_hud(hud),
+	TitleMenu(5),
+	PracticeMenu(7),
+	PauseMenu(3),
+	QuitMenu(2),
+	GameOverMenu(2),												//引数が必要なクラスなのでインスタンスにも引数を与える
+	scene(isScoreLoaded ? SCENE_TITLE : SCENE_CORRUPTED_NOTICE),	//場面を初期化(標準はタイトルであるが、起動時にスコアデータが正常で無いと検知された場合は破損通知シーンへ遷移)
+	lastSelectedStage(1),
+	lastSelectedPhase(0),											//これらはリトライで適切なステージとフェーズに飛べる用に保存
+	playingPractice(false),											//プラクティス経由かどうかを判定するフラグ(前使っていたplayintPracticeとは用途はちがうようになっている)
+	inputName(ScoreConfig::DEFAULT_NAMES[0]),						//入力中の文字列を保持するバッファ変数
+	currentResultEntry({}),											//今回のプレイ結果を保持
+	backspaceHoldCount(0) {
+}
+
+
+/*　ーーーーーDxLibのデフォ：画面サイズ(640,480)ーーーーー　*/
+
+
+void SceneManager::Update() {
+	switch (scene) {
+	case SCENE_TITLE:
+		if (Input::IsTrigger(KEY_INPUT_UP)) {
+			TitleMenu.Prev();
+		}
+		if (Input::IsTrigger(KEY_INPUT_DOWN)) {
+			TitleMenu.Next();
+		}
+		if (Input::IsTrigger(KEY_INPUT_T)) {
+			m_bm->ClearAllBullets();
+			m_bm->ClearAllItems();
+			playingBulletTest = true;				//テストシーンであることを示すフラグ
+			testScene.Init();
+			scene = SCENE_BULLET_TEST;
+		}
+
+		if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
+			int select = TitleMenu.GetSelect();											//上で計算し終わって決定する直前のmenu_cursorを利用
+			if (select == 0) {
+				lastSelectedStage = 1;
+				lastSelectedPhase = 0;
+				m_bm->ClearAllBullets();
+				m_bm->ClearAllItems();
+				playingPractice = false;											//通常スタート時はフラグを折る
+				playingBulletTest = false;											//同様にテストシーンフラグを折る
+				m_stageManager->Init(m_bm, lastSelectedStage, lastSelectedPhase, playingPractice);
+				scene = SCENE_STAGE;
+			}
+			if (select == 1) {
+				scene = SCENE_PRACTICE;
+			}
+			if (select == 2) scene = SCENE_RANKING;
+			if (select == 3) scene = SCENE_QUIT_CONFIRM;
+			if (select == 4) scene = SCENE_QUIT_CONFIRM;
+		}
+		if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
+			TitleMenu.SetSelect(4);
+		}
+		break;
+
+
+
+	case SCENE_BULLET_TEST:
+	{
+		bool isGameOver = testScene.Update(m_bm);
+		if (isGameOver) {
+			GameOverMenu.SetSelect(0);		//ゲームオーバーメニューでのカーソルを初期化
+			scene = SCENE_GAMEOVER;
+		}
+		if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
+			m_bm->ClearAllBullets();
+			playingBulletTest = false;		//抜ける時は弾全消しして、テストシーンフラグを折る
+			scene = SCENE_TITLE;
+		}
+	}
+	break;
+
+
+
+	case SCENE_PRACTICE:
+		if (Input::IsTrigger(KEY_INPUT_UP)) PracticeMenu.Prev();
+		if (Input::IsTrigger(KEY_INPUT_DOWN)) PracticeMenu.Next();
+		if (Input::IsPress(KEY_INPUT_ESCAPE)) scene = SCENE_TITLE;
+
+		if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
+			lastSelectedStage = 1;
+			lastSelectedPhase = PracticeMenu.GetSelect();
+			playingPractice = true;
+			playingBulletTest = false;									//プラクティススタート時はテストフラグを折る
+
+			m_bm->ClearAllBullets();
+			m_bm->ClearAllItems();
+			m_stageManager->Init(m_bm, lastSelectedStage, lastSelectedPhase, playingPractice);
+			scene = SCENE_STAGE;
+		}
+		break;
+
+
+
+	case SCENE_STAGE:
+	{
+		m_stageManager->Update(m_bm);
+
+		m_bm->Update(
+			m_stageManager->GetPlayer().GetX(),
+			m_stageManager->GetPlayer().GetY(),
+			m_stageManager->GetBoss().GetX(),
+			m_stageManager->GetBoss().GetY(),
+			m_stageManager->GetBoss().GetFlag(),			//stageManagerからplayerとBossを借りてきて座標を渡す
+			m_stageManager->GetFairies()
+		);
+
+		bool isAutoCollect = (m_stageManager->GetPlayer().GetY() < PlayArea::ItemCollectionLine);						//自機が上部回収ラインより上の時、isAutoCollectをtrueへ
+
+		if (Input::IsTrigger(KEY_INPUT_X) && m_stageManager->GetPlayer().GetBomb() > 0) {								// X押下且つ残ボムがある場合
+			if (m_stageManager->GetPlayer().IsDeathTimerActive() || !m_stageManager->GetPlayer().IsInvincible()) {		//喰らいボム通常ボム発動した場合
+				isAutoCollect = true;																				//回収モードオン
+			}
+		}
+
+		m_bm->UpdateItems(
+			m_stageManager->GetPlayer(),
+			50.0f,
+			isAutoCollect
+		);
+
+		bool isDead = m_stageManager->GetBoss().CheckCollision(m_stageManager->GetPlayer(), *m_bm);
+
+		bool isPlayerHit = false;
+		if (!m_stageManager->GetPlayer().IsInvincible()) {
+			isPlayerHit = m_bm->CheckPlayerCollision(
+				m_stageManager->GetPlayer().GetX(),
+				m_stageManager->GetPlayer().GetY(),
+				m_stageManager->GetPlayer().GetHitR()
+			);
+		}
+
+		if (isPlayerHit && !m_stageManager->GetPlayer().IsDeathTimerActive()) {	//被弾且つdeathTimerがアクティブではない時
+			m_stageManager->GetPlayer().StartDeathTimer();								//deathTimerを始動(アクティベート)
+		}
+
+		if (m_stageManager->GetPlayer().GetLife() < 0) {		//残機(整数型)が負即ち残機0で被弾した状態の場合
+			GameOverMenu.SetSelect(0);							//ゲームオーバーシーンのカーソルの初期化
+			scene = SCENE_GAMEOVER;
+		}
+		if (Input::IsTrigger(KEY_INPUT_X) && m_stageManager->GetPlayer().GetBomb() > 0) {// X押下且つボム数が1以上の時
+			if (m_stageManager->GetPlayer().IsDeathTimerActive()) {								//deathTimerがアクティブな時
+				m_stageManager->GetPlayer().StopDeathTimer();												//deathTimerを停止(inactivate)
+				m_stageManager->GetPlayer().SetInVincible(m_stageManager->GetPlayer().GetInvincibleTime());	//無敵時間をセット
+				m_bm->ConvertEnemyBulletsToItems();														//敵弾を小スコアへ変換
+				m_stageManager->GetPlayer().ComsumeBomb();													//ボム消費
+			}
+			else if (!m_stageManager->GetPlayer().IsInvincible()) {									//無敵状態でなければ通常ボム消費	
+				m_bm->ConvertEnemyBulletsToItems();														//敵弾を小スコアへ変換
+				m_stageManager->GetPlayer().ComsumeBomb();													//ボム消費
+			}
+		}
+
+		if (m_stageManager->GetBoss().IsStageClear()) {											//ボスを倒したフラグが返されたらタイトルに戻る
+			while (Input::IsTrigger(KEY_INPUT_F)) ProcessMessage();		//z,enterキーを長押し状態でCLEARに遷移してきた時に離したらそのままタイトルに行くのを防ぐ為の文
+			ClearInputCharBuf();				//画面遷移前にキー入力バッファを完全クリアして、入力画面でも予約されたキー入力が起きないように対策
+			if (!playingPractice) {
+				inputName = "";
+				scene = SCENE_NAME_ENTRY;
+			}
+			else {
+				scene = SCENE_CLEAR;
+			}
+		}
+
+		if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
+			PauseMenu.SetSelect(0);								//ポーズ遷移前にポーズメニュのカーソルを初期化
+			scene = SCENE_PAUSE;
+		}														//case SCENE_STAGEの中身を囲うことで変数のスコープがその中限定となる
+	}
+	break;
+
+
+
+	case SCENE_GAMEOVER:
+		if (Input::IsTrigger(KEY_INPUT_UP)) { GameOverMenu.Prev(); }
+		if (Input::IsTrigger(KEY_INPUT_DOWN)) { GameOverMenu.Next(); }
+		if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
+			int select = GameOverMenu.GetSelect();
+
+			if (select == 0) {					//コンティニューする場合
+				if (playingBulletTest) {	//テストシーンの時
+					testScene.GetPlayer().Reset(true);		//Practiceモード同様の残機残ボムのセット
+					//testScene.GetPlayer().SetInVincible(testScene.GetPlayer().GetInvincibleTime());
+					m_bm->ClearEnemyBullets();
+					scene = SCENE_BULLET_TEST;
+				}
+				else {
+					m_stageManager->GetPlayer().loadingLife();		//基準残機数のセット
+					m_stageManager->GetPlayer().loadingBomb();		//基準ボム数のセット
+					m_stageManager->GetPlayer().SetInVincible(m_stageManager->GetPlayer().GetInvincibleTime());
+					scene = SCENE_STAGE;
+					m_bm->ClearEnemyBullets();
+					m_stageManager->GetPlayer().Reset(playingPractice);
+				}
+			}
+
+			if (select == 1) {					//諦める場合
+				if (playingBulletTest) {	//テストシーンの時
+					playingBulletTest = false;
+					scene = SCENE_TITLE;
+				}
+				else if (!playingPractice) {					//通常プレイの時のみ名前入力
+					inputName = "";
+					scene = SCENE_NAME_ENTRY;
+				}
+				else {
+					scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
+
+
+					m_scoreManager->AddScore("PLR", m_stageManager->GetPlayer().GetDisplayScore(), 1, 1, GetCurrentDateAsInt());
+				}
+				//scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
+			}
+		}
+		break;
+
+
+
+	case SCENE_CLEAR:
+		if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
+			scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;													//三項演算子によりシーン遷移
+		}
+		break;
+
+
+	case SCENE_PAUSE:
+		if (Input::IsTrigger(KEY_INPUT_UP)) { PauseMenu.Prev(); }
+		if (Input::IsTrigger(KEY_INPUT_DOWN)) { PauseMenu.Next(); }
+
+		if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
+			int select = PauseMenu.GetSelect();
+			if (select == 0) scene = SCENE_STAGE;
+			if (select == 1) { scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE; }
+			if (select == 2) {
+				m_bm->ClearAllBullets();
+				m_bm->ClearAllItems();
+				m_stageManager->Init(m_bm, lastSelectedStage, lastSelectedPhase, playingPractice);									//やり直しなのでリセット処理
+				scene = SCENE_STAGE;
+			}
+		}
+
+		if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
+			scene = SCENE_STAGE;
+		}
+
+		if (Input::IsRelease(KEY_INPUT_R)) {
+			m_bm->ClearAllBullets();
+			m_bm->ClearAllItems();
+			m_stageManager->Init(m_bm, lastSelectedStage, lastSelectedPhase, playingPractice);
+			scene = SCENE_STAGE;
+		}
+
+		if (Input::IsTrigger(KEY_INPUT_Q)) {
+			scene = playingPractice ? SCENE_PRACTICE : SCENE_TITLE;
+		}
+		break;
+
+
+
+	case SCENE_RANKING:
+		if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN) || Input::IsTrigger(KEY_INPUT_ESCAPE)) {
+			scene = SCENE_TITLE;
+		}
+		break;
+
+
+	case SCENE_CORRUPTED_NOTICE:
+		if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
+			scene = SCENE_TITLE;
+		}
+		break;
+
+
+	case SCENE_NAME_ENTRY:
+	{
+		char c = GetInputChar(TRUE);
+
+		if (c != 0 && std::isalnum(static_cast<unsigned char>(c))) {	//アルファベットまたは数字の場合のみ追加 (std::isalnum を使用)
+			char upperChar = static_cast<char>(std::toupper(c));
+
+			if (inputName.length() < ScoreConfig::MAX_NAME_CHARS) {
+				inputName += upperChar;									//文字数未満なら末尾に追加
+			}
+			else if (!inputName.empty()) {
+				inputName.back() = upperChar;							//文字数上限に達している場合は末尾の文字を上書き
+			}
+		}
+
+		if (Input::IsTrigger(KEY_INPUT_SPACE)) {
+			if (inputName.length() < ScoreConfig::MAX_NAME_CHARS) {
+				inputName += ' ';
+			}
+			else if (!inputName.empty()) {
+				inputName.back() = ' ';									//スペースキーでも上書き対応
+			}
+		}
+		if (Input::IsPress(KEY_INPUT_BACK)) {
+			backspaceHoldCount++;
+			if (backspaceHoldCount == 1 || (backspaceHoldCount > 15 && backspaceHoldCount % 4 == 0)) {	//最初の1フレーム、又は0.5秒長押し後に4フレームごとに連打
+				if (!inputName.empty()) {
+					inputName.pop_back();
+				}
+			}
+		}
+		else {
+			backspaceHoldCount = 0;		//キーを離したら初期化
+		}
+
+		if (Input::IsTrigger(KEY_INPUT_RETURN)) {
+			std::string finalName = inputName.empty() ? ScoreConfig::EMPTY_NAME_FALLBACK : inputName;
+			int64_t finalScore = m_stageManager->GetPlayer().GetDisplayScore();
+			uint32_t currentDate = GetCurrentDateAsInt();
+
+			memset(&currentResultEntry, 0, sizeof(currentResultEntry));									//今回の結果情報を保持しておく
+			strncpy_s(currentResultEntry.name, finalName.c_str(), ScoreConfig::MAX_NAME_BYTES - 1);
+			currentResultEntry.score = finalScore;
+			currentResultEntry.date = currentDate;
+
+			m_scoreManager->AddScore(finalName, finalScore, 1, 1, currentDate);							//ランク外なら内部でソートせず弾く
+
+			scene = SCENE_RANKING;
+		}
+	}
+	break;
+
+
+
+	case SCENE_QUIT_CONFIRM:
+		if (Input::IsTrigger(KEY_INPUT_LEFT)) QuitMenu.Prev();
+		if (Input::IsTrigger(KEY_INPUT_RIGHT)) QuitMenu.Next();
+
+		if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
+			int select = QuitMenu.GetSelect();
+			if (select == 0) scene = SCENE_TITLE;
+			if (select == 1) DxLib::DxLib_End();
+		}
+		break;
+	}
+}
+
+
+
+
+
+
+
+void SceneManager::Draw() {
+	switch (scene) {
+	case SCENE_TITLE:
+		DrawString(250, 210, "東 方 酔 々 夢", GetColor(255, 255, 255));
+		DrawString(270, 270, (TitleMenu.GetSelect() == 0 ? "> Start" : "Start"), GetColor(255, 255, 255));
+		DrawString(270, 300, (TitleMenu.GetSelect() == 1 ? "> Practice Start" : "Practice Start"), GetColor(255, 255, 255));
+		DrawString(270, 330, (TitleMenu.GetSelect() == 2 ? "> Result" : "Result"), GetColor(255, 255, 255));
+		DrawString(270, 360, (TitleMenu.GetSelect() == 3 ? "> Replay" : "Replay"), GetColor(255, 255, 255));
+		DrawString(270, 390, (TitleMenu.GetSelect() == 4 ? "> Quit" : "Quit"), GetColor(255, 255, 255));
+		DrawString(30, 450, "決定：Z or Enter　　フルスクリーン/ウィンドウ：F", GetColor(0, 255, 0));
+		break;
+
+
+
+	case SCENE_PRACTICE:
+		DrawString(170, 100, "～～～ スペルプラクティスモード ～～～", GetColor(0, 255, 0));
+		DrawString(230, 150, (PracticeMenu.GetSelect() == 0 ? "> 1面道中" : "1面道中"), GetColor(255, 255, 255));
+		DrawString(230, 180, (PracticeMenu.GetSelect() == 1 ? "> 1ボス　通1" : "1ボス　通1"), GetColor(255, 255, 255));
+		DrawString(230, 210, (PracticeMenu.GetSelect() == 2 ? "> 1ボス　スペカ1" : "1ボス　スペカ1"), GetColor(255, 255, 255));
+		DrawString(230, 240, (PracticeMenu.GetSelect() == 3 ? "> 1ボス　通2" : "1ボス　通2"), GetColor(255, 255, 255));
+		DrawString(230, 270, (PracticeMenu.GetSelect() == 4 ? "> 1ボス　天上天下の照國(笑)" : "1ボス　天上天下の照國(笑)"), GetColor(255, 255, 255));
+		DrawString(230, 300, (PracticeMenu.GetSelect() == 5 ? "> 1ボス　フィットフルナイトメア(笑)" : "フィットフルナイトメア(笑)"), GetColor(255, 255, 255));
+		DrawString(230, 330, (PracticeMenu.GetSelect() == 6 ? "> 1ボスラスペ" : "1ボスラスペ"), GetColor(255, 255, 255));
+		break;
+
+
+
+	case SCENE_BULLET_TEST:
+		testScene.Draw(m_bm, m_hud);
+		break;
+
+
+
+	case SCENE_STAGE:
+	{
+		using namespace PlayArea;											//これによりnamespaceのPlayArea内で定義したものがこの関数内限定で使用できるようになる
+		m_bm->DrawItems();
+		m_stageManager->Draw(m_bm);					//敵や自機本体の描画
+		m_bm->Draw();								//弾の描画
+		m_stageManager->GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
+		m_hud->Draw(&m_stageManager->GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
+
+		DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
+	}
+	break;
+
+
+
+
+	case SCENE_GAMEOVER:
+	{
+		using namespace PlayArea;
+
+		m_bm->DrawItems();
+		m_stageManager->Draw(m_bm);					//敵や自機本体の描画
+		m_bm->Draw();								//弾の描画
+		m_stageManager->GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
+		m_hud->Draw(&m_stageManager->GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
+		DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);	//プレイ領域描画
+
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 120);
+		DrawBox(Left - Margin, Top - Margin, Right + Margin, Bottom + Margin, GetColor(0, 0, 0), true);
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+		DrawString(Left + 150, Top + 150, "Game Over", GetColor(255, 0, 0));
+		DrawString(Left + 130, Top + 200, "コンティニュー", GetColor(255, 255, 255));
+
+		DrawString(Left + 160, Top + 240, "はい", GameOverMenu.GetSelect() == 0 ? GetColor(255, 255, 0) : GetColor(128, 128, 128));
+		DrawString(Left + 160, Top + 270, "いいえ", GameOverMenu.GetSelect() == 1 ? GetColor(255, 255, 0) : GetColor(128, 128, 128));
+	}
+	break;
+
+
+
+	case SCENE_CLEAR:
+		DrawString(270, 240, "All Clear!!!", GetColor(0, 255, 0), false);
+		DrawString(180, 300, (playingPractice ? "プラクティスに戻るにはZかEnterキーを押してください" : "終了するにはZかEnterキーを押して下さい"), GetColor(0, 255, 0), false);
+		break;
+
+
+
+
+	case(SCENE_PAUSE):
+	{
+		using namespace PlayArea;
+		DrawString(470, 220, "一時停止", GetColor(0, 255, 255));
+		DrawString(470, 270, (PauseMenu.GetSelect() == 0 ? "> 続ける" : "続ける"), GetColor(255, 255, 255));
+		DrawString(470, 300, (PauseMenu.GetSelect() == 1 ? "> タイトルに戻る" : "タイトルに戻る"), GetColor(255, 255, 255));
+		DrawString(470, 330, (PauseMenu.GetSelect() == 2 ? "> やり直す" : "やり直す"), GetColor(255, 255, 255));
+
+		DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
+
+		m_bm->DrawItems();
+		m_stageManager->Draw(m_bm);					//敵や自機本体の描画
+		m_bm->Draw();								//弾の描画
+		m_stageManager->GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
+		m_hud->Draw(&m_stageManager->GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
+	}
+	break;
+
+
+
+
+	case(SCENE_RANKING):
+		DrawString(240, 80, "HIGH SCORE RANKING", GetColor(255, 255, 255));
+		for (int i = 0; i < ScoreConfig::RANKING_MAX; ++i) {
+			const HighScoreEntry& entry = m_scoreManager->GetEntry(i);
+
+			uint32_t y = entry.date / 10000;
+			uint32_t m = (entry.date % 10000) / 100;
+			uint32_t d = entry.date % 100;					//年月日をそれぞれ抽出
+
+			DrawFormatString(160, 140 + (i * 35), GetColor(255, 255, 255), "No.%d   %-10s   %09lld %04u/%02u/%02u", i + 1, entry.name, entry.score, y, m, d);
+		}
+
+		if (currentResultEntry.name[0] != '\0') {
+			uint32_t y = currentResultEntry.date / 10000;
+			uint32_t m = (currentResultEntry.date % 10000) / 100;
+			uint32_t d = currentResultEntry.date % 100;
+
+			DrawString(160, 310, "---------------------------------------------", GetColor(128, 128, 128));
+			DrawString(160, 330, "YOUR SCORE:", GetColor(0, 255, 255));
+			DrawFormatString(160, 350, GetColor(0, 255, 255), "       %-10s   %09lld %04u/%02u/%02u", currentResultEntry.name, currentResultEntry.score, y, m, d);
+		}
+		DrawString(200, 420, "Z or Enter : タイトルへ戻る", GetColor(0, 255, 0));
+		break;
+
+
+
+
+	case SCENE_CORRUPTED_NOTICE:
+		DrawString(180, 150, ":(", GetColor(255, 0, 0));
+		DrawString(180, 180, "スコアデータが破損しています", GetColor(255, 0, 0));
+		DrawString(160, 240, "ランキングを初期化して作り直します", GetColor(255, 255, 255));
+		DrawString(200, 300, "ZかEnterキーを押して続行", GetColor(0, 255, 0));
+		break;
+
+
+
+	case SCENE_NAME_ENTRY:
+	{
+		DrawString(ScoreConfig::ENTRY_UI_TITLE_X, ScoreConfig::ENTRY_UI_TITLE_Y, "NEW HIGH SCORE!", GetColor(255, 255, 0));
+		DrawString(ScoreConfig::ENTRY_UI_MSG_X, ScoreConfig::ENTRY_UI_MSG_Y, "ENTER YOUR NAME", GetColor(255, 255, 255));
+
+		std::string displayName = inputName + "_";
+		DrawFormatString(ScoreConfig::ENTRY_UI_INPUT_X, ScoreConfig::ENTRY_UI_INPUT_Y, GetColor(0, 255, 255), "> %-9s", displayName.c_str());
+
+		DrawFormatString(ScoreConfig::ENTRY_UI_SCORE_X, ScoreConfig::ENTRY_UI_SCORE_Y, GetColor(255, 255, 255), "SCORE: %09d", m_stageManager->GetPlayer().GetDisplayScore());
+		DrawString(ScoreConfig::ENTRY_UI_HELP_X, ScoreConfig::ENTRY_UI_HELP_Y, "Enter : 確定   BS : 削除", GetColor(0, 255, 0));
+	}
+	break;
+
+
+
+
+	case(SCENE_QUIT_CONFIRM):
+		DrawString(240, 210, "終了しますか？", GetColor(0, 255, 255));
+		DrawString(240, 240, (QuitMenu.GetSelect() == 1 ? "> はい　　いいえ" : "はい　　>いいえ"), GetColor(0, 255, 255));
+		break;
+	}
+}
+
+
+// === File: SceneManager.h ===
+
+#pragma once
+#include <string>
+#include "MenuManager.h"
+#include "ScoreData.h"
+#include "BulletTestScene.h"
+
+
+class BulletManager;
+class ScoreManager;
+class StageManager;
+class HUD;
+
+
+enum SceneType {
+	SCENE_TITLE,
+	SCENE_PRACTICE,
+	SCENE_STAGE,
+	SCENE_GAMEOVER,
+	SCENE_CLEAR,
+	SCENE_PAUSE,
+	SCENE_RANKING,
+	SCENE_NAME_ENTRY,
+	SCENE_CORRUPTED_NOTICE,
+	SCENE_QUIT_CONFIRM,
+	SCENE_BULLET_TEST
+};
+
+
+class SceneManager {
+private:
+	BulletManager* m_bm;
+	ScoreManager* m_scoreManager;
+	StageManager* m_stageManager;
+	HUD* m_hud;						//各実体のポインタ
+
+	MenuManager TitleMenu;
+	MenuManager PracticeMenu;
+	MenuManager PauseMenu;
+	MenuManager QuitMenu;
+	MenuManager GameOverMenu;		//メニュー管理インスタンス
+	
+	BulletTestScene testScene;
+
+	SceneType scene;
+	int lastSelectedStage;
+	int lastSelectedPhase;
+	bool playingPractice;
+
+	bool playingBulletTest = false;	//テストシーン経由のゲームオーバー判定フラグ
+	
+	std::string inputName;
+	HighScoreEntry currentResultEntry;
+	int backspaceHoldCount;
+
+public:
+	SceneManager(BulletManager* bm, ScoreManager* sm, StageManager* stm, HUD* hud, bool isScoreLoaded);
+	~SceneManager() = default;
+
+	void Update();
+	void Draw();
+
+	bool CanToggleFullscreen() const { return scene != SCENE_NAME_ENTRY; }
+	SceneType GetCurrentScene() const { return scene; }
+
+
+
+};
+
 // === File: ScoreData.h ===
 
 #pragma once

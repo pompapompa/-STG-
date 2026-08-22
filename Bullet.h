@@ -16,6 +16,9 @@ public:
 	OwnerType owner;															//インスタンス宣言
 	bool isHoming = false;														//ホーミング弾フラグ
 
+	float charge = 0.0f;				//電荷
+	float mass = 1.0f;					//質量
+
 	float turnSpeed = 0.0f;							//弾自身の旋回しやすさを格納する変数
 
 	float x = 0;

@@ -1,0 +1,36 @@
+2026/8/22
+
+if (testTimer % 5 == 0) {
+	float baseAngleDeg = (testTimer * 1.5f);												//回転速度
+	int colorType = (testTimer % 10 == 0) ? 1 : 0;
+	BulletPattern::NWayShot(originX, originY, 4.0f, shotSpeed, 8, 360.0f, baseAngleDeg, bm, colorType);
+}
+これの赤と青の符号付き電荷±1.0 Cのやつについて
+
+縦レーザ
+1
+currentI	:0.40
+FlucCoeff(K)	:1.00
+Softening(r0)	:59.00
+Max Turn(BzCap)	:0.24
+Bullet Speed	:1.60
+
+2
+currentI	:2.00
+FlucCoeff(K)	:0.22
+Softening(r0)	:88.00
+Max Turn(BzCap)	:0.40
+Bullet Speed	:3.00
+
+
+横レーザ
+1
+currentI	:20.00
+FlucCoeff(K)	:0.22
+Softening(r0)	:88.00
+Max Turn(BzCap)	:0.40
+Bullet Speed	:3.50
+
+comment:下端が完全な安置となっており、見た目が比較的綺麗？な弾幕。これは下端制限するための弾幕とし、別の弾幕を組み合わせ下だけで避けるものにすると良いかもしれない。
+
+

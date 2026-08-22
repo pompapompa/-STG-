@@ -64,6 +64,9 @@ public:
 	int GetPlayerBulletMax() const { return PlayerBMax; }
 	Bullet& GetPlayerBullet(int index) { return p_bullets[index]; }
 
+	int GetEnemyBulletMax() const { return EnemyBMax; }					
+	Bullet& GetEnemyBullet(int index) { return e_bullets[index]; }			//敵弾に直接アクセスするためのゲッタ
+
 
 	bool CheckPlayerCollision(float px, float py, float pr);
 	bool CheckEnemyCollision(float ex, float ey, float er, Player& player);	
