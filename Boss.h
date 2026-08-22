@@ -39,6 +39,9 @@ private:
 	static constexpr int PhaseTimerColorChangeSeconds = 5;		//フェーズタイマの色の変化が起こる残り秒数
 
 	int currentIdx = 0;											//現在のフェーズ番号
+	
+	int endIdx = 0;												//このボスの終了フェーズの番号
+	
 	int phaseTimer = 0;											//フェーズ開始からの経過時間
 	float phaseMaxHp;											//現在のフェーズの初期HP
 						
@@ -126,7 +129,7 @@ public:
 		BossGraphs[1] = LoadGraph("素材集/改良版虹色大玉.png");
 	}
 
-	void Spawn(float in_x, float in_y);
+	void Spawn(float in_x, float in_y, int startPhase = 0, int in_endPhase = -1);				
 
 	void Update(const class Player& player, class BulletManager* bm) override;				//BulletManagerを受け取ることで弾を出せるようにする
 	void Draw() override;

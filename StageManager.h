@@ -10,6 +10,7 @@
 enum class StageState {
 	ST_TITLE,					//道中のタイトル表示
 	DOCHU,						//道中
+	MID_BOSS_BATTLE,			//道中ボス
 	BOSS_APPEAR,				//ボス出現(会話等)
 	BOSS_BATTLE,				//ボス戦
 	BOSS_END,					//ボス討伐完了演出

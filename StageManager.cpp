@@ -30,8 +30,10 @@ static constexpr EnemySpawn Stage1Timeline[] = {
 	{	350,	Right,	top,	-5.0f,	0.0f,	15.0f,	10,		8,			15,
 		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		1}, false,{0,0,3,0,0}},
 
+/*道中ボスはBossシステムへ移行
 	{	500,	CenterX,top,	0.0f,	0.0f,	30.0f,	400,	1,			5,									//道中ボス
 		{	PT::RotateAll,	4.0f,	3.0f,	7,		64,		0.0f,		50.0f,		90.0f,		2}, true,{0,10,8,1,2}},
+*/
 
 	{	700,	Left,	top,	3.0f,	0.0f,	15.0f,	10,		10,			10,
 		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		0}, false,{0,1,0,0,0}},
@@ -59,6 +61,14 @@ void StageManager::Update(BulletManager* bm) {
 	stageTimer++;								//時間を進める
 
 	if (state == StageState::DOCHU) {
+		
+		if (stageTimer == 500) {
+			state = StageState::MID_BOSS_BATTLE;						//道中ボス
+			float X = Left + (Right - Left) / 2.0f;
+			float Y = Top - (Bottom - Top) / 4.0f;
+			boss.Spawn(X, Y, 0, 0);										
+		}
+		
 		for (int i = 0; i < SPAWN_COUNT; i++) {
 			if (Stage1Timeline[i].frame == stageTimer) {				//EnemySpawnのframeと経過時間が一致した場合
 				for (int s = 0; s < MAX_SPAWN_SLOT; s++) {
@@ -93,7 +103,13 @@ void StageManager::Update(BulletManager* bm) {
 
 			float X = Left + (Right - Left) / 2.0f;
 			float Y = Top + (Bottom - Top) / 4.0f;
-			boss.Spawn(X, Y);
+			boss.Spawn(X, Y, 1, -1);				//ボスはフェーズ1から最終フェーズまで
+		}
+	}
+	else if (state == StageState::MID_BOSS_BATTLE) {
+		boss.Update(player, bm);
+		if (!boss.GetFlag()) {						//ボスフラグが消えたら道中復帰
+			state = StageState::DOCHU;
 		}
 	}
 
@@ -126,8 +142,8 @@ void StageManager::Draw(BulletManager* bm) {		//弾とかの描画
 		}
 	}
 
-	if (state == StageState::BOSS_BATTLE) {
-		boss.Draw();								//ボス戦中、ボスの描画
+	if (state==StageState::MID_BOSS_BATTLE || state == StageState::BOSS_BATTLE) {
+		boss.Draw();								//道中ボス・ボス戦中のボスの描画
 	}
 }
 

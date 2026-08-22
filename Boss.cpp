@@ -17,12 +17,13 @@ Boss::Boss() : hp(0.0f) {
 	BossGraphs[1] = LoadGraph("素材集/改良版虹色大玉.png");
 }
 
-void Boss::Spawn(float in_x, float in_y) {
+void Boss::Spawn(float in_x, float in_y, int startPhase, int in_endIdx) {
 	BulletPattern::ShotConfig dummyConf;
 	Encount(in_x, in_y, para.r, 0.0f, 0.0f, 0, dummyConf, false);							//hpの引数はボスの場合hpロジックが独自の為ダミーの0を入力している。その後上書きされる為何でも良い。
 
-	currentIdx = 0;
-	
+	currentIdx = startPhase;											//現在のフェーズに初期フェーズ番号を格納
+	this->endIdx = (in_endIdx >= 0) ? in_endIdx : (PHASE_MAX - 1);		//終了フェーズを設定(-1が渡された場合は最終フェーズまで)
+
 	this->phaseMaxHp = phases[currentIdx].hpLimit;						//フェーズの最大HPをセット
 	this->hp = 0.0f;													//初期スポーン時のhpチャージ演出の起点とするため,hp=0.0fとしておく
 
@@ -81,7 +82,7 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 			}
 
 			currentIdx++;															//現在のフェーズを次の段階へ
-			if (currentIdx < PHASE_MAX) {											//フェーズが全て終わっていない場合
+			if (currentIdx <=endIdx && currentIdx<PHASE_MAX) {							//endIdx以下且つ、フェーズが最大まで終わっていない場合
 				state = BossState::WAITING;									//待機状態遷移
 				waitTimer = 0;												//待機時間タイマを初期化
 
