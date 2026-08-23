@@ -120,7 +120,6 @@ enum class BulletShape {			//弾の形状を列挙型で定義
 	MAX_SHAPES
 };
 
-
 enum class BulletColor {			//弾の色を列挙型で定義
 	RED = 0,				//赤
 	BLUE,					//青
@@ -133,16 +132,37 @@ enum class BulletColor {			//弾の色を列挙型で定義
 	MAX_COLORS
 };
 
+namespace BulletDefaultRadius {							//弾種ごとのデフォルト半径
+	static constexpr float CIRCLE = 5.0f;		//通常円
+	static constexpr float UROKO = 4.0f;		//鱗
+	static constexpr float RICE = 4.0f;			//米弾
+	static constexpr float BIG_CIRCLE = 32.0f;	//大玉
+	static constexpr float KNIFE = 4.0f;		//ナイフ
+	static constexpr float POIFUL = 4.0f;		//ポイフル
+	static constexpr float LIGHT = 15.0f;		//光弾
+	static constexpr float ZAYAKU = 15.0f;		//座薬
+}
+
+static constexpr float BULLET_HIT_RATE[] = {		//弾種ごとの見た目半径に対する当たり判定の比率
+	0.40f,		// CIRCLE:		通常円(40%)
+	0.40f,		// UROKO:		鱗
+	0.35f,		// RICE:		米弾
+	0.50f,		// BIG_CIRCLE:	大玉
+	0.35f,		// KNIFE:		ナイフ
+	0.40f,		// POIFUL:		ポイフル
+	0.25f,		// LIGHT:		光弾(光のオーラの影響で小さめに設定)
+	0.30f		// ZAYAKU:		座薬
+};
 
 static constexpr float BULLET_BASE_RADIUS[] = {		//弾種ごとの基準解像度半径
-	1.0f,		//DEFAULT_CIRCLE:	通常円
-	18.0f,		//SCALE:			鱗		(r/18.0f )
-	64.0f,		//RICE:				米弾	(r/64.0f )
-	128.0f,		//BIG:				大玉	(r/128.0f)
-	8.0f,		//KNIFE:			ナイフ	(r/8.0f  )
-	18.0f,		//POIFUL:			ポイフル(r/18.0f )
-	48.0f,		//LIGHT:			光弾	(r/48.0f )
-	48.0f		//ZAYAKU:			座薬	(r/48.0f  )
+	1.0f,		//CIRCLE:		通常円
+	18.0f,		//UROKO:		鱗		(r/18.0f )
+	64.0f,		//RICE:			米弾	(r/64.0f )
+	128.0f,		//BIG_CIRCLE:	大玉	(r/128.0f)
+	8.0f,		//KNIFE:		ナイフ	(r/8.0f  )
+	18.0f,		//POIFUL:		ポイフル(r/18.0f )
+	48.0f,		//LIGHT:		光弾	(r/48.0f )
+	48.0f		//ZAYAKU:		座薬	(r/48.0f )
 };
 
 

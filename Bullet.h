@@ -10,8 +10,6 @@ private:
 
 public:
 
-	static constexpr float HIT_RATE = 0.4f;			//見た目に対する判定の比率
-
 	enum class OwnerType{ PLAYER, ENEMY };										//誰の弾かのタイプ分け
 	OwnerType owner;															//インスタンス宣言
 	bool isHoming = false;														//ホーミング弾フラグ

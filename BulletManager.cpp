@@ -158,9 +158,11 @@ bool BulletManager::CheckPlayerCollision(float px, float py, float pr) {
 	for (int i = 0; i < EnemyBMax; i++) {
 		if (!e_bullets[i].GetFlag()) continue;
 
-		float enemyHitR = e_bullets[i].r * Bullet::HIT_RATE;
+		BulletShape shape = GetBulletShape(e_bullets[i].type);			//’eŽí‚ðŽæ“¾‚µ‚Äshape‚ÉŠi”[
+		float hitRate = BULLET_HIT_RATE[static_cast<int>(shape)];		//hitRate‚Éshape‚Ì’eŽí‚ÌŒ©‚½–Ú”¼Œa‚É‘Î‚·‚é“–‚½‚è”»’è‚Ì”ä—¦‚ðŠi”[
+		float enemyHitR = e_bullets[i].r * hitRate;
 
-		if (Collision::CheckCircle(px, py, pr, e_bullets[i].x, e_bullets[i].y, enemyHitR)) {
+		if (Collision::CheckCircle(px, py, pr, e_bullets[i].x, e_bullets[i].y, enemyHitR)) {		
 			e_bullets[i].flag = false;
 			return true;
 		}

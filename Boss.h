@@ -72,48 +72,48 @@ private:
 
 	*/
 
-	/*  {phaseNum, hpLimit, limitTime[s],弾幕数,{{type,	sr,		ss,		si,		way,	広角,		回転速度,	基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム}}　*/
+	/*  {phaseNum, hpLimit, limitTime[s],弾幕数,{{type,			sr,							ss,		si,		way,	広角,		回転速度,	基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム}}　*/
 	
 			/*	通1　*/
 			{ 0,	600.0f,		10.0f,	1,		{
-									{PT::RotateAll,		4.0f,	0.6f,	5,		12,		360.0f,		0.5f,		90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)}
+									{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		0.6f,	5,		12,		360.0f,		0.5f,		90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)}
 			},false,},
 
 
 			/*　通1の2段階目(発狂)　*/
 			{ 1,	900.0f,		50.0f,	2,		{
-									{PT::RotateAll,		4.0f,	3.5f,	10,		18,		360.0f,		0.2f,		90,			GetBulletID(BulletShape::RICE,BulletColor::RED)},
-									{PT::RotateAll,		4.0f,	2.0f,	48,		64,		360.0f,		0.0f,		90,			GetBulletID(BulletShape::POIFUL,BulletColor::PURPLE)}
+									{PT::RotateAll,		BulletDefaultRadius::RICE,			3.5f,	10,		18,		360.0f,		0.2f,		90,			GetBulletID(BulletShape::RICE,BulletColor::RED)},
+									{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,	48,		64,		360.0f,		0.0f,		90,			GetBulletID(BulletShape::POIFUL,BulletColor::PURPLE)}
 			},true, {0,10, 5,0,0,1}},
 	  
 			
 			/*　通2　*/
 			{ 2,	600.0f,		30.0f,	4,		{
-									{PT::RotateAll,		3.0f,	1.6f,	5,		17,		360.0f,		5.5f,		90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)},
-									{PT::RotateAll,		3.0f,	1.6f,	5,		17,		360.0f,		-5.5f,		90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)},
-									{PT::RotateAll,		4.0f,	3.0f,	20,		15,		360.0f,		10.0f,		90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)},
-									{PT::RotateAll,		4.0f,	3.0f,	20,		15,		360.0f,		-10.0f,		90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)}
+									{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		1.6f,	5,		17,		360.0f,		5.5f,		90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)},
+									{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		1.6f,	5,		17,		360.0f,		-5.5f,		90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)},
+									{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,	20,		15,		360.0f,		10.0f,		90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)},
+									{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,	20,		15,		360.0f,		-10.0f,		90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)}
 
 			},true, {0,10,8,1,0,2}},
 	
 			/*　天上天下の照國(3枚目)　*/
 			{ 3,	900.0f,		60.0f,	3,		{
-									{PT::RotateAll,		4.0f,	5.0f,	8,		16,		360.0f,		2.8f,		90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
-									{PT::RotateAll,		4.0f,	5.0f,	8,		16,		360.0f,		-2.8f,		90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
-									{PT::RotateAll,		4.0f,	2.0f,	45,		64,		360.0f,		0.0f,		90,			GetBulletID(BulletShape::RICE, BulletColor::BLUE)}
+									{PT::RotateAll,		BulletDefaultRadius::UROKO,			5.0f,	8,		16,		360.0f,		2.8f,		90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
+									{PT::RotateAll,		BulletDefaultRadius::UROKO,			5.0f,	8,		16,		360.0f,		-2.8f,		90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
+									{PT::RotateAll,		BulletDefaultRadius::RICE,			2.0f,	45,		64,		360.0f,		0.0f,		90,			GetBulletID(BulletShape::RICE, BulletColor::BLUE)}
 			},true, {0,15,5,0,1,3}},
 			
 			/*　フィットフルナイトメア　*/
 			{ 4,	600.0f,		60.0f,	1,		{
-									{PT::RotateAll,		4.0f,	8.0f,	5,		45,		360.0f,		0.191,		90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)}
+									{PT::RotateAll,		BulletDefaultRadius::KNIFE,			8.0f,	5,		45,		360.0f,		0.191,		90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)}
 			},true, {0,30,8,0,0,2}},
 			
 			/*　ラストスペル　*/
 			{ 5,	800.0f,		110.0f,	4,		{
-									{PT::NWay,			4.0f,	15.0f,	3,		12,		180.0f,		0.5f,		90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)},
-									{PT::RotateAll,		15.0f,	2.5f,	7,		18,		360.0f,		5.0f,		90,			GetBulletID(BulletShape::LIGHT,BulletColor::RED)},
-									{PT::RotateAll,		15.0f,	2.5f,	7,		18,		360.0f,		-5.0f,		90,			GetBulletID(BulletShape::LIGHT,BulletColor::BLUE)},
-									{PT::Aimed,			32.0f,	2.0f,	120,		1,		0.0f,		500.0f,		90,		GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::BLUE)}
+									{PT::NWay,			BulletDefaultRadius::KNIFE,			15.0f,	3,		12,		180.0f,		0.5f,		90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)},
+									{PT::RotateAll,		BulletDefaultRadius::LIGHT,			2.5f,	7,		18,		360.0f,		5.0f,		90,			GetBulletID(BulletShape::LIGHT,BulletColor::RED)},
+									{PT::RotateAll,		BulletDefaultRadius::LIGHT,			2.5f,	7,		18,		360.0f,		-5.0f,		90,			GetBulletID(BulletShape::LIGHT,BulletColor::BLUE)},
+									{PT::Aimed,			BulletDefaultRadius::BIG_CIRCLE,	2.0f,	120,	1,		0.0f,		500.0f,		90,			GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::BLUE)}
 			},true, {0,50,0,0,0,0}},
 	};
 
