@@ -107,3 +107,55 @@ struct CustomGraphicsData {
 	unsigned int itemCanvas[5][16][16];			//アイテム何種で何×何グリッドか
 };
 
+
+enum class BulletShape {			//弾の形状を列挙型で定義
+	CIRCLE = 0,				//通常円(画像なし)
+	UROKO,					//鱗
+	RICE,					//米弾
+	BIG_CIRCLE,				//大玉
+	KNIFE,					//ナイフ
+	POIFUL,					//ポイフル
+	LIGHT,					//光弾
+	ZAYAKU,					//座薬
+	MAX_SHAPES
+};
+
+
+enum class BulletColor {			//弾の色を列挙型で定義
+	RED = 0,				//赤
+	BLUE,					//青
+	YELLOW,					//黄
+	AQUA,					//水
+	SILVER,					//銀
+	PURPLE,					//紫
+	ORANGE,					//橙
+	GREEN,					//緑
+	MAX_COLORS
+};
+
+
+static constexpr float BULLET_BASE_RADIUS[] = {		//弾種ごとの基準解像度半径
+	1.0f,		//DEFAULT_CIRCLE:	通常円
+	18.0f,		//SCALE:			鱗		(r/18.0f )
+	64.0f,		//RICE:				米弾	(r/64.0f )
+	128.0f,		//BIG:				大玉	(r/128.0f)
+	8.0f,		//KNIFE:			ナイフ	(r/8.0f  )
+	18.0f,		//POIFUL:			ポイフル(r/18.0f )
+	48.0f,		//LIGHT:			光弾	(r/48.0f )
+	48.0f		//ZAYAKU:			座薬	(r/48.0f  )
+};
+
+
+constexpr int GetBulletID(BulletShape shape, BulletColor color) {		//形状と色から弾IDを生成する関数
+	return static_cast<int>(shape) * static_cast<int>(BulletColor::MAX_COLORS) + static_cast<int>(color);
+}
+
+constexpr BulletShape GetBulletShape(int bulletID) {					//弾IDから形状を取り出す関数
+	return static_cast<BulletShape>(bulletID / static_cast<int>(BulletColor::MAX_COLORS));
+}
+
+constexpr BulletColor GetBulletColor(int bulletID) {					//弾IDから色を取り出す関数
+	return static_cast<BulletColor>(bulletID % static_cast<int>(BulletColor::MAX_COLORS));
+}
+
+static constexpr int BULLET_GRAPHIC_MAX = static_cast<int>(BulletShape::MAX_SHAPES) * static_cast<int>(BulletColor::MAX_COLORS);	//全弾グラフィックの最大配列要素数(形状数*色数)

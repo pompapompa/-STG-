@@ -1,6 +1,8 @@
 #pragma once
 #include "Bullet.h"
 #include "Item.h"
+#include "Common.h"
+
 
 class Enemy;																	//前方宣言
 class Player;
@@ -16,21 +18,11 @@ private:
 	static constexpr int MAX_ITEMS = 2000;										//アイテムの最大配列数
 	Item items[MAX_ITEMS];														//アイテムの実体配列
 
-	int bulletGraphs[50];														//画像の番号を格納する箱
+	int bulletGraphs[BULLET_GRAPHIC_MAX];										//画像配列サイズ(Common.hで計算されたBULLET_GRAPHIC_MAX)
 
 public:
 	BulletManager();															//初期化関数
-	void ReloadGraphic() {
-		bulletGraphs[2] = LoadGraph("素材集/鱗/青鱗.png");
-		bulletGraphs[3] = LoadGraph("素材集/赤米弾.png");
-		bulletGraphs[4] = LoadGraph("素材集/青米弾.png");
-		bulletGraphs[5] = LoadGraph("素材集/青大玉.png");
-		bulletGraphs[6] = LoadGraph("素材集/改良版虹色大玉.png");
-		bulletGraphs[7] = LoadGraph("素材集/ポイフル/紫ポイフル.png");
-		bulletGraphs[8] = LoadGraph("素材集/ナイフ/青ナイフ.png");
-		bulletGraphs[9] = LoadGraph("素材集/ナイフ/赤ナイフ.png");
-		bulletGraphs[10] = LoadGraph("素材集/鱗/黄鱗.png");
-	}
+	void ReloadGraphic();
 
 	/**
 	 * @brief 自機弾を画面に発射する

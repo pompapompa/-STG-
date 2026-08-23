@@ -1,79 +1,77 @@
-#include "StageManager.h"
+ï»¿#include "StageManager.h"
 #include "Common.h"
 #include "BulletPattern.h"
 #include "BurstController.h"
 #include "DxLib.h"
 
 
-/*@[[[[[DxLib‚ÌƒfƒtƒHF‰æ–ÊƒTƒCƒY(640,480)[[[[[@*/
+/*ã€€ãƒ¼ãƒ¼ãƒ¼ãƒ¼ãƒ¼DxLibã®ãƒ‡ãƒ•ã‚©ï¼šç”»é¢ã‚µã‚¤ã‚º(640,480)ãƒ¼ãƒ¼ãƒ¼ãƒ¼ãƒ¼ã€€*/
 
 
 using namespace PlayArea;
 
-using namespace BulletPattern;								//È—ª–¼
+using namespace BulletPattern;								//çœç•¥å
 
-static constexpr int top = Top + StageManager::upMargin;			//—d¸‚ªo‚Ä‚­‚é‚ÉƒvƒŒƒC—Ìˆæ‚Ìã‚©‚ç‚Ç‚ê‚­‚ç‚¢ŠJ‚¯‚ÄoŒ»‚·‚é‚©
+static constexpr int top = Top + StageManager::upMargin;			//å¦–ç²¾ãŒå‡ºã¦ãã‚‹æ™‚ã«ãƒ—ãƒ¬ã‚¤é ˜åŸŸã®ä¸Šã‹ã‚‰ã©ã‚Œãã‚‰ã„é–‹ã‘ã¦å‡ºç¾ã™ã‚‹ã‹
 
 
 static constexpr EnemySpawn Stage1Timeline[] = {
 /*	{	frame,	x,		y,		vx,		vy,		r,		hp,		count	interval,	
-		{	type,			sr,		ss,		si,		way,	L‚ª‚èŠp,	‰ñ“]‘¬“x	Šî€Šp“x	’eŒ©‚½–Ú(0:Â/1:Ô/2:Â—Ø/3:Ô•Ä/4:Â•Ä)},’eÁ‚µƒtƒ‰ƒO, {0F¬ƒXƒRƒA, 1FƒXƒRƒA, 2Fƒpƒ[, 3Fc‹@, 4Fƒ{ƒ€, 5F‘åƒpƒ[}}*/
+		{	type,			sr,		ss,		si,		way,	åºƒãŒã‚Šè§’,	å›è»¢é€Ÿåº¦	åŸºæº–è§’åº¦	å¼¾è¦‹ãŸç›®(0:é’/1:èµ¤/2:é’é±—/3:èµ¤ç±³/4:é’ç±³)},å¼¾æ¶ˆã—ãƒ•ãƒ©ã‚°, {0ï¼šå°ã‚¹ã‚³ã‚¢, 1ï¼šã‚¹ã‚³ã‚¢, 2ï¼šãƒ‘ãƒ¯ãƒ¼, 3ï¼šæ®‹æ©Ÿ, 4ï¼šãƒœãƒ , 5ï¼šå¤§ãƒ‘ãƒ¯ãƒ¼}}*/
 	{	60,		Left, 	top,	4.0f,	0.0f,	15.0f,	10,		7,			20,
-		{	PT::NWay,		4.0f,	8.0f,	18,		4,		10.0f,		0.0f,		90.0f,		3},false, {0,0,2,0,0}},
+		{	PT::NWay,		4.0f,	8.0f,	18,		4,		10.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::UROKO, BulletColor::BLUE)},false, {0,1,2,0,0}},
 
 	{	120,	Right,  top,	-3.0f,	0.0f,	15.0f,	10,		7,			15,
-		{	PT::NWay,		4.0f,	16.0f,	4,		2,		3.0f,		0.0f,		90.0f,		4},false,{0,0,2,0,0}},
+		{	PT::NWay,		4.0f,	16.0f,	4,		2,		3.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::RED)},false,{0,0,2,0,0}},
 
 	{	350,	Left,	top,	5.0f,	0.0f,	15.0f,	10,		8,			15,
-		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		0}, false,{0,0,1,0,0}},
+		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::ZAYAKU,BulletColor::AQUA)}, false,{0,0,1,0,0}},
 
 	{	350,	Right,	top,	-5.0f,	0.0f,	15.0f,	10,		8,			15,
-		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		1}, false,{0,0,3,0,0}},
+		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::LIGHT,BulletColor::BLUE)}, false,{0,0,3,0,0}},
 
-/*“¹’†ƒ{ƒX‚ÍBossƒVƒXƒeƒ€‚ÖˆÚs
-	{	500,	CenterX,top,	0.0f,	0.0f,	30.0f,	400,	1,			5,									//“¹’†ƒ{ƒX
-		{	PT::RotateAll,	4.0f,	3.0f,	7,		64,		0.0f,		50.0f,		90.0f,		2}, true,{0,10,8,1,2}},
-*/
+	{	1000,	Left,	top,	3.0f,	0.0f,	15.0f,	10,		10,			10,
+		{	PT::NWay,		32.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::RED)}, false,{0,1,0,0,0}},
 
-	{	700,	Left,	top,	3.0f,	0.0f,	15.0f,	10,		10,			10,
-		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		0}, false,{0,1,0,0,0}},
+	{	1000,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			10,
+		{	PT::NWay,		32.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::BLUE)}, false,{0,0,1,0,0}},
 
-	{	700,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			10,
-		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		1}, false,{0,0,1,0,0}},
+	{	1100,	Left,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			5,
+		{	PT::NWay,		4.0f,	6.0f,	30,		5,		90.0f,		5.0f,		90.0f,		GetBulletID(BulletShape::UROKO,BulletColor::RED)},	false,{0,2,0,0,0}},
 
-	{	800,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			5,		
-		{	PT::NWay,		4.0f,	6.0f,	30,		5,		90.0f,		5.0f,		90.0f,		2},	false,{0,0,2,0,0}},
+	{	1100,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			5,		
+		{	PT::NWay,		4.0f,	6.0f,	30,		5,		90.0f,		5.0f,		90.0f,		GetBulletID(BulletShape::UROKO,BulletColor::BLUE)},	false,{0,0,2,0,0}},
 
-	{	900,	CenterX,top,	-1.0f,	0.0f,	15.0f,	15,		10,			8,
-		{	PT::RotateAll,	4.0f,	3.0f,	15,		18,		0.0f,		0.0f,		90.0f,		3}, false,{0,2,2,0,0}},
+	{	1500,	CenterX,top,	-1.0f,	0.0f,	15.0f,	15,		10,			8,
+		{	PT::RotateAll,	4.0f,	3.0f,	15,		18,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::RED)}, false,{0,2,2,0,0}},
 
-	{	900,	CenterX,top,	1.0f,	0.0f,	15.0f,	15,		10,			8,
-		{	PT::RotateAll,	4.0f,	3.0f,	15,		18,		0.0f,		0.0f,		90.0f,		3}, false,{0,2,2,0,0}}
+	{	1500,	CenterX,top,	1.0f,	0.0f,	15.0f,	15,		10,			8,
+		{	PT::RotateAll,	4.0f,	3.0f,	15,		18,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::BLUE)}, false,{0,3,2,0,0}}
 
 };
 
 
 
-static constexpr int SPAWN_COUNT = sizeof(Stage1Timeline) / sizeof(EnemySpawn);	//ƒf[ƒ^‚ÌŒÂ”‚ğŒvZ
+static constexpr int SPAWN_COUNT = sizeof(Stage1Timeline) / sizeof(EnemySpawn);	//ãƒ‡ãƒ¼ã‚¿ã®å€‹æ•°ã‚’è¨ˆç®—
 
 void StageManager::Update(BulletManager* bm) {
 	
-	stageTimer++;								//ŠÔ‚ği‚ß‚é
+	stageTimer++;								//æ™‚é–“ã‚’é€²ã‚ã‚‹
 
 	if (state == StageState::DOCHU) {
 		
 		if (stageTimer == 500) {
-			state = StageState::MID_BOSS_BATTLE;						//“¹’†ƒ{ƒX
+			state = StageState::MID_BOSS_BATTLE;						//é“ä¸­ãƒœã‚¹
 			float X = Left + (Right - Left) / 2.0f;
 			float Y = Top - (Bottom - Top) / 4.0f;
 			boss.Spawn(X, Y, 0, 0);										
 		}
 		
 		for (int i = 0; i < SPAWN_COUNT; i++) {
-			if (Stage1Timeline[i].frame == stageTimer) {				//EnemySpawn‚Ìframe‚ÆŒo‰ßŠÔ‚ªˆê’v‚µ‚½ê‡
+			if (Stage1Timeline[i].frame == stageTimer) {				//EnemySpawnã®frameã¨çµŒéæ™‚é–“ãŒä¸€è‡´ã—ãŸå ´åˆ
 				for (int s = 0; s < MAX_SPAWN_SLOT; s++) {
 					if (!SpawnSlots[s].IsActive()) {
-						SpawnSlots[s].Activate(Stage1Timeline[i].count, i);		//ˆø”‚Åi‚ğ“n‚µ‚Ä‚Ç‚ê‚ğg‚¤‚©Šo‚¦‚³‚¹‚é
+						SpawnSlots[s].Activate(Stage1Timeline[i].count, i);		//å¼•æ•°ã§iã‚’æ¸¡ã—ã¦ã©ã‚Œã‚’ä½¿ã†ã‹è¦šãˆã•ã›ã‚‹
 						break;
 					}
 				}
@@ -96,39 +94,39 @@ void StageManager::Update(BulletManager* bm) {
 		}
 
 
-		if (stageTimer >= 1200) {
-			state = StageState::BOSS_BATTLE;		//ƒXƒe[ƒWó‘Ô‚ğƒ{ƒXí‚ÖˆÚs
+		if (stageTimer >= 2000) {
+			state = StageState::BOSS_BATTLE;		//ã‚¹ãƒ†ãƒ¼ã‚¸çŠ¶æ…‹ã‚’ãƒœã‚¹æˆ¦ã¸ç§»è¡Œ
 
 
 
 			float X = Left + (Right - Left) / 2.0f;
 			float Y = Top + (Bottom - Top) / 4.0f;
-			boss.Spawn(X, Y, 1, -1);				//ƒ{ƒX‚ÍƒtƒF[ƒY1‚©‚çÅIƒtƒF[ƒY‚Ü‚Å
+			boss.Spawn(X, Y, 1, -1);				//ãƒœã‚¹ã¯ãƒ•ã‚§ãƒ¼ã‚º1ã‹ã‚‰æœ€çµ‚ãƒ•ã‚§ãƒ¼ã‚ºã¾ã§
 		}
 	}
 	else if (state == StageState::MID_BOSS_BATTLE) {
 		boss.Update(player, bm);
-		if (!boss.GetFlag()) {						//ƒ{ƒXƒtƒ‰ƒO‚ªÁ‚¦‚½‚ç“¹’†•œ‹A
+		if (!boss.GetFlag()) {						//ãƒœã‚¹ãƒ•ãƒ©ã‚°ãŒæ¶ˆãˆãŸã‚‰é“ä¸­å¾©å¸°
 			state = StageState::DOCHU;
 		}
 	}
 
-	player.Update(bm);								//ƒwƒbƒ_‚Å‚à‚ç‚Á‚½bm‚ğ“n‚µ‚Ä©‹@‚ª’e‚ğŒ‚‚Ä‚é‚æ‚¤‚É‚·‚é
+	player.Update(bm);								//ãƒ˜ãƒƒãƒ€ã§ã‚‚ã‚‰ã£ãŸbmã‚’æ¸¡ã—ã¦è‡ªæ©ŸãŒå¼¾ã‚’æ’ƒã¦ã‚‹ã‚ˆã†ã«ã™ã‚‹
 
 	for (int i = 0; i < Enemy::EnemyMax; i++) {
 		if (fairies[i].GetFlag()) {
-			fairies[i].Update(player, bm);					//ƒtƒ‰ƒO‚ª—§‚Á‚Ä‚¢‚é—d¸‚ğŒ©‚Â‚¯‚½‚çXV‚µ‚Ä“®‚©‚·
+			fairies[i].Update(player, bm);					//ãƒ•ãƒ©ã‚°ãŒç«‹ã£ã¦ã„ã‚‹å¦–ç²¾ã‚’è¦‹ã¤ã‘ãŸã‚‰æ›´æ–°ã—ã¦å‹•ã‹ã™
 
 		}
 	}
 
 	if (state == StageState::BOSS_BATTLE) {
-		boss.Update(player, bm);							//ƒ{ƒXí’†‚Ìê‡Abm‚Åƒ{ƒX‚ÌXV‚ğ‚µ‚Äƒ{ƒX‚ª’e‚ğŒ‚‚Ä‚é‚æ‚¤‚É‚·‚é
+		boss.Update(player, bm);							//ãƒœã‚¹æˆ¦ä¸­ã®å ´åˆã€bmã§ãƒœã‚¹ã®æ›´æ–°ã‚’ã—ã¦ãƒœã‚¹ãŒå¼¾ã‚’æ’ƒã¦ã‚‹ã‚ˆã†ã«ã™ã‚‹
 	}
 }
 
-void StageManager::Draw(BulletManager* bm) {		//’e‚Æ‚©‚Ì•`‰æ
-	player.Draw();									//©‹@‚Ì•`‰æ
+void StageManager::Draw(BulletManager* bm) {		//å¼¾ã¨ã‹ã®æç”»
+	player.Draw();									//è‡ªæ©Ÿã®æç”»
 
 
 	for (int i = 0; i < Enemy::EnemyMax; i++) {
@@ -138,39 +136,39 @@ void StageManager::Draw(BulletManager* bm) {		//’e‚Æ‚©‚Ì•`‰æ
 					bm->ConvertEnemyBulletsToItems();
 				}
 			}
-			fairies[i].Draw();						//ƒtƒ‰ƒO‚ª—§‚Á‚Ä‚¢‚é—d¸‚ğ•`‰æ
+			fairies[i].Draw();						//ãƒ•ãƒ©ã‚°ãŒç«‹ã£ã¦ã„ã‚‹å¦–ç²¾ã‚’æç”»
 		}
 	}
 
 	if (state==StageState::MID_BOSS_BATTLE || state == StageState::BOSS_BATTLE) {
-		boss.Draw();								//“¹’†ƒ{ƒXEƒ{ƒXí’†‚Ìƒ{ƒX‚Ì•`‰æ
+		boss.Draw();								//é“ä¸­ãƒœã‚¹ãƒ»ãƒœã‚¹æˆ¦ä¸­ã®ãƒœã‚¹ã®æç”»
 	}
 }
 
-void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx, bool isPractice) {							//ƒXƒe[ƒW‚Ìó‘Ô‚ğ‘S‚ÄƒŠƒZƒbƒg‚·‚éŠÖ”
+void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx, bool isPractice) {							//ã‚¹ãƒ†ãƒ¼ã‚¸ã®çŠ¶æ…‹ã‚’å…¨ã¦ãƒªã‚»ãƒƒãƒˆã™ã‚‹é–¢æ•°
 	currentStageNum = stageNum;
 	
 	bm->ConvertEnemyBulletsToItems();
 	bm->ClearAllItems();
 
 	player.Reset(isPractice);
-	boss.Reset();									//ƒ{ƒXƒtƒ‰ƒO‚ğÜ‚é
+	boss.Reset();									//ãƒœã‚¹ãƒ•ãƒ©ã‚°ã‚’æŠ˜ã‚‹
 
 
 	for (int i = 0; i < Enemy::EnemyMax;i++) {
-		fairies[i].SetFlag(false);					//—d¸ƒtƒ‰ƒO‚àÜ‚é
+		fairies[i].SetFlag(false);					//å¦–ç²¾ãƒ•ãƒ©ã‚°ã‚‚æŠ˜ã‚‹
 	}
 
 	for (int i = 0; i < MAX_SPAWN_SLOT; i++) {
 		SpawnSlots[i].Reset();
 	}
-	if (startPhaseIdx > 0) {							//Practiceƒ‚[ƒh‚Ì‚Íƒ{ƒXí‚Ü‚ÅƒXƒLƒbƒv
-		stageTimer = 1200;							//ƒXƒe[ƒWƒ^ƒCƒ}[‚ğ1200(’Êí‚Ìƒ{ƒX‚ªo‚Ä‚­‚éŠÔ)‚É‚·‚é‚±‚Æ‚Å“¹’†‚ÌG‹›‚ªoŒ»‚·‚é‚Ì‚ğ–h~
-		state = StageState::BOSS_BATTLE;			//ó‘Ô‚ğƒ{ƒXí‚Ö
+	if (startPhaseIdx > 0) {							//Practiceãƒ¢ãƒ¼ãƒ‰ã®æ™‚ã¯ãƒœã‚¹æˆ¦ã¾ã§ã‚¹ã‚­ãƒƒãƒ—
+		stageTimer = 1200;							//ã‚¹ãƒ†ãƒ¼ã‚¸ã‚¿ã‚¤ãƒãƒ¼ã‚’1200(é€šå¸¸æ™‚ã®ãƒœã‚¹ãŒå‡ºã¦ãã‚‹æ™‚é–“)ã«ã™ã‚‹ã“ã¨ã§é“ä¸­ã®é›‘é­šãŒå‡ºç¾ã™ã‚‹ã®ã‚’é˜²æ­¢
+		state = StageState::BOSS_BATTLE;			//çŠ¶æ…‹ã‚’ãƒœã‚¹æˆ¦ã¸
 
 		float X = Left + (Right - Left) / 2.0f;
 		float Y = Top + (Bottom - Top) / 4.0f;
-		boss.Spawn(X, Y);							//‰æ–Ê’†‰›‚Éƒ{ƒX‚ğoŒ»‚³‚¹‚éB
+		boss.Spawn(X, Y);							//ç”»é¢ä¸­å¤®ã«ãƒœã‚¹ã‚’å‡ºç¾ã•ã›ã‚‹ã€‚
 
 		boss.JumpToPhase(startPhaseIdx - 1);
 	}

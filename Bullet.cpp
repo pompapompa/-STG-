@@ -36,68 +36,28 @@ void Bullet::Draw(int scaleGraph) {
 		DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::WHITE), false);
 	}
 	else {
-		switch (type) {
+		BulletShape shape = GetBulletShape(type);
+		BulletColor color = GetBulletColor(type);
 		
-		case 9:		//赤ナイフ
-		case 8:		//青ナイフ
-		{
-			float angle = atan2f(vy, vx);								       //進行方向の角度を算出
-			float drawAngle = angle - (DX_PI_F / 2.0f);				    	   //画像は下向きなので、始線(0)からの差(-π/2)する
+		if (scaleGraph != -1 && shape != BulletShape::CIRCLE) {	//画像ハンドルが有効であり、且つ通常円(CIRCLE)以外の場合はテクスチャ回転描画
+			float angle = atan2f(vy, vx);                               //進行方向の角度を算出
+			float drawAngle = angle - (DX_PI_F / 2.0f);                 //画像は下向き基準なので、始線(0)からの差(-π/2)する
 
-			float scale = r / 8.0f;										   //解像度に合わせて半径を調整
+			int shapeIdx = static_cast<int>(shape);
+			float baseR = BULLET_BASE_RADIUS[shapeIdx];
+			float scale = (baseR > 0.0f) ? (r / baseR) : 1.0f;          //基準半径で割って描画倍率を判定と連動
 
-			DrawRotaGraph((int)x, (int)y, scale, drawAngle, scaleGraph, TRUE);   //回転描画
-			break;
+			DrawRotaGraph((int)x, (int)y, scale, drawAngle, scaleGraph, TRUE);		//回転描画
 		}
-
-		
-		case 6:			//虹色大玉
-		case 5:			//青大玉
-		{
-			float angle = atan2f(vy, vx);
-			float drawAngle = angle - (DX_PI_F / 2.0f);
-
-			float scale = r / 128.0f;
-			DrawRotaGraph((int)x, (int)y, scale, drawAngle, scaleGraph, TRUE);
-			break;
-		}
-
-		
-		case 4:			//青米弾
-		case 3:			//赤米弾
-		{
-			float angle = atan2f(vy, vx);
-			float drawAngle = angle - (DX_PI_F / 2.0f);
-
-			float scale = r / 64.0f;
-			DrawRotaGraph((int)x, (int)y, scale, drawAngle, scaleGraph, TRUE);
-			break;
-		}
-
-		//鱗系ポイフル系
-		case 2:        //青鱗
-		case 7:			//紫ポイフル
-		case 10:		//黄鱗
-		{
-			float angle = atan2f(vy, vx);								       //進行方向の角度を算出
-			float drawAngle = angle - (DX_PI_F / 2.0f);				    	   //画像は下向きなので、始線(0)からの差(-π/2)する
-
-			float scale = r / 18.0f;										   //解像度に合わせて半径を調整
-
-			DrawRotaGraph((int)x, (int)y, scale, drawAngle, scaleGraph, TRUE);   //回転描画
-			break;
-		}
-
-		case 1:			//赤円
-		
-			DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::RED), true);
-			DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::WHITE), false);
-			break;
-
-		case 0:
-		default:		//青円
-			DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::WHITE), true);
-			DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::BLUE), false);
+		else {
+			if (color == BulletColor::RED) {
+				DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::RED), true);
+				DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::WHITE), false);
+			}
+			else {
+				DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::WHITE), true);
+				DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::BLUE), false);		//通常円(CIRCLE)や画像がない場合のフォールバック描画
+			}
 		}
 	}
 }

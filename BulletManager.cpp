@@ -1,5 +1,6 @@
 #include "BulletManager.h"
 #include <cfloat>
+
 #include "Distance.h"
 #include "Collision.h"
 #include "Bullet.h"
@@ -8,21 +9,59 @@
 
 
 BulletManager::BulletManager() {
-
-	for (int i = 0; i < 50; i++) {
+	for (int i = 0; i < BULLET_GRAPHIC_MAX; i++) {
 		bulletGraphs[i] = -1;								//配列の中身を-1で初期化
 	}
-
-	bulletGraphs[2] = LoadGraph("素材集/鱗/青鱗.png");
-	bulletGraphs[3] = LoadGraph("素材集/赤米弾.png");
-	bulletGraphs[4] = LoadGraph("素材集/青米弾.png");
-	bulletGraphs[5] = LoadGraph("素材集/青大玉.png");
-	bulletGraphs[6] = LoadGraph("素材集/改良版虹色大玉.png");
-	bulletGraphs[7] = LoadGraph("素材集/ポイフル/紫ポイフル.png");
-	bulletGraphs[8] = LoadGraph("素材集/ナイフ/青ナイフ.png");
-	bulletGraphs[9] = LoadGraph("素材集/ナイフ/赤ナイフ.png");
-	bulletGraphs[10] = LoadGraph("素材集/鱗/黄鱗.png");
+	ReloadGraphic();
 }
+
+
+void BulletManager::ReloadGraphic() {
+	
+	for (int i = 0; i < BULLET_GRAPHIC_MAX; i++) {		//既存ハンドルの破棄
+		if (bulletGraphs[i] != -1) {
+			DeleteGraph(bulletGraphs[i]);
+			bulletGraphs[i] = -1;
+		}
+	}
+
+	const char* shapeFolders[] = {
+		"",			//CIRCLE(画像なし)
+		"鱗",		//UROKO
+		"米弾",		//RICE
+		"大玉",		//BIG_CIRCLE
+		"ナイフ",	//KNIFE
+		"ポイフル",	//POIFUL
+		"光弾",		//LIGHT
+		"座薬"		//ZAYAKU
+	};
+
+	const char* colorNames[] = {
+		"赤",		//RED
+		"青",		//BLUE
+		"黄",		//YELLOW
+		"水",		//AQUA
+		"銀",		//SILVER
+		"紫",		//PURPLE
+		"橙",		//ORANGE
+		"緑"		//GREEN
+	};
+
+	
+	for (int s = 1; s < static_cast<int>(BulletShape::MAX_SHAPES); ++s) {		//弾種読み込み
+		for (int c = 0; c < static_cast<int>(BulletColor::MAX_COLORS); ++c) {	//色種読み込み
+			int id = s * static_cast<int>(BulletColor::MAX_COLORS) + c;		
+
+			char path[256];
+			snprintf(path, sizeof(path), "素材集/%s/%s%s.png", shapeFolders[s], colorNames[c], shapeFolders[s]);
+
+			
+			bulletGraphs[id] = LoadGraph(path);		//ファイルが存在すればハンドルが入り、無ければ自動的に-1になる
+		}
+	}
+}
+
+
 
 void BulletManager::LaunchPlayerBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming, float turnSpeed) {
 	for (int i = 0; i < PlayerBMax; i++) {
