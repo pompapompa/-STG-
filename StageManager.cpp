@@ -18,7 +18,7 @@ void StageManager::Update(BulletManager* bm) {
 	stageTimer++;								//時間を進める
 
 	if (state == StageState::DOCHU) {
-		if (stageTimer == 700) {
+		if (stageTimer == Stage1Data::MID_BOSS_SPAWN_FRAME) {
 			state = StageState::MID_BOSS_BATTLE;						//道中ボス
 			float X = Left + (Right - Left) / 2.0f;
 			float Y = Top - (Bottom - Top)  / 4.0f;
@@ -52,10 +52,10 @@ void StageManager::Update(BulletManager* bm) {
 		}
 
 
-		if (stageTimer >= 4000) {
+		if (stageTimer >= Stage1Data::BOSS_SPAWN_FRAME) {
 			state = StageState::BOSS_BATTLE;		//ステージ状態をボス戦へ移行
 			float X = Left + (Right - Left) / 2.0f;
-			float Y = Top + (Bottom - Top) / 4.0f;
+			float Y = Top + (Bottom - Top)  / 4.0f;
 			boss.Spawn(X, Y, Stage1Data::BossPhases, Stage1Data::BOSS_PHASE_MAX, 0, -1);				//ボスはフェーズ1から最終フェーズまで
 		}
 	}
@@ -119,7 +119,7 @@ void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx, bool
 		SpawnSlots[i].Reset();
 	}
 	if (startPhaseIdx > 0) {							//Practiceモードの時はボス戦までスキップ
-		stageTimer = 2000;							//ステージタイマーを1200(通常時のボスが出てくる時間)にすることで道中の雑魚が出現するのを防止
+		stageTimer = Stage1Data::BOSS_SPAWN_FRAME;							//ステージタイマーを1200(通常時のボスが出てくる時間)にすることで道中の雑魚が出現するのを防止
 		state = StageState::BOSS_BATTLE;			//状態をボス戦へ
 
 		float X = Left + (Right - Left) / 2.0f;
