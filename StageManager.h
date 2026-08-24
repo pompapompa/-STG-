@@ -58,4 +58,6 @@ public:
 	Player& GetPlayer() { return player; }		//&は参照渡しで、privateに隔離されてるインスタンスそのものへのアクセス権を引き出している。窓口の様なもの
 	Boss& GetBoss() { return boss; }
 	Enemy* GetFairies() { return fairies; }
+
+	bool IsStageClear() const { return (state == StageState::BOSS_BATTLE && boss.IsDead()); }		//ボス戦中でボスの全フェーズが終了した時にステージクリアと判定
 };

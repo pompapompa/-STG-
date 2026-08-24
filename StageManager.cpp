@@ -3,75 +3,33 @@
 #include "BulletPattern.h"
 #include "BurstController.h"
 #include "DxLib.h"
+#include "Stage1Data.h"
+
 
 
 /*　ーーーーーDxLibのデフォ：画面サイズ(640,480)ーーーーー　*/
 
 
 using namespace PlayArea;
-
 using namespace BulletPattern;								//省略名
 
-static constexpr int top = Top + StageManager::upMargin;			//妖精が出てくる時にプレイ領域の上からどれくらい開けて出現するか
-
-
-static constexpr EnemySpawn Stage1Timeline[] = {
-/*	{	frame,	x,		y,		vx,		vy,		r,		hp,		count	interval,	
-		{	type,			sr,										ss,				si,		way,	広がり角,	回転速度	基準角度	弾見た目(0:青/1:赤/2:青鱗/3:赤米/4:青米)},弾消しフラグ, {0：小スコア, 1：スコア, 2：パワー, 3：残機, 4：ボム, 5：大パワー}}*/
-	{	60,		Left, 	top,	4.0f,	0.0f,	15.0f,	10,		7,			20,
-		{	PT::NWay,		BulletDefaultRadius::UROKO,				8.0f,			18,		4,		10.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::UROKO, BulletColor::BLUE)},false, {0,1,2,0,0}},
-
-	{	120,	Right,  top,	-3.0f,	0.0f,	15.0f,	10,		7,			15,
-		{	PT::NWay,		BulletDefaultRadius::RICE,				16.0f,			4,		2,		3.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::RED)},false,{0,0,2,0,0}},
-
-	{	350,	Left,	top,	5.0f,	0.0f,	15.0f,	10,		8,			15,
-		{	PT::Aimed,		BulletDefaultRadius::ZAYAKU,			6.0f,			30,		1,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::ZAYAKU,BulletColor::AQUA)}, false,{0,0,1,0,0}},
-
-	{	350,	Right,	top,	-5.0f,	0.0f,	15.0f,	10,		8,			15,
-		{	PT::Aimed,		BulletDefaultRadius::LIGHT,				6.0f,			30,		1,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::LIGHT,BulletColor::BLUE)}, false,{0,0,3,0,0}},
-
-	{	1000,	Left,	top,	3.0f,	0.0f,	15.0f,	10,		10,			10,
-		{	PT::NWay,		BulletDefaultRadius::BIG_CIRCLE,		7.0f,			30,		12,		180.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::RED)}, false,{0,1,0,0,0}},
-
-	{	1000,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			10,
-		{	PT::NWay,		BulletDefaultRadius::BIG_CIRCLE,		7.0f,			30,		12,		180.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::BLUE)}, false,{0,0,1,0,0}},
-
-	{	1100,	Left,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			5,
-		{	PT::NWay,		BulletDefaultRadius::UROKO,				6.0f,			30,		5,		90.0f,		5.0f,		90.0f,		GetBulletID(BulletShape::UROKO,BulletColor::RED)},	false,{0,2,0,0,0}},
-
-	{	1100,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			5,		
-		{	PT::NWay,		BulletDefaultRadius::UROKO,				6.0f,			30,		5,		90.0f,		5.0f,		90.0f,		GetBulletID(BulletShape::UROKO,BulletColor::BLUE)},	false,{0,0,2,0,0}},
-
-	{	1500,	CenterX,top,	-1.0f,	0.0f,	15.0f,	15,		10,			8,
-		{	PT::RotateAll,	BulletDefaultRadius::RICE,				3.0f,			15,		18,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::RED)}, false,{0,2,2,0,0}},
-
-	{	1500,	CenterX,top,	1.0f,	0.0f,	15.0f,	15,		10,			8,
-		{	PT::RotateAll,	BulletDefaultRadius::RICE,				3.0f,			15,		18,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::BLUE)}, false,{0,3,2,0,0}}
-
-};
-
-
-
-static constexpr int SPAWN_COUNT = sizeof(Stage1Timeline) / sizeof(EnemySpawn);	//データの個数を計算
 
 void StageManager::Update(BulletManager* bm) {
-	
 	stageTimer++;								//時間を進める
 
 	if (state == StageState::DOCHU) {
-		
-		if (stageTimer == 500) {
+		if (stageTimer == 700) {
 			state = StageState::MID_BOSS_BATTLE;						//道中ボス
 			float X = Left + (Right - Left) / 2.0f;
-			float Y = Top - (Bottom - Top) / 4.0f;
-			boss.Spawn(X, Y, 0, 0);										
+			float Y = Top - (Bottom - Top)  / 4.0f;
+			boss.Spawn(X, Y, Stage1Data::MidBossPhases, Stage1Data::MID_BOSS_PHASE_MAX, 0, -1);										
 		}
 		
-		for (int i = 0; i < SPAWN_COUNT; i++) {
-			if (Stage1Timeline[i].frame == stageTimer) {				//EnemySpawnのframeと経過時間が一致した場合
+		for (int i = 0; i < Stage1Data::SPAWN_COUNT; i++) {
+			if (Stage1Data::Timeline[i].frame == stageTimer) {				//EnemySpawnのframeと経過時間が一致した場合
 				for (int s = 0; s < MAX_SPAWN_SLOT; s++) {
 					if (!SpawnSlots[s].IsActive()) {
-						SpawnSlots[s].Activate(Stage1Timeline[i].count, i);		//引数でiを渡してどれを使うか覚えさせる
+						SpawnSlots[s].Activate(Stage1Data::Timeline[i].count, i);		//引数でiを渡してどれを使うか覚えさせる
 						break;
 					}
 				}
@@ -81,10 +39,10 @@ void StageManager::Update(BulletManager* bm) {
 			if (SpawnSlots[s].IsActive()) {
 				int dataIdx = SpawnSlots[s].GetDataIdx();
 
-				if (SpawnSlots[s].Tick(Stage1Timeline[dataIdx].interval)) {
+				if (SpawnSlots[s].Tick(Stage1Data::Timeline[dataIdx].interval)) {
 					for (int j = 0; j < Enemy::EnemyMax; j++) {
 						if (!fairies[j].GetFlag()) {
-							auto& d = Stage1Timeline[dataIdx];
+							auto& d = Stage1Data::Timeline[dataIdx];
 							fairies[j].Encount(d.x, d.y, d.r, d.vx, d.vy, d.hp,d.shotConf,d.clearOnEnd, d.dropCounts);
 							break;
 						}
@@ -94,19 +52,17 @@ void StageManager::Update(BulletManager* bm) {
 		}
 
 
-		if (stageTimer >= 2000) {
+		if (stageTimer >= 4000) {
 			state = StageState::BOSS_BATTLE;		//ステージ状態をボス戦へ移行
-
-
-
 			float X = Left + (Right - Left) / 2.0f;
 			float Y = Top + (Bottom - Top) / 4.0f;
-			boss.Spawn(X, Y, 1, -1);				//ボスはフェーズ1から最終フェーズまで
+			boss.Spawn(X, Y, Stage1Data::BossPhases, Stage1Data::BOSS_PHASE_MAX, 0, -1);				//ボスはフェーズ1から最終フェーズまで
 		}
 	}
 	else if (state == StageState::MID_BOSS_BATTLE) {
 		boss.Update(player, bm);
 		if (!boss.GetFlag()) {						//ボスフラグが消えたら道中復帰
+			boss.Reset();							//中ボス終了後にボス状態をリセット
 			state = StageState::DOCHU;
 		}
 	}
@@ -163,14 +119,12 @@ void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx, bool
 		SpawnSlots[i].Reset();
 	}
 	if (startPhaseIdx > 0) {							//Practiceモードの時はボス戦までスキップ
-		stageTimer = 1200;							//ステージタイマーを1200(通常時のボスが出てくる時間)にすることで道中の雑魚が出現するのを防止
+		stageTimer = 2000;							//ステージタイマーを1200(通常時のボスが出てくる時間)にすることで道中の雑魚が出現するのを防止
 		state = StageState::BOSS_BATTLE;			//状態をボス戦へ
 
 		float X = Left + (Right - Left) / 2.0f;
 		float Y = Top + (Bottom - Top) / 4.0f;
-		boss.Spawn(X, Y);							//画面中央にボスを出現させる。
-
-		boss.JumpToPhase(startPhaseIdx - 1);
+		boss.Spawn(X, Y, Stage1Data::BossPhases, Stage1Data::BOSS_PHASE_MAX, startPhaseIdx - 1, - 1);				//画面中央にボスを出現させ、指定フェーズへジャンプ
 	}
 	else {
 		stageTimer = 0;

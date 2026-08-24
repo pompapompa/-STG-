@@ -9,7 +9,7 @@ namespace PlayArea {						//struct‚¾‚ÆŒÄ‚Ño‚µ‚Å–ˆ‰ñPlayArea::‚Æ‘‚©‚Ë‚Î‚È‚ç‚È‚¢
 	static constexpr int Right = 416;			//32+384‚Å384=128*3
 	static constexpr int Top = 16;
 	static constexpr int Bottom = 464;			//16+448‚Å448=64*7‚ÅFX‚¤‚ê‚µ‚¢‚ç‚µ‚¢AÚ×‚ÍDiscord
-	
+
 	static constexpr int CenterX = Left + (Right - Left) / 2;
 	static constexpr int CenterY = Top + (Bottom - Top) / 2;
 
@@ -22,7 +22,7 @@ namespace PlayArea {						//struct‚¾‚ÆŒÄ‚Ño‚µ‚Å–ˆ‰ñPlayArea::‚Æ‘‚©‚Ë‚Î‚È‚ç‚È‚¢
 
 	static constexpr float Margin = 15.0f;									//ƒQ[ƒ€ƒI[ƒo[ƒV[ƒ“‚Å‚ÌƒvƒŒƒC—Ìˆæ‚É”í‚¹‚é•‚¢ƒ‚ƒ„‚Ì—V‚Ñ
 	static constexpr float ItemCollectionLine = Top + 150.0f;				//ƒAƒCƒeƒ€ã•”‰ñûƒ‰ƒCƒ“
-	static constexpr float PhaseTimerX = Right - 25.0f;						
+	static constexpr float PhaseTimerX = Right - 25.0f;
 	static constexpr float PhaseTimerY = Top + 10.0f;						//ƒtƒF[ƒYƒ^ƒCƒ}‚ÌUI•`‰æÀ•W
 };
 
@@ -91,12 +91,12 @@ struct ObjectColor {
 	static unsigned int Get(Type type) {
 		switch (type) {
 		case Type::BLACK:		return GetColor(0, 0, 0);
-		case Type::RED:			return GetColor(255,   0,   0);
-		case Type::GREEN:		return GetColor(  0, 255,   0);
-		case Type::BLUE:		return GetColor(  0,   0, 255);
-		case Type::YELLOW:		return GetColor(255, 255,   0);
-		case Type::MAGENTA:		return GetColor(255,   0, 255);
-		case Type::CYAN:		return GetColor(  0, 255, 255);
+		case Type::RED:			return GetColor(255, 0, 0);
+		case Type::GREEN:		return GetColor(0, 255, 0);
+		case Type::BLUE:		return GetColor(0, 0, 255);
+		case Type::YELLOW:		return GetColor(255, 255, 0);
+		case Type::MAGENTA:		return GetColor(255, 0, 255);
+		case Type::CYAN:		return GetColor(0, 255, 255);
 		default:				return GetColor(255, 255, 255);
 		}
 	}
@@ -150,8 +150,8 @@ static constexpr float BULLET_HIT_RATE[] = {		//’eí‚²‚Æ‚ÌŒ©‚½–Ú”¼Œa‚É‘Î‚·‚é“–‚½
 	0.50f,		// BIG_CIRCLE:	‘å‹Ê
 	0.35f,		// KNIFE:		ƒiƒCƒt
 	0.40f,		// POIFUL:		ƒ|ƒCƒtƒ‹
-	0.25f,		// LIGHT:		Œõ’e(Œõ‚ÌƒI[ƒ‰‚Ì‰e‹¿‚Å¬‚³‚ß‚Éİ’è)
-	0.30f		// ZAYAKU:		À–ò
+	0.20f,		// LIGHT:		Œõ’e(Œõ‚ÌƒI[ƒ‰‚Ì‰e‹¿‚Å¬‚³‚ß‚Éİ’è)
+	0.20f		// ZAYAKU:		À–ò
 };
 
 static constexpr float BULLET_BASE_RADIUS[] = {		//’eí‚²‚Æ‚ÌŠî€‰ğ‘œ“x”¼Œa
@@ -179,3 +179,33 @@ constexpr BulletColor GetBulletColor(int bulletID) {					//’eID‚©‚çF‚ğæ‚èo‚·Š
 }
 
 static constexpr int BULLET_GRAPHIC_MAX = static_cast<int>(BulletShape::MAX_SHAPES) * static_cast<int>(BulletColor::MAX_COLORS);	//‘S’eƒOƒ‰ƒtƒBƒbƒN‚ÌÅ‘å”z—ñ—v‘f”(Œ`ó”*F”)
+
+
+
+/**
+	 * @brief ‘S•ûˆÊ‰ñ“]’e (PT::RotateAll) ‚ÌŒğ·—p‰ñ“]‘¬“x (rotSpeed) ‚ğƒRƒ“ƒpƒCƒ‹‚É©“®ŒvZ‚·‚é
+	 *
+	 * --- RotateAll‚Ì‰ñ“]‘¬“x(rotSpeed)Zoƒƒ‚ ---
+	 * 1‰ñ‚Ì”­Ë‚Åi‚ŞŠp“x‚ğƒ¢ƒÆ[deg]‚Æ‚µ‚½‚Æ‚«A
+	 * ‘S•ûˆÊ’e‚ÌŒ„ŠÔ(step = 360 / way)‚É‘Î‚µ‚Äƒ¢ƒÆ‚ªstep‚Ì®””{‚É‚È‚é‚ÆA
+	 * ‘O‚Ì’e‚Ì‹O“¹‚Æd‚È‚Á‚Ä‰ñ“]‚µ‚ÄŒ©‚¦‚È‚­‚È‚éB
+	 *
+	 * ãY—í‚Éƒoƒ‰‚¯‚³‚¹‚é‚É‚ÍA
+	 *   step = 360.0f / way
+	 *   ƒ¢ƒÆ   = step * (phaseShift + k)
+	 * ‚Æ‚È‚é‚æ‚¤‚É rotSpeed ‚ğ’è‚ß‚ê‚Î—Ç‚¢B
+	 *
+	 *   rotSpeed = (ƒ¢ƒÆ * ƒÎ) / (si * 180)
+	 *
+	 * @param way ’e‚Ì‘S•ûˆÊway”
+	 * @param si ”­ËŠÔŠu (interval[F])
+	 * @param phaseShift ˆÊ‘ŠƒYƒŒ”ä—¦ (1.0f/2.0f: ”¼üŠúƒYƒŒ, 1.0f/3.0f: 1/3üŠúƒYƒŒ, 1.0f/4.0f: 1/4üŠúƒYƒŒ)
+	 * @param k ‰ñ“]Š´‚ğo‚·‚½‚ß‚Ì’Ç‰Áü‰ñ” (0,1,2...)
+	 * @return constexpr float Zo‚³‚ê‚½ rotSpeed[rad/F]
+	 */
+constexpr float CalcRotateSpeed(int way, int si, float phaseShift = (1.0f / 3.0f), int k = 2) {
+	float step = 360.0f / static_cast<float>(way);
+	float deltaTheta = step * (phaseShift + static_cast<float>(k));
+	return (deltaTheta * 3.14159265f) / (static_cast<float>(si) * 180.0f);
+}
+

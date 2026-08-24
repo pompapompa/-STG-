@@ -187,7 +187,7 @@ void SceneManager::Update() {
 			}
 		}
 
-		if (m_stageManager->GetBoss().IsStageClear()) {											//ボスを倒したフラグが返されたらタイトルに戻る
+		if (m_stageManager->IsStageClear()) {											//ボスを倒したフラグが返されたらタイトルに戻る
 			while (Input::IsTrigger(KEY_INPUT_F)) ProcessMessage();		//z,enterキーを長押し状態でCLEARに遷移してきた時に離したらそのままタイトルに行くのを防ぐ為の文
 			ClearInputCharBuf();				//画面遷移前にキー入力バッファを完全クリアして、入力画面でも予約されたキー入力が起きないように対策
 			if (!playingPractice) {

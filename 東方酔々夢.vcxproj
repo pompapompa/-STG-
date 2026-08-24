@@ -179,6 +179,7 @@
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="ScoreData.h" />
     <ClInclude Include="ScoreManager.h" />
+    <ClInclude Include="Stage1Data.h" />
     <ClInclude Include="StageManager.h" />
     <ClInclude Include="Weapon.h" />
   </ItemGroup>

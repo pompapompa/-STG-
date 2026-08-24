@@ -11,7 +11,7 @@
 #include <math.h>
 
 
-Boss::Boss() : hp(0.0f) {
+Boss::Boss() : hp(0.0f), state(BossState::WAITING) {
 	for (int i = 0; i < 20; i++) {
 		BossGraphs[i] = -1;
 	}
@@ -19,13 +19,18 @@ Boss::Boss() : hp(0.0f) {
 	BossGraphs[1] = LoadGraph("素材集/改良版虹色大玉.png");
 }
 
-void Boss::Spawn(float in_x, float in_y) {
+void Boss::Spawn(float in_x, float in_y, const BossPhase* phaseTable, int phaseCount, int startPhase, int in_endIdx) {
+	if (phaseTable == nullptr || phaseCount <= 0) return;		//テーブルが不正な場合の早期return
+	
 	BulletPattern::ShotConfig dummyConf;
 	Encount(in_x, in_y, para.r, 0.0f, 0.0f, 0, dummyConf, false);							//hpの引数はボスの場合hpロジックが独自の為ダミーの0を入力している。その後上書きされる為何でも良い。
 
-	currentIdx = 0;
-	
-	this->phaseMaxHp = phases[currentIdx].hpLimit;						//フェーズの最大HPをセット
+	this->m_phases = phaseTable;																//渡された弾幕テーブルのポインタを保持
+	this->m_phaseMax = phaseCount;																//渡された弾幕テーブルの要素数を保持
+	this->currentIdx = (startPhase < phaseCount) ? startPhase : 0;								//startPhaseが要素数を超えないようにクランプ
+	this->endIdx = (in_endIdx >= 0 && in_endIdx < phaseCount) ? in_endIdx : (phaseCount - 1);	//終了フェーズを設定(-1が渡された場合は最終フェーズまで)
+
+	this->phaseMaxHp = m_phases[currentIdx].hpLimit;					//フェーズの最大HPをセット
 	this->hp = 0.0f;													//初期スポーン時のhpチャージ演出の起点とするため,hp=0.0fとしておく
 
 	this->timer = 0;
@@ -37,9 +42,10 @@ void Boss::Spawn(float in_x, float in_y) {
 
 }
 
+
 void Boss::Update(const Player& player, BulletManager* bm) {									//BulletManagerを使って弾を撃つ
 	using namespace PlayArea;
-	if (!flag) return;
+	if (!flag || m_phases == nullptr) return;	//ボスフラグが無い、又はm_phasesがヌルポインタの場合は早期return
 
 	if (state == BossState::ACTIVE) {		//戦闘状態
 		timer++;
@@ -47,17 +53,15 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 
 
 		x = PlayArea::DefaultBossX;
-		//y = PlayArea::DefaultBossY;
 		y = PlayArea::FitfullBossY;
-		const BossPhase& p = phases[currentIdx];
-
+		const BossPhase& p = m_phases[currentIdx];
 
 		for (int i = 0; i < p.shotCount; i++) {
 			const auto& conf = p.shots[i];
 
 			if (phaseTimer % conf.interval == 0) {
 				if (conf.type == PT::RotateAll) {
-					float baseAngleDeg = (timer * conf.rotSpeed) * 180.0f / DX_PI_F;
+					float baseAngleDeg = conf.baseAngle + (timer * conf.rotSpeed) * 180.0f / DX_PI_F;
 					BulletPattern::NWayShot(x, y, conf.radius, conf.speed, conf.way, conf.totalAngle, baseAngleDeg, bm, conf.graphicType);
 				}
 				else {
@@ -71,23 +75,23 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 		if (hp <= 0 || phaseTimer >= maxFrames) {							//フェーズのhpがなくなるか、limitTimer(制限時間)を越えた場合
 
 			for (int typeIdx = 0; typeIdx < DROP_TYPE_MAX; typeIdx++) {					//アイテム全種類のループ
-				int count = phases[currentIdx].dropCounts[typeIdx];				//静的配列から値を取得して格納			
+				int count = m_phases[currentIdx].dropCounts[typeIdx];				//静的配列から値を取得して格納			
 				if (count > 0) {												//1以上の時
 					ItemType iType = static_cast<ItemType>(typeIdx);		//アイテムの種類を格納
 					bm->LaunchItem(x, y, iType, count, 35.0f);				//ボス座標から半径35.0f以内にランダムに散布してドロップ
 				}
 			}
 
-			if (phases[currentIdx].clearOnEnd) {
+			if (m_phases[currentIdx].clearOnEnd) {
 				bm->ConvertEnemyBulletsToItems();												//現在のphaseでclearOnEndフラグが立っているならbmに弾消し申請
 			}
 
 			currentIdx++;															//現在のフェーズを次の段階へ
-			if (currentIdx < PHASE_MAX) {											//フェーズが全て終わっていない場合
+			if (currentIdx <=endIdx && currentIdx<m_phaseMax) {							//endIdx以下且つ、フェーズが最大まで終わっていない場合
 				state = BossState::WAITING;									//待機状態遷移
 				waitTimer = 0;												//待機時間タイマを初期化
 
-				this->phaseMaxHp = phases[currentIdx].hpLimit;				//フェーズの最大hp変数にそのフェーズの最大hpを格納
+				this->phaseMaxHp = m_phases[currentIdx].hpLimit;				//フェーズの最大hp変数にそのフェーズの最大hpを格納
 				this->hp = 0.0f;											//hpチャージ演出の起点とするため,hp=0.0fとしておく
 			}
 			else {
@@ -205,26 +209,26 @@ bool Boss::CheckCollision(Player& player, BulletManager& bm) {
 	return false;
 }
 
+int Boss::GetRemainingPhaseTimer() const {		//外部から残り時間を取得するゲッタ関数
+	if (state == BossState::WAITING || m_phases == nullptr) return 0;	//待機状態かm_phasesがヌルポインタの場合はの安全ガード
+
+	int maxFrames = (int)(m_phases[currentIdx].limitTimeSeconds * FPSManager::GetTargetFPS());	//制限時間[F]=制限時間[s]*FPS[F/s]
+	int remain = maxFrames - phaseTimer;														//そのフェーズの制限時間 - そのフェーズが開始してからの時間
+	return (remain < 0) ? 0 : remain;															//制限時間よりも経過時間が大きくなったらremain<0より0を返し、そうでなければその差分の時間を返す
+}		
 
 void Boss::JumpToPhase(int phaseIdx) {
-	if (phaseIdx < 0 || phaseIdx >= PHASE_MAX) return;		//最大フェーズ配列数を越えない対策
+	if (m_phases == nullptr || phaseIdx < 0 || phaseIdx >= m_phaseMax) return;		//最大フェーズ配列数を越えない対策
 	currentIdx = phaseIdx;
 	phaseTimer = 0;
-	phaseMaxHp = phases[currentIdx].hpLimit;
-	hp = phaseMaxHp;
+	phaseMaxHp = m_phases[currentIdx].hpLimit;
+	hp = m_phaseMax;
 
 	flag = true;
 	state = BossState::WAITING;								//フェーズジャンプ時も待機状態からスタート
 	waitTimer = 0;
 }
 
-int Boss::GetRemainingPhaseTimer() const {			//外部から残り時間を取得するゲッタ関数
-	if (state == BossState::WAITING) return 0;					//待機状態では0を返す
-	
-	int maxFrames = (int)(phases[currentIdx].limitTimeSeconds * FPSManager::GetTargetFPS());	//制限時間[F]=制限時間[s]*FPS[F/s]
-	int remain = maxFrames - phaseTimer;		//そのフェーズの制限時間 - そのフェーズが開始してからの時間
-	return (remain < 0) ? 0 : remain;							//制限時間よりも経過時間が大きくなったらremain<0より0を返し、そうでなければその差分の時間を返す
-}
 // === File: Boss.h ===
 
 #pragma once
@@ -267,83 +271,20 @@ private:
 	static constexpr int PHASE_CHARGE_FRAME = 60;				//体力ゲージが溜まるチャージ演出にかかるフレーム数
 	static constexpr int PhaseTimerColorChangeSeconds = 5;		//フェーズタイマの色の変化が起こる残り秒数
 
+	const BossPhase* m_phases = nullptr;						//外部から渡されるフェーズ配列の戦闘ポインタを保持
+	int m_phaseMax = 0;											//外部から渡されたフェーズ配列の要素数を保持
+
 	int currentIdx = 0;											//現在のフェーズ番号
+	int endIdx = 0;												//このボスの終了フェーズの番号
+	
 	int phaseTimer = 0;											//フェーズ開始からの経過時間
-	float phaseMaxHp;											//現在のフェーズの初期HP
+	float phaseMaxHp = 0.0f;									//現在のフェーズの初期HP
 						
 	BossState state;											//ボスの現在の状態を保持する変数
 	int waitTimer = 0;											//待機時間をカウントするタイマ
 
 	int chargeTimer = 0;										//チャージ演出の経過時間をカウントするタイマ
 	int BossGraphs[20];											//画像番号を格納する箱
-
-	
-
-	static constexpr BossPhase phases[] = {						//通常こうげきとスペカのデータを配列で定義
-		/*
-	
-		0:青円
-		1:赤円
-		2:青鱗
-		3:赤米弾
-		4:青米弾
-		5:青大玉
-		6:虹色大玉
-		7:紫ポイフル
-		8:青ナイフ
-		9:赤ナイフ
-		10:黄鱗
-
-		{小スコア,スコア,パワー,残機,ボム,大パワー}
-
-	*/
-
-	/*  {phaseNum, hpLimit, limitTime[s],弾幕数,{{type,	sr,		ss,		si,		way,	広角,		回転速度,	基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム}}　*/
-	
-			/*	通1　*/
-			{ 0,	600.0f,		10.0f,	1,		{
-									{PT::RotateAll,		4.0f,	0.6f,	5,		12,		360.0f,		0.5f,		90,			0}
-			},false,},
-
-
-			/*　通1の2段階目(発狂)　*/
-			{ 1,	900.0f,		50.0f,	2,		{
-									{PT::RotateAll,		4.0f,	3.5f,	10,		18,		360.0f,		0.2f,		90,			3},
-									{PT::RotateAll,		4.0f,	2.0f,	48,		64,		360.0f,		0.0f,		90,			7}
-			},true, {0,10, 5,0,0,1}},
-	  
-			
-			/*　通2　*/
-			{ 2,	600.0f,		30.0f,	4,		{
-									{PT::RotateAll,		3.0f,	1.6f,	5,		17,		360.0f,		5.5f,		90,			0},
-									{PT::RotateAll,		3.0f,	1.6f,	5,		17,		360.0f,		-5.5f,		90,			0},
-									{PT::RotateAll,		4.0f,	3.0f,	20,		15,		360.0f,		10.0f,		90,			2},
-									{PT::RotateAll,		4.0f,	3.0f,	20,		15,		360.0f,		-10.0f,		90,			2}
-
-			},true, {0,10,8,1,0,2}},
-	
-			/*　天上天下の照國(3枚目)　*/
-			{ 3,	900.0f,		60.0f,	3,		{
-									{PT::RotateAll,		4.0f,	5.0f,	8,		16,		360.0f,		2.8f,		90,			10},
-									{PT::RotateAll,		4.0f,	5.0f,	8,		16,		360.0f,		-2.8f,		90,			10},
-									{PT::RotateAll,		4.0f,	2.0f,	45,		64,		360.0f,		0.0f,		90,			4}
-			},true, {0,15,5,0,1,3}},
-			
-			/*　フィットフルナイトメア　*/
-			{ 4,	600.0f,		60.0f,	1,		{
-									{PT::RotateAll,		4.0f,	8.0f,	5,		45,		360.0f,		0.191,		90,			9}
-			},true, {0,30,8,0,0,2}},
-			
-			/*　ラストスペル　*/
-			{ 5,	800.0f,		110.0f,	4,		{
-									{PT::NWay,			4.0f,	15.0f,	3,		12,		180.0f,		0.5f,		90,			9},
-									{PT::RotateAll,		6.0f,	2.5f,	7,		18,		360.0f,		5.0f,		90,			1},
-									{PT::RotateAll,		6.0f,	2.5f,	7,		18,		360.0f,		-5.0f,		90,			0},
-									{PT::Aimed,			32.0f,	2.0f,	120,		1,		0.0f,		500.0f,		90,			5}
-			},true, {0,50,0,0,0,0}},
-	};
-
-	static constexpr int PHASE_MAX = sizeof(phases) / sizeof(phases[0]);
 
 	float hp;											//現在の体力
 	int timer = 0;
@@ -355,7 +296,7 @@ public:
 		BossGraphs[1] = LoadGraph("素材集/改良版虹色大玉.png");
 	}
 
-	void Spawn(float in_x, float in_y);
+	void Spawn(float in_x, float in_y, const BossPhase* phaseTable, int phaseCount, int startPhase = 0, int in_endPhase = -1);				
 
 	void Update(const class Player& player, class BulletManager* bm) override;				//BulletManagerを受け取ることで弾を出せるようにする
 	void Draw() override;
@@ -366,17 +307,21 @@ public:
 	float GetHpRate() { return(phaseMaxHp > 0.0f) ? (hp / phaseMaxHp) : 0.0f; }		//そのフェーズの残りhpを円弧のUIで表現する時用の比率
 
 	int GetRemainingPhaseTimer() const;												//外部(UI描画等)から現在のフェーズの制限時間の残りフレーム数を取得するためのゲッタ
-	bool IsStageClear() const { return (!flag && currentIdx >= PHASE_MAX); }		//ボスフラグが折れていてフェーズが最大(ラストスペルの次のフェーズ遷移)でクリア判定を返すゲッタ
+	bool IsDead() const { return (m_phases != nullptr && !flag && currentIdx >= m_phaseMax); }	//ボスフラグが折れていてフェーズが最大(ラストスペルの次のフェーズ遷移)でクリア判定を返すゲッタ
+
 
 	bool CheckCollision(class Player& player, class BulletManager& bm);				//冒頭でインクルードしなかったのは循環参照を防ぐため。それより、ここで前方宣言をする。
 
 	void Reset() {
 		flag = false;
 		currentIdx = 0;
+		m_phases = nullptr;		//ポインタ初期化
+		m_phaseMax = 0;			//要素数初期化
 	}
 
 	void JumpToPhase(int phaseIdx);
 };
+
 // === File: BossMoving.cpp ===
 
 /*#include "BossMoving.h"
@@ -455,68 +400,28 @@ void Bullet::Draw(int scaleGraph) {
 		DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::WHITE), false);
 	}
 	else {
-		switch (type) {
+		BulletShape shape = GetBulletShape(type);
+		BulletColor color = GetBulletColor(type);
 		
-		case 9:		//赤ナイフ
-		case 8:		//青ナイフ
-		{
-			float angle = atan2f(vy, vx);								       //進行方向の角度を算出
-			float drawAngle = angle - (DX_PI_F / 2.0f);				    	   //画像は下向きなので、始線(0)からの差(-π/2)する
+		if (scaleGraph != -1 && shape != BulletShape::CIRCLE) {	//画像ハンドルが有効であり、且つ通常円(CIRCLE)以外の場合はテクスチャ回転描画
+			float angle = atan2f(vy, vx);                               //進行方向の角度を算出
+			float drawAngle = angle - (DX_PI_F / 2.0f);                 //画像は下向き基準なので、始線(0)からの差(-π/2)する
 
-			float scale = r / 8.0f;										   //解像度に合わせて半径を調整
+			int shapeIdx = static_cast<int>(shape);
+			float baseR = BULLET_BASE_RADIUS[shapeIdx];
+			float scale = (baseR > 0.0f) ? (r / baseR) : 1.0f;          //基準半径で割って描画倍率を判定と連動
 
-			DrawRotaGraph((int)x, (int)y, scale, drawAngle, scaleGraph, TRUE);   //回転描画
-			break;
+			DrawRotaGraph((int)x, (int)y, scale, drawAngle, scaleGraph, TRUE);		//回転描画
 		}
-
-		
-		case 6:			//虹色大玉
-		case 5:			//青大玉
-		{
-			float angle = atan2f(vy, vx);
-			float drawAngle = angle - (DX_PI_F / 2.0f);
-
-			float scale = r / 128.0f;
-			DrawRotaGraph((int)x, (int)y, scale, drawAngle, scaleGraph, TRUE);
-			break;
-		}
-
-		
-		case 4:			//青米弾
-		case 3:			//赤米弾
-		{
-			float angle = atan2f(vy, vx);
-			float drawAngle = angle - (DX_PI_F / 2.0f);
-
-			float scale = r / 64.0f;
-			DrawRotaGraph((int)x, (int)y, scale, drawAngle, scaleGraph, TRUE);
-			break;
-		}
-
-		//鱗系ポイフル系
-		case 2:        //青鱗
-		case 7:			//紫ポイフル
-		case 10:		//黄鱗
-		{
-			float angle = atan2f(vy, vx);								       //進行方向の角度を算出
-			float drawAngle = angle - (DX_PI_F / 2.0f);				    	   //画像は下向きなので、始線(0)からの差(-π/2)する
-
-			float scale = r / 18.0f;										   //解像度に合わせて半径を調整
-
-			DrawRotaGraph((int)x, (int)y, scale, drawAngle, scaleGraph, TRUE);   //回転描画
-			break;
-		}
-
-		case 1:			//赤円
-		
-			DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::RED), true);
-			DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::WHITE), false);
-			break;
-
-		case 0:
-		default:		//青円
-			DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::WHITE), true);
-			DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::BLUE), false);
+		else {
+			if (color == BulletColor::RED) {
+				DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::RED), true);
+				DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::WHITE), false);
+			}
+			else {
+				DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::WHITE), true);
+				DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::BLUE), false);		//通常円(CIRCLE)や画像がない場合のフォールバック描画
+			}
 		}
 	}
 }
@@ -533,8 +438,6 @@ private:
 	unsigned int color;		
 
 public:
-
-	static constexpr float HIT_RATE = 0.4f;			//見た目に対する判定の比率
 
 	enum class OwnerType{ PLAYER, ENEMY };										//誰の弾かのタイプ分け
 	OwnerType owner;															//インスタンス宣言
@@ -595,6 +498,7 @@ public:
 
 #include "BulletManager.h"
 #include <cfloat>
+
 #include "Distance.h"
 #include "Collision.h"
 #include "Bullet.h"
@@ -603,21 +507,59 @@ public:
 
 
 BulletManager::BulletManager() {
-
-	for (int i = 0; i < 50; i++) {
+	for (int i = 0; i < BULLET_GRAPHIC_MAX; i++) {
 		bulletGraphs[i] = -1;								//配列の中身を-1で初期化
 	}
-
-	bulletGraphs[2] = LoadGraph("素材集/鱗/青鱗.png");
-	bulletGraphs[3] = LoadGraph("素材集/赤米弾.png");
-	bulletGraphs[4] = LoadGraph("素材集/青米弾.png");
-	bulletGraphs[5] = LoadGraph("素材集/青大玉.png");
-	bulletGraphs[6] = LoadGraph("素材集/改良版虹色大玉.png");
-	bulletGraphs[7] = LoadGraph("素材集/ポイフル/紫ポイフル.png");
-	bulletGraphs[8] = LoadGraph("素材集/ナイフ/青ナイフ.png");
-	bulletGraphs[9] = LoadGraph("素材集/ナイフ/赤ナイフ.png");
-	bulletGraphs[10] = LoadGraph("素材集/鱗/黄鱗.png");
+	ReloadGraphic();
 }
+
+
+void BulletManager::ReloadGraphic() {
+	
+	for (int i = 0; i < BULLET_GRAPHIC_MAX; i++) {		//既存ハンドルの破棄
+		if (bulletGraphs[i] != -1) {
+			DeleteGraph(bulletGraphs[i]);
+			bulletGraphs[i] = -1;
+		}
+	}
+
+	const char* shapeFolders[] = {
+		"",			//CIRCLE(画像なし)
+		"鱗",		//UROKO
+		"米弾",		//RICE
+		"大玉",		//BIG_CIRCLE
+		"ナイフ",	//KNIFE
+		"ポイフル",	//POIFUL
+		"光弾",		//LIGHT
+		"座薬"		//ZAYAKU
+	};
+
+	const char* colorNames[] = {
+		"赤",		//RED
+		"青",		//BLUE
+		"黄",		//YELLOW
+		"水",		//AQUA
+		"銀",		//SILVER
+		"紫",		//PURPLE
+		"橙",		//ORANGE
+		"緑"		//GREEN
+	};
+
+	
+	for (int s = 1; s < static_cast<int>(BulletShape::MAX_SHAPES); ++s) {		//弾種読み込み
+		for (int c = 0; c < static_cast<int>(BulletColor::MAX_COLORS); ++c) {	//色種読み込み
+			int id = s * static_cast<int>(BulletColor::MAX_COLORS) + c;		
+
+			char path[256];
+			snprintf(path, sizeof(path), "素材集/%s/%s%s.png", shapeFolders[s], colorNames[c], shapeFolders[s]);
+
+			
+			bulletGraphs[id] = LoadGraph(path);		//ファイルが存在すればハンドルが入り、無ければ自動的に-1になる
+		}
+	}
+}
+
+
 
 void BulletManager::LaunchPlayerBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming, float turnSpeed) {
 	for (int i = 0; i < PlayerBMax; i++) {
@@ -714,9 +656,11 @@ bool BulletManager::CheckPlayerCollision(float px, float py, float pr) {
 	for (int i = 0; i < EnemyBMax; i++) {
 		if (!e_bullets[i].GetFlag()) continue;
 
-		float enemyHitR = e_bullets[i].r * Bullet::HIT_RATE;
+		BulletShape shape = GetBulletShape(e_bullets[i].type);			//弾種を取得してshapeに格納
+		float hitRate = BULLET_HIT_RATE[static_cast<int>(shape)];		//hitRateにshapeの弾種の見た目半径に対する当たり判定の比率を格納
+		float enemyHitR = e_bullets[i].r * hitRate;
 
-		if (Collision::CheckCircle(px, py, pr, e_bullets[i].x, e_bullets[i].y, enemyHitR)) {
+		if (Collision::CheckCircle(px, py, pr, e_bullets[i].x, e_bullets[i].y, enemyHitR)) {		
 			e_bullets[i].flag = false;
 			return true;
 		}
@@ -796,6 +740,8 @@ void BulletManager::Draw() {
 #pragma once
 #include "Bullet.h"
 #include "Item.h"
+#include "Common.h"
+
 
 class Enemy;																	//前方宣言
 class Player;
@@ -811,21 +757,11 @@ private:
 	static constexpr int MAX_ITEMS = 2000;										//アイテムの最大配列数
 	Item items[MAX_ITEMS];														//アイテムの実体配列
 
-	int bulletGraphs[50];														//画像の番号を格納する箱
+	int bulletGraphs[BULLET_GRAPHIC_MAX];										//画像配列サイズ(Common.hで計算されたBULLET_GRAPHIC_MAX)
 
 public:
 	BulletManager();															//初期化関数
-	void ReloadGraphic() {
-		bulletGraphs[2] = LoadGraph("素材集/鱗/青鱗.png");
-		bulletGraphs[3] = LoadGraph("素材集/赤米弾.png");
-		bulletGraphs[4] = LoadGraph("素材集/青米弾.png");
-		bulletGraphs[5] = LoadGraph("素材集/青大玉.png");
-		bulletGraphs[6] = LoadGraph("素材集/改良版虹色大玉.png");
-		bulletGraphs[7] = LoadGraph("素材集/ポイフル/紫ポイフル.png");
-		bulletGraphs[8] = LoadGraph("素材集/ナイフ/青ナイフ.png");
-		bulletGraphs[9] = LoadGraph("素材集/ナイフ/赤ナイフ.png");
-		bulletGraphs[10] = LoadGraph("素材集/鱗/黄鱗.png");
-	}
+	void ReloadGraphic();
 
 	/**
 	 * @brief 自機弾を画面に発射する
@@ -1073,16 +1009,16 @@ BulletTestScene::BulletTestScene() {
 	laserStartY = (float)Top;										//レーザ始点y座標はプレイ領域上端
 	*/
 
-	laserStartX = (float)Left;
-	laserStartY = (float)CenterY;
+	laserStartX = (float)Left;										//レーザ始点x座標はプレイ領域中央									
+	laserStartY = (float)CenterY;									//レーザ始点y座標はプレイ領域上端
 	
 	/*
 	laserDirX = 0.0f;										
 	laserDirY = 1.0f;
 	*/
 
-	laserDirX = 1.0f;
-	laserDirY = 0.0f;
+	laserDirX = 1.0f;												
+	laserDirY = 0.0f;												//レーザ(電流)のx,yの向き
 
 	currentParamIdx = 0;
 	
@@ -1194,31 +1130,31 @@ bool BulletTestScene::Update(BulletManager* bm) {
 			float currentSpeed = sqrtf(b.vx * b.vx + b.vy * b.vy);
 			if (currentSpeed <= 0.001f) continue;
 
-			// 線電流方向ベクトル u
+			//線電流方向ベクトル u
 			float u_x = laserDirX;
 			float u_y = laserDirY;
 
-			// 弾の位置ベクトル (レーザー始点基準)
+			//弾の位置ベクトル (レーザー始点基準)
 			float px = b.x - laserStartX;
 			float py = b.y - laserStartY;
 
-			// 直線への射影長 t
+			//直線への射影長 t
 			float t = px * u_x + py * u_y;
 
-			// 直線上の最近接点
+			//直線上の最近接点
 			float closestX = laserStartX + t * u_x;
 			float closestY = laserStartY + t * u_y;
 
-			// 最近接点から弾への法線ベクトル n
+			//最近接点から弾への法線ベクトル n
 			float nx = b.x - closestX;
 			float ny = b.y - closestY;
 
-			// 距離 r の算出とソフトニング
+			//距離 r の算出とソフトニング
 			float distSq = nx * nx + ny * ny;
 			float softeningSq = softeningR * softeningR;
 			float rEff = sqrtf(distSq + softeningSq);
 
-			// 単位法線ベクトル
+			//単位法線ベクトル
 			float rReal = sqrtf(distSq);
 			if (rReal > 0.001f) {
 				nx /= rReal;
@@ -1229,22 +1165,22 @@ bool BulletTestScene::Update(BulletManager* bm) {
 				ny = u_x;
 			}
 
-			// 磁束密度 B_z = (K * I / r) * (u × n)_z
+			//磁束密度 B_z = (K * I / r) * (u × n)_z
 			float Bz = (fluxK * currentI / rEff) * (u_x * ny - u_y * nx);
 
-			// 磁束密度の上限クランプ
+			//磁束密度の上限クランプ
 			if (Bz > maxBzCap) Bz = maxBzCap;
 			if (Bz < -maxBzCap) Bz = -maxBzCap;
 
-			// ローレンツ力 F = q(v × B)
+			//ローレンツ力 F = q(v × B)
 			float Fx = b.charge * (b.vy * Bz);
 			float Fy = b.charge * (-b.vx * Bz);
 
-			// 速度ベクトルの偏向
+			//速度ベクトルの偏向
 			b.vx += Fx / b.mass;
 			b.vy += Fy / b.mass;
 
-			// 磁束密度による仕事はゼロのため、元の速さに再正規化（純粋旋回）
+			//磁束密度による仕事はゼロのため、元の速さに再正規化（純粋旋回）
 			float newSpeed = sqrtf(b.vx * b.vx + b.vy * b.vy);
 			if (newSpeed > 0.001f) {
 				b.vx = (b.vx / newSpeed) * currentSpeed;
@@ -1287,9 +1223,17 @@ void BulletTestScene::Draw(BulletManager* bm, HUD* hud) {
 
 
 	DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);		//プレイ領域の描画
+	SetDrawArea(Left, Top, Right, Bottom);									//描画領域をプレイ領域内に制限
+	
+	float areaW = (float)(Right - Left);
+	float areaH = (float)(Bottom - Top);
+	float maxDiagonalLength = sqrtf(areaW * areaW + areaH * areaH);			//全方位に対応するため、PlayAreaの対角線長を基準にレーザ終点を計算
 	DrawLine((int)laserStartX, (int)laserStartY,
-		(int)(laserStartX + laserDirX * 1000.0f), (int)(laserStartY + laserDirY * 1000.0f),
+		(int)(laserStartX + laserDirX * maxDiagonalLength), (int)(laserStartY + laserDirY * maxDiagonalLength),
 		GetColor(255, 255, 0), 2);
+
+	SetDrawArea(0, 0, 640, 480);											//描画可能領域制限の解除(HUD等UI描画の阻害をしないように画面全体に戻す)
+	SetDrawAreaFull();														//HUD等UI描画を阻害しないように画面全体の描画領域制限を解除
 
 	testPlayer.Draw();			//自機描画
 	bm->Draw();					//弾の描画
@@ -1297,6 +1241,7 @@ void BulletTestScene::Draw(BulletManager* bm, HUD* hud) {
 
 	DrawCircle((int)originX, (int)originY, 15, GetColor(255, 0, 0), FALSE);		//発射源の描画
 
+	
 	if (hud != nullptr) {
 		hud->Draw(&testPlayer);			//Drawの引数がダミーでなければHUDを描画
 	}
@@ -1436,7 +1381,7 @@ namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書か
 	static constexpr int Right = 416;			//32+384で384=128*3
 	static constexpr int Top = 16;
 	static constexpr int Bottom = 464;			//16+448で448=64*7で色々うれしいらしい、詳細はDiscord
-	
+
 	static constexpr int CenterX = Left + (Right - Left) / 2;
 	static constexpr int CenterY = Top + (Bottom - Top) / 2;
 
@@ -1449,7 +1394,7 @@ namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書か
 
 	static constexpr float Margin = 15.0f;									//ゲームオーバーシーンでのプレイ領域に被せる黒いモヤの遊び
 	static constexpr float ItemCollectionLine = Top + 150.0f;				//アイテム上部回収ライン
-	static constexpr float PhaseTimerX = Right - 25.0f;						
+	static constexpr float PhaseTimerX = Right - 25.0f;
 	static constexpr float PhaseTimerY = Top + 10.0f;						//フェーズタイマのUI描画座標
 };
 
@@ -1518,12 +1463,12 @@ struct ObjectColor {
 	static unsigned int Get(Type type) {
 		switch (type) {
 		case Type::BLACK:		return GetColor(0, 0, 0);
-		case Type::RED:			return GetColor(255,   0,   0);
-		case Type::GREEN:		return GetColor(  0, 255,   0);
-		case Type::BLUE:		return GetColor(  0,   0, 255);
-		case Type::YELLOW:		return GetColor(255, 255,   0);
-		case Type::MAGENTA:		return GetColor(255,   0, 255);
-		case Type::CYAN:		return GetColor(  0, 255, 255);
+		case Type::RED:			return GetColor(255, 0, 0);
+		case Type::GREEN:		return GetColor(0, 255, 0);
+		case Type::BLUE:		return GetColor(0, 0, 255);
+		case Type::YELLOW:		return GetColor(255, 255, 0);
+		case Type::MAGENTA:		return GetColor(255, 0, 255);
+		case Type::CYAN:		return GetColor(0, 255, 255);
 		default:				return GetColor(255, 255, 255);
 		}
 	}
@@ -1533,6 +1478,108 @@ struct CustomGraphicsData {
 	unsigned int playerCanvas[3][16][16];		//自機何種で何×何グリッドか
 	unsigned int itemCanvas[5][16][16];			//アイテム何種で何×何グリッドか
 };
+
+
+enum class BulletShape {			//弾の形状を列挙型で定義
+	CIRCLE = 0,				//通常円(画像なし)
+	UROKO,					//鱗
+	RICE,					//米弾
+	BIG_CIRCLE,				//大玉
+	KNIFE,					//ナイフ
+	POIFUL,					//ポイフル
+	LIGHT,					//光弾
+	ZAYAKU,					//座薬
+	MAX_SHAPES
+};
+
+enum class BulletColor {			//弾の色を列挙型で定義
+	RED = 0,				//赤
+	BLUE,					//青
+	YELLOW,					//黄
+	AQUA,					//水
+	SILVER,					//銀
+	PURPLE,					//紫
+	ORANGE,					//橙
+	GREEN,					//緑
+	MAX_COLORS
+};
+
+namespace BulletDefaultRadius {							//弾種ごとのデフォルト半径
+	static constexpr float CIRCLE = 5.0f;		//通常円
+	static constexpr float UROKO = 4.0f;		//鱗
+	static constexpr float RICE = 4.0f;			//米弾
+	static constexpr float BIG_CIRCLE = 32.0f;	//大玉
+	static constexpr float KNIFE = 4.0f;		//ナイフ
+	static constexpr float POIFUL = 4.0f;		//ポイフル
+	static constexpr float LIGHT = 15.0f;		//光弾
+	static constexpr float ZAYAKU = 15.0f;		//座薬
+}
+
+static constexpr float BULLET_HIT_RATE[] = {		//弾種ごとの見た目半径に対する当たり判定の比率
+	0.40f,		// CIRCLE:		通常円(40%)
+	0.40f,		// UROKO:		鱗
+	0.35f,		// RICE:		米弾
+	0.50f,		// BIG_CIRCLE:	大玉
+	0.35f,		// KNIFE:		ナイフ
+	0.40f,		// POIFUL:		ポイフル
+	0.20f,		// LIGHT:		光弾(光のオーラの影響で小さめに設定)
+	0.20f		// ZAYAKU:		座薬
+};
+
+static constexpr float BULLET_BASE_RADIUS[] = {		//弾種ごとの基準解像度半径
+	1.0f,		//CIRCLE:		通常円
+	18.0f,		//UROKO:		鱗		(r/18.0f )
+	64.0f,		//RICE:			米弾	(r/64.0f )
+	128.0f,		//BIG_CIRCLE:	大玉	(r/128.0f)
+	8.0f,		//KNIFE:		ナイフ	(r/8.0f  )
+	18.0f,		//POIFUL:		ポイフル(r/18.0f )
+	48.0f,		//LIGHT:		光弾	(r/48.0f )
+	48.0f		//ZAYAKU:		座薬	(r/48.0f )
+};
+
+
+constexpr int GetBulletID(BulletShape shape, BulletColor color) {		//形状と色から弾IDを生成する関数
+	return static_cast<int>(shape) * static_cast<int>(BulletColor::MAX_COLORS) + static_cast<int>(color);
+}
+
+constexpr BulletShape GetBulletShape(int bulletID) {					//弾IDから形状を取り出す関数
+	return static_cast<BulletShape>(bulletID / static_cast<int>(BulletColor::MAX_COLORS));
+}
+
+constexpr BulletColor GetBulletColor(int bulletID) {					//弾IDから色を取り出す関数
+	return static_cast<BulletColor>(bulletID % static_cast<int>(BulletColor::MAX_COLORS));
+}
+
+static constexpr int BULLET_GRAPHIC_MAX = static_cast<int>(BulletShape::MAX_SHAPES) * static_cast<int>(BulletColor::MAX_COLORS);	//全弾グラフィックの最大配列要素数(形状数*色数)
+
+
+
+/**
+	 * @brief 全方位回転弾 (PT::RotateAll) の交差用回転速度 (rotSpeed) をコンパイル時に自動計算する
+	 *
+	 * --- RotateAllの回転速度(rotSpeed)算出メモ ---
+	 * 1回の発射で進む角度をΔθ[deg]としたとき、
+	 * 全方位弾の隙間(step = 360 / way)に対してΔθがstepの整数倍になると、
+	 * 前の弾の軌道と重なって回転して見えなくなる。
+	 *
+	 * 綺麗にバラけさせるには、
+	 *   step = 360.0f / way
+	 *   Δθ   = step * (phaseShift + k)
+	 * となるように rotSpeed を定めれば良い。
+	 *
+	 *   rotSpeed = (Δθ * π) / (si * 180)
+	 *
+	 * @param way 弾の全方位way数
+	 * @param si 発射間隔 (interval[F])
+	 * @param phaseShift 位相ズレ比率 (1.0f/2.0f: 半周期ズレ, 1.0f/3.0f: 1/3周期ズレ, 1.0f/4.0f: 1/4周期ズレ)
+	 * @param k 回転感を出すための追加周回数 (0,1,2...)
+	 * @return constexpr float 算出された rotSpeed[rad/F]
+	 */
+constexpr float CalcRotateSpeed(int way, int si, float phaseShift = (1.0f / 3.0f), int k = 2) {
+	float step = 360.0f / static_cast<float>(way);
+	float deltaTheta = step * (phaseShift + static_cast<float>(k));
+	return (deltaTheta * 3.14159265f) / (static_cast<float>(si) * 180.0f);
+}
 
 
 // === File: Distance.h ===
@@ -2902,11 +2949,9 @@ private:
 			}
 		},
 
-		{		64,		30,		30,		2,		2,		  5,	  3,
+		{		64,		30,		30,		2,		2,		  3,	  3,
 			{	{-20.0f, 0.0f, 0.0f, -10.0f},
-				{-10.0f, 0.0f, 0.0f, -10.0f},
-				{  0.0f, 0.0f, 0.0f, -10.0f},
-				{ 10.0f, 0.0f, 0.0f, -10.0f}, 
+				{ 0.0f, 0.0f, 0.0f, -10.0f},
 				{ 20.0f, 0.0f, 0.0f, -10.0f}
 			},
 
@@ -2916,14 +2961,12 @@ private:
 			}
 		},
 
-		{		80,		30,		30,		2,		2,		  7,	  4,
-			{	{-30.0f, 0.0f, 0.0f, -12.0f},
-				{-20.0f, 0.0f, 0.0f, -12.0f},
-				{-10.0f, 0.0f, 0.0f, -12.0f},
-				{ 0.0f,  0.0f, 0.0f, -12.0f},
-				{ 10.0f, 0.0f, 0.0f, -12.0f},
-				{ 20.0f, 0.0f, 0.0f, -12.0f},
-				{ 30.0f, 0.0f, 0.0f, -12.0f}
+		{		80,		30,		30,		2,		2,		  5,	  4,
+			{	{-20.0f, 0.0f, 0.0f, -10.0f},
+				{-10.0f, 0.0f, 0.0f, -10.0f},
+				{  0.0f, 0.0f, 0.0f, -10.0f},
+				{ 10.0f, 0.0f, 0.0f, -10.0f},
+				{ 20.0f, 0.0f, 0.0f, -10.0f}
 			},
 
 			{	{-4.0f, -5.0f, -3.0f, -7.0f},
@@ -3176,7 +3219,7 @@ void SceneManager::Update() {
 			}
 		}
 
-		if (m_stageManager->GetBoss().IsStageClear()) {											//ボスを倒したフラグが返されたらタイトルに戻る
+		if (m_stageManager->IsStageClear()) {											//ボスを倒したフラグが返されたらタイトルに戻る
 			while (Input::IsTrigger(KEY_INPUT_F)) ProcessMessage();		//z,enterキーを長押し状態でCLEARに遷移してきた時に離したらそのままタイトルに行くのを防ぐ為の文
 			ClearInputCharBuf();				//画面遷移前にキー入力バッファを完全クリアして、入力画面でも予約されたキー入力が起きないように対策
 			if (!playingPractice) {
@@ -3792,6 +3835,149 @@ public:
 	const HighScoreEntry& GetEntry(int rankIndex) const;				//指定順位のスコア情報を取得する関数
 	const ScoreDataFile& GetScoreData() const { return m_scoreData; }	//スコアデータ構造体全体の参照を取得するインライン関数
 };
+// === File: Stage1Data.h ===
+
+#pragma once
+#include "Common.h"
+#include "Boss.h"
+#include "StageManager.h"
+
+/*
+				--- RotateAllの回転速度(rotSpeed)算出メモ ---
+1回の発射で進む角度をΔθ[deg]としたとき、
+全方位弾の隙間(step=360/way)に対してΔθが整数倍に近いとほぼ重なって回転してしまう。
+前の弾の隙間の真ん中に配置して最もバラけさせるには、
+	Δθ=step*(k+1/2) (k=0,1,2⋯)
+となるようにrotSpeedを定めれば良い。
+	rotSpeed=(Δθ/(si*180/π))
+			=(Δθ*π)/(si*180)
+綺麗にバラけるΔθの選び方は、、
+	step=360.0f/way
+であり、Δθ=step*0.5f(半周期ズレ)やstep*1.5f, step*2.5f等がある。
+
+計算例
+(si=20,way=36で(1/3 + 2)周期ズレの場合)
+・step=360.0f/36=10.0f
+1/3周期ズレより1/3 step=10/3≒3.33で、回転感を出すために適当なk=2周期を加えると、Δθ=(1/3 +2)step≒10*2.33=23.3f
+	rotSpeed=(23.3f*3.14f)/(20*180)=0.0203227778≒0.0203f
+
+(si=10,way=12で(1/3 + 1)周期ズレの場合)
+・step=360.0f/12=30.0f
+・Δθ=30.0f*(1/3 +1)=30.0f(4/3)=40.0f
+	rotSpeed=(40.0f*3.14f)/(10*180)=0.069033333≒0.0690f
+*/
+
+namespace Stage1Data {
+	static constexpr BossPhase MidBossPhases[] = {
+	
+/*  {phaseNum, hpLimit, limitTime[s],弾幕数,{{type,			sr,							ss,		si,		way,	広角,		回転速度,	基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム,大パワー}}　*/
+
+		/* 中ボス通1 */
+		{ 0,	1000.0f,		30.0f,	2,		{
+								{PT::RotateAll,		BulletDefaultRadius::ZAYAKU,		3.0f,	5,		12,		360.0f,		0.25f,		90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::SILVER)},
+								{PT::NWay,			BulletDefaultRadius::LIGHT,			5.0f,	15,		3,		60.0f,		0.25f,		90,			GetBulletID(BulletShape::LIGHT,BulletColor::YELLOW)}
+		},true,	{0,10,0,0,0,0}},
+
+		/* 中ボススペカ1枚目 */
+		{ 1,	1200.0f,		30.0f,	3,		{
+								{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,	10,		12,		360.0f,		CalcRotateSpeed(12, 10, 1.0f / 3.0f, 1),		90,			GetBulletID(BulletShape::POIFUL,BulletColor::PURPLE)},
+								{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,	10,		12,		360.0f,		-CalcRotateSpeed(12, 10, 1.0f / 3.0f, 1),	90,			GetBulletID(BulletShape::POIFUL,BulletColor::PURPLE)},
+								{PT::NWay,			BulletDefaultRadius::ZAYAKU,		4.0f,	75,		10,		20.0f,		0.25f,		90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::AQUA)}
+		},true,	{0,10,3,1,0,1}},
+	};
+	static constexpr int MID_BOSS_PHASE_MAX = sizeof(MidBossPhases) / sizeof(MidBossPhases[0]);		//中ボスの総フェーズ数算出
+
+
+
+	static constexpr BossPhase BossPhases[] = {						//通常こうげきとスペカのデータを配列で定義
+
+/*  {phaseNum, hpLimit, limitTime[s],弾幕数,{{type,			sr,							ss,		si,		way,	広角,		回転速度,	基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム,大パワー}}　*/
+
+		/*	通1　*/
+		{ 0,	1200.0f,		10.0f,	1,		{
+								{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		0.6f,	5,		12,		360.0f,		0.5f,		90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)}
+		},false,},
+
+
+		/*　通1の2段階目(発狂)　*/
+		{ 1,	1500.0f,		50.0f,	2,		{
+								{PT::RotateAll,		BulletDefaultRadius::RICE,			3.5f,	10,		18,		360.0f,		0.2f,		90,			GetBulletID(BulletShape::RICE,BulletColor::RED)},
+								{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,	48,		64,		360.0f,		0.0f,		90,			GetBulletID(BulletShape::POIFUL,BulletColor::PURPLE)}
+		},true, {0,10, 5,0,0,1}},
+
+
+		/*　通2　*/
+		{ 2,	1200.0f,		30.0f,	4,		{
+								{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		1.6f,	5,		17,		360.0f,		5.5f,		90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)},
+								{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		1.6f,	5,		17,		360.0f,		-5.5f,		90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)},
+								{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,	20,		15,		360.0f,		10.0f,		90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)},
+								{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,	20,		15,		360.0f,		-10.0f,		90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)}
+
+		},true, {0,10,8,1,0,2}},
+
+		/*　天上天下の照國(3枚目)　*/
+		{ 3,	2000.0f,		60.0f,	3,		{
+								{PT::RotateAll,		BulletDefaultRadius::UROKO,			5.0f,	8,		16,		360.0f,		2.8f,		90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
+								{PT::RotateAll,		BulletDefaultRadius::UROKO,			5.0f,	8,		16,		360.0f,		-2.8f,		90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
+								{PT::RotateAll,		BulletDefaultRadius::RICE,			2.0f,	45,		64,		360.0f,		0.008f,		90,			GetBulletID(BulletShape::RICE, BulletColor::BLUE)}
+		},true, {0,15,5,0,1,3}},
+
+		/*　フィットフルナイトメア　*/
+		{ 4,	750.0f,		60.0f,	1,		{
+								{PT::RotateAll,		BulletDefaultRadius::KNIFE,			8.0f,	5,		45,		360.0f,		0.191,		90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)}
+		},true, {0,30,8,0,0,2}},
+
+		/*　ラストスペル　*/
+		{ 5,	2500.0f,		110.0f,	5,		{
+								{PT::NWay,			BulletDefaultRadius::KNIFE,			15.0f,	3,		12,		180.0f,		10.0f,		90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)},
+								{PT::RotateAll,		BulletDefaultRadius::LIGHT,			2.0f,	20,		36,		360.0f,		CalcRotateSpeed(36, 20, 1.0f / 3.0f, 2),	90,			GetBulletID(BulletShape::LIGHT,BulletColor::RED)},
+								{PT::RotateAll,		BulletDefaultRadius::LIGHT,			2.0f,	20,		36,		360.0f,		-CalcRotateSpeed(36, 20, 1.0f / 3.0f, 2),	90,			GetBulletID(BulletShape::LIGHT,BulletColor::BLUE)},
+								{PT::RotateAll,		BulletDefaultRadius::ZAYAKU,		1.25f,	30,		24,		360.0f,		0.5f,		90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::GREEN)},
+								{PT::Aimed,			BulletDefaultRadius::BIG_CIRCLE,	1.5f,	120,	1,		0.0f,		500.0f,		90,			GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::BLUE)}
+		},true, {0,50,0,0,0,0}},
+	};
+	static constexpr int BOSS_PHASE_MAX = sizeof(BossPhases) / sizeof(BossPhases[0]);
+
+
+
+	
+	static constexpr int top = Top + StageManager::upMargin;			//妖精が出てくる時にプレイ領域の上からどれくらい開けて出現するか
+	static constexpr EnemySpawn Timeline[] = {
+		/*	{	frame,	x,		y,		vx,		vy,		r,		hp,		count	interval,
+				{	type,			sr,										ss,				si,		way,	広がり角,	回転速度	基準角度	弾見た目(0:青/1:赤/2:青鱗/3:赤米/4:青米)},弾消しフラグ, {0：小スコア, 1：スコア, 2：パワー, 3：残機, 4：ボム, 5：大パワー}}*/
+			{	60,		Left, 	top,	4.0f,	0.0f,	15.0f,	5,		7,			20,
+				{	PT::NWay,		BulletDefaultRadius::UROKO,				8.0f,			18,		4,		10.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::UROKO, BulletColor::BLUE)},false, {0,0,1,0,0}},
+
+			{	120,	Right,  top,	-4.0f,	0.0f,	15.0f,	5,		7,			15,
+				{	PT::NWay,		BulletDefaultRadius::RICE,				16.0f,			4,		2,		3.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::RED)},false,{0,0,1,0,0}},
+
+			{	350,	Left,	top,	3.0f,	0.0f,	15.0f,	5,		8,			15,
+				{	PT::Aimed,		BulletDefaultRadius::ZAYAKU,			6.0f,			30,		1,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::ZAYAKU,BulletColor::AQUA)}, false,{0,2,1,0,0}},
+
+			{	350,	Right,	top,	-3.0f,	0.0f,	15.0f,	5,		8,			15,
+				{	PT::Aimed,		BulletDefaultRadius::LIGHT,				6.0f,			30,		1,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::LIGHT,BulletColor::BLUE)}, false,{0,0,2,0,0}},
+
+			{	3000,	Left,	top,	3.0f,	0.0f,	15.0f,	10,		10,			10,
+				{	PT::NWay,		BulletDefaultRadius::BIG_CIRCLE,		7.0f,			30,		12,		180.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::RED)}, false,{0,1,0,0,0}},
+
+			{	3000,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			10,
+				{	PT::NWay,		BulletDefaultRadius::BIG_CIRCLE,		7.0f,			30,		12,		180.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::BLUE)}, false,{0,0,1,0,0}},
+
+			{	3100,	Left,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			5,
+				{	PT::NWay,		BulletDefaultRadius::UROKO,				6.0f,			30,		5,		90.0f,		5.0f,		90.0f,		GetBulletID(BulletShape::UROKO,BulletColor::RED)},	false,{0,2,0,0,0}},
+
+			{	3100,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			5,
+				{	PT::NWay,		BulletDefaultRadius::UROKO,				6.0f,			30,		5,		90.0f,		5.0f,		90.0f,		GetBulletID(BulletShape::UROKO,BulletColor::BLUE)},	false,{0,0,2,0,0}},
+
+			{	3500,	CenterX,top,	-1.0f,	0.0f,	15.0f,	15,		10,			8,
+				{	PT::RotateAll,	BulletDefaultRadius::RICE,				3.0f,			15,		18,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::RED)}, false,{0,2,2,0,0}},
+
+			{	3500,	CenterX,top,	1.0f,	0.0f,	15.0f,	15,		10,			8,
+				{	PT::RotateAll,	BulletDefaultRadius::RICE,				3.0f,			15,		18,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::BLUE)}, false,{0,3,2,0,0}}
+
+	};
+	static constexpr int SPAWN_COUNT = sizeof(Timeline) / sizeof(EnemySpawn);	//データの個数を計算
+}
 // === File: StageManager.cpp ===
 
 #include "StageManager.h"
@@ -3799,67 +3985,33 @@ public:
 #include "BulletPattern.h"
 #include "BurstController.h"
 #include "DxLib.h"
+#include "Stage1Data.h"
+
 
 
 /*　ーーーーーDxLibのデフォ：画面サイズ(640,480)ーーーーー　*/
 
 
 using namespace PlayArea;
-
 using namespace BulletPattern;								//省略名
 
-static constexpr int top = Top + StageManager::upMargin;			//妖精が出てくる時にプレイ領域の上からどれくらい開けて出現するか
-
-
-static constexpr EnemySpawn Stage1Timeline[] = {
-/*	{	frame,	x,		y,		vx,		vy,		r,		hp,		count	interval,	
-		{	type,			sr,		ss,		si,		way,	広がり角,	回転速度	基準角度	弾見た目(0:青/1:赤/2:青鱗/3:赤米/4:青米)},弾消しフラグ, {0：小スコア, 1：スコア, 2：パワー, 3：残機, 4：ボム, 5：大パワー}}*/
-	{	60,		Left, 	top,	4.0f,	0.0f,	15.0f,	10,		7,			20,
-		{	PT::NWay,		4.0f,	8.0f,	18,		4,		10.0f,		0.0f,		90.0f,		3},false, {0,0,2,0,0}},
-
-	{	120,	Right,  top,	-3.0f,	0.0f,	15.0f,	10,		7,			15,
-		{	PT::NWay,		4.0f,	16.0f,	4,		2,		3.0f,		0.0f,		90.0f,		4},false,{0,0,2,0,0}},
-
-	{	350,	Left,	top,	5.0f,	0.0f,	15.0f,	10,		8,			15,
-		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		0}, false,{0,0,1,0,0}},
-
-	{	350,	Right,	top,	-5.0f,	0.0f,	15.0f,	10,		8,			15,
-		{	PT::Aimed,		15.0f,	6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		1}, false,{0,0,3,0,0}},
-
-	{	500,	CenterX,top,	0.0f,	0.0f,	30.0f,	400,	1,			5,									//道中ボス
-		{	PT::RotateAll,	4.0f,	3.0f,	7,		64,		0.0f,		50.0f,		90.0f,		2}, true,{0,10,8,1,2}},
-
-	{	700,	Left,	top,	3.0f,	0.0f,	15.0f,	10,		10,			10,
-		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		0}, false,{0,1,0,0,0}},
-
-	{	700,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			10,
-		{	PT::NWay,		10.0f,	7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		1}, false,{0,0,1,0,0}},
-
-	{	800,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			5,		
-		{	PT::NWay,		4.0f,	6.0f,	30,		5,		90.0f,		5.0f,		90.0f,		2},	false,{0,0,2,0,0}},
-
-	{	900,	CenterX,top,	-1.0f,	0.0f,	15.0f,	15,		10,			8,
-		{	PT::RotateAll,	4.0f,	3.0f,	15,		18,		0.0f,		0.0f,		90.0f,		3}, false,{0,2,2,0,0}},
-
-	{	900,	CenterX,top,	1.0f,	0.0f,	15.0f,	15,		10,			8,
-		{	PT::RotateAll,	4.0f,	3.0f,	15,		18,		0.0f,		0.0f,		90.0f,		3}, false,{0,2,2,0,0}}
-
-};
-
-
-
-static constexpr int SPAWN_COUNT = sizeof(Stage1Timeline) / sizeof(EnemySpawn);	//データの個数を計算
 
 void StageManager::Update(BulletManager* bm) {
-	
 	stageTimer++;								//時間を進める
 
 	if (state == StageState::DOCHU) {
-		for (int i = 0; i < SPAWN_COUNT; i++) {
-			if (Stage1Timeline[i].frame == stageTimer) {				//EnemySpawnのframeと経過時間が一致した場合
+		if (stageTimer == 700) {
+			state = StageState::MID_BOSS_BATTLE;						//道中ボス
+			float X = Left + (Right - Left) / 2.0f;
+			float Y = Top - (Bottom - Top)  / 4.0f;
+			boss.Spawn(X, Y, Stage1Data::MidBossPhases, Stage1Data::MID_BOSS_PHASE_MAX, 0, -1);										
+		}
+		
+		for (int i = 0; i < Stage1Data::SPAWN_COUNT; i++) {
+			if (Stage1Data::Timeline[i].frame == stageTimer) {				//EnemySpawnのframeと経過時間が一致した場合
 				for (int s = 0; s < MAX_SPAWN_SLOT; s++) {
 					if (!SpawnSlots[s].IsActive()) {
-						SpawnSlots[s].Activate(Stage1Timeline[i].count, i);		//引数でiを渡してどれを使うか覚えさせる
+						SpawnSlots[s].Activate(Stage1Data::Timeline[i].count, i);		//引数でiを渡してどれを使うか覚えさせる
 						break;
 					}
 				}
@@ -3869,10 +4021,10 @@ void StageManager::Update(BulletManager* bm) {
 			if (SpawnSlots[s].IsActive()) {
 				int dataIdx = SpawnSlots[s].GetDataIdx();
 
-				if (SpawnSlots[s].Tick(Stage1Timeline[dataIdx].interval)) {
+				if (SpawnSlots[s].Tick(Stage1Data::Timeline[dataIdx].interval)) {
 					for (int j = 0; j < Enemy::EnemyMax; j++) {
 						if (!fairies[j].GetFlag()) {
-							auto& d = Stage1Timeline[dataIdx];
+							auto& d = Stage1Data::Timeline[dataIdx];
 							fairies[j].Encount(d.x, d.y, d.r, d.vx, d.vy, d.hp,d.shotConf,d.clearOnEnd, d.dropCounts);
 							break;
 						}
@@ -3882,14 +4034,18 @@ void StageManager::Update(BulletManager* bm) {
 		}
 
 
-		if (stageTimer >= 1200) {
+		if (stageTimer >= 4000) {
 			state = StageState::BOSS_BATTLE;		//ステージ状態をボス戦へ移行
-
-
-
 			float X = Left + (Right - Left) / 2.0f;
 			float Y = Top + (Bottom - Top) / 4.0f;
-			boss.Spawn(X, Y);
+			boss.Spawn(X, Y, Stage1Data::BossPhases, Stage1Data::BOSS_PHASE_MAX, 0, -1);				//ボスはフェーズ1から最終フェーズまで
+		}
+	}
+	else if (state == StageState::MID_BOSS_BATTLE) {
+		boss.Update(player, bm);
+		if (!boss.GetFlag()) {						//ボスフラグが消えたら道中復帰
+			boss.Reset();							//中ボス終了後にボス状態をリセット
+			state = StageState::DOCHU;
 		}
 	}
 
@@ -3922,8 +4078,8 @@ void StageManager::Draw(BulletManager* bm) {		//弾とかの描画
 		}
 	}
 
-	if (state == StageState::BOSS_BATTLE) {
-		boss.Draw();								//ボス戦中、ボスの描画
+	if (state==StageState::MID_BOSS_BATTLE || state == StageState::BOSS_BATTLE) {
+		boss.Draw();								//道中ボス・ボス戦中のボスの描画
 	}
 }
 
@@ -3945,14 +4101,12 @@ void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx, bool
 		SpawnSlots[i].Reset();
 	}
 	if (startPhaseIdx > 0) {							//Practiceモードの時はボス戦までスキップ
-		stageTimer = 1200;							//ステージタイマーを1200(通常時のボスが出てくる時間)にすることで道中の雑魚が出現するのを防止
+		stageTimer = 2000;							//ステージタイマーを1200(通常時のボスが出てくる時間)にすることで道中の雑魚が出現するのを防止
 		state = StageState::BOSS_BATTLE;			//状態をボス戦へ
 
 		float X = Left + (Right - Left) / 2.0f;
 		float Y = Top + (Bottom - Top) / 4.0f;
-		boss.Spawn(X, Y);							//画面中央にボスを出現させる。
-
-		boss.JumpToPhase(startPhaseIdx - 1);
+		boss.Spawn(X, Y, Stage1Data::BossPhases, Stage1Data::BOSS_PHASE_MAX, startPhaseIdx - 1, - 1);				//画面中央にボスを出現させ、指定フェーズへジャンプ
 	}
 	else {
 		stageTimer = 0;
@@ -3973,6 +4127,7 @@ void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx, bool
 enum class StageState {
 	ST_TITLE,					//道中のタイトル表示
 	DOCHU,						//道中
+	MID_BOSS_BATTLE,			//道中ボス
 	BOSS_APPEAR,				//ボス出現(会話等)
 	BOSS_BATTLE,				//ボス戦
 	BOSS_END,					//ボス討伐完了演出
@@ -4020,6 +4175,8 @@ public:
 	Player& GetPlayer() { return player; }		//&は参照渡しで、privateに隔離されてるインスタンスそのものへのアクセス権を引き出している。窓口の様なもの
 	Boss& GetBoss() { return boss; }
 	Enemy* GetFairies() { return fairies; }
+
+	bool IsStageClear() const { return (state == StageState::BOSS_BATTLE && boss.IsDead()); }		//ボス戦中でボスの全フェーズが終了した時にステージクリアと判定
 };
 
 // === File: Weapon.h ===
