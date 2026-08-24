@@ -9,6 +9,8 @@ namespace Stage1Data {
 	static constexpr int MID_BOSS_SPAWN_FRAME = 700;		//道中ボス出現フレーム
 	static constexpr int LATE_STAGE_SPAWN_FRAME = 3000;		//道中後半開始の(道中ボス撃破後)最初の妖精出現フレーム
 	static constexpr int BOSS_SPAWN_FRAME = 4000;			//ボス出現フレーム
+	static constexpr int MID_BOSS_PRAC_OFFSET_1 = 1000;		//practiceにおける中ボスの1段階目に加算するフレーム
+	static constexpr int MID_BOSS_PRAC_OFFSET_2 = 1500;		//2段階目に加算するフレーム
 
 	static constexpr BossPhase MidBossPhases[] = {
 	

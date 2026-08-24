@@ -21,7 +21,7 @@ void StageManager::Update(BulletManager* bm) {
 		if (stageTimer == Stage1Data::MID_BOSS_SPAWN_FRAME) {
 			state = StageState::MID_BOSS_BATTLE;						//道中ボス
 			float X = Left + (Right - Left) / 2.0f;
-			float Y = Top - (Bottom - Top)  / 4.0f;
+			float Y = Top  - (Bottom - Top) / 4.0f;
 			boss.Spawn(X, Y, Stage1Data::MidBossPhases, Stage1Data::MID_BOSS_PHASE_MAX, 0, -1);										
 		}
 		
@@ -55,7 +55,7 @@ void StageManager::Update(BulletManager* bm) {
 		if (stageTimer >= Stage1Data::BOSS_SPAWN_FRAME) {
 			state = StageState::BOSS_BATTLE;		//ステージ状態をボス戦へ移行
 			float X = Left + (Right - Left) / 2.0f;
-			float Y = Top + (Bottom - Top)  / 4.0f;
+			float Y = Top  + (Bottom - Top) / 4.0f;
 			boss.Spawn(X, Y, Stage1Data::BossPhases, Stage1Data::BOSS_PHASE_MAX, 0, -1);				//ボスはフェーズ1から最終フェーズまで
 		}
 	}
@@ -103,7 +103,7 @@ void StageManager::Draw(BulletManager* bm) {		//弾とかの描画
 
 void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx, bool isPractice) {							//ステージの状態を全てリセットする関数
 	currentStageNum = stageNum;
-	
+
 	bm->ConvertEnemyBulletsToItems();
 	bm->ClearAllItems();
 
@@ -111,23 +111,55 @@ void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx, bool
 	boss.Reset();									//ボスフラグを折る
 
 
-	for (int i = 0; i < Enemy::EnemyMax;i++) {
+	for (int i = 0; i < Enemy::EnemyMax; i++) {
 		fairies[i].SetFlag(false);					//妖精フラグも折る
 	}
 
 	for (int i = 0; i < MAX_SPAWN_SLOT; i++) {
 		SpawnSlots[i].Reset();
 	}
-	if (startPhaseIdx > 0) {							//Practiceモードの時はボス戦までスキップ
-		stageTimer = Stage1Data::BOSS_SPAWN_FRAME;							//ステージタイマーを1200(通常時のボスが出てくる時間)にすることで道中の雑魚が出現するのを防止
-		state = StageState::BOSS_BATTLE;			//状態をボス戦へ
 
-		float X = Left + (Right - Left) / 2.0f;
-		float Y = Top + (Bottom - Top) / 4.0f;
-		boss.Spawn(X, Y, Stage1Data::BossPhases, Stage1Data::BOSS_PHASE_MAX, startPhaseIdx - 1, - 1);				//画面中央にボスを出現させ、指定フェーズへジャンプ
-	}
-	else {
+	float bossSpawnX = Left + (Right - Left) / 2.0f;
+	float bossSpawnY = Top + (Bottom - Top) / 4.0f;
+
+
+	switch (startPhaseIdx) {
+	case 0:							//1面道中前半
 		stageTimer = 0;
 		state = StageState::DOCHU;
+		break;
+
+	case 1:							//1面倒中ボス 通1
+		stageTimer = Stage1Data::MID_BOSS_SPAWN_FRAME + Stage1Data::MID_BOSS_PRAC_OFFSET_1;
+		state = StageState::MID_BOSS_BATTLE;
+		boss.Spawn(bossSpawnX, bossSpawnY, Stage1Data::MidBossPhases, Stage1Data::MID_BOSS_PHASE_MAX, 0, -1);
+		break;
+
+	case 2:							//1面道中ボス　スペカ1
+		stageTimer = Stage1Data::MID_BOSS_SPAWN_FRAME + Stage1Data::MID_BOSS_PRAC_OFFSET_2;
+		state = StageState::MID_BOSS_BATTLE;
+		boss.Spawn(bossSpawnX, bossSpawnY, Stage1Data::MidBossPhases, Stage1Data::MID_BOSS_PHASE_MAX, 1, -1);
+		break;
+
+	case 3:							//1面道中後半
+		stageTimer = Stage1Data::LATE_STAGE_SPAWN_FRAME - 1;		//妖精出現の1フレーム前から開始して安定化
+		state = StageState::DOCHU;
+		break;
+
+	case 4:		//1ボス 通1
+	case 5:		//1ボス 通1(2段階目)
+	case 6:		//1ボス 通2
+	case 7:		//1ボス 天上天下の照國
+	case 8:		//1ボス	フィットフルナイトメア
+	case 9:		//1ボス ラストスペル
+		stageTimer = Stage1Data::BOSS_SPAWN_FRAME;
+		state = StageState::BOSS_BATTLE;
+		boss.Spawn(bossSpawnX, bossSpawnY, Stage1Data::BossPhases, Stage1Data::BOSS_PHASE_MAX, startPhaseIdx - 4, -1);
+		break;
+
+	default:
+		stageTimer = 0;
+		state = StageState::DOCHU;
+		break;
 	}
 }

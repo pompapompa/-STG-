@@ -31,7 +31,7 @@ SceneManager::SceneManager(BulletManager* bm, ScoreManager* sm, StageManager* st
 	m_stageManager(stm),
 	m_hud(hud),
 	TitleMenu(5),
-	PracticeMenu(7),
+	PracticeMenu(10),
 	PauseMenu(3),
 	QuitMenu(2),
 	GameOverMenu(2),												//引数が必要なクラスなのでインスタンスにも引数を与える
@@ -397,13 +397,16 @@ void SceneManager::Draw() {
 
 	case SCENE_PRACTICE:
 		DrawString(170, 100, "～～～ スペルプラクティスモード ～～～", GetColor(0, 255, 0));
-		DrawString(230, 150, (PracticeMenu.GetSelect() == 0 ? "> 1面道中" : "1面道中"), GetColor(255, 255, 255));
-		DrawString(230, 180, (PracticeMenu.GetSelect() == 1 ? "> 1ボス　通1" : "1ボス　通1"), GetColor(255, 255, 255));
-		DrawString(230, 210, (PracticeMenu.GetSelect() == 2 ? "> 1ボス　スペカ1" : "1ボス　スペカ1"), GetColor(255, 255, 255));
-		DrawString(230, 240, (PracticeMenu.GetSelect() == 3 ? "> 1ボス　通2" : "1ボス　通2"), GetColor(255, 255, 255));
-		DrawString(230, 270, (PracticeMenu.GetSelect() == 4 ? "> 1ボス　天上天下の照國(笑)" : "1ボス　天上天下の照國(笑)"), GetColor(255, 255, 255));
-		DrawString(230, 300, (PracticeMenu.GetSelect() == 5 ? "> 1ボス　フィットフルナイトメア(笑)" : "フィットフルナイトメア(笑)"), GetColor(255, 255, 255));
-		DrawString(230, 330, (PracticeMenu.GetSelect() == 6 ? "> 1ボスラスペ" : "1ボスラスペ"), GetColor(255, 255, 255));
+		DrawString(230, 150, (PracticeMenu.GetSelect() == 0 ? "> 1面道中　　　前半"							: "1面道中　　　前半"), GetColor(255, 255, 255));
+		DrawString(230, 180, (PracticeMenu.GetSelect() == 1 ? "> 1面道中ボス　通1"							: "1面道中ボス　通1"), GetColor(255, 255, 255));
+		DrawString(230, 210, (PracticeMenu.GetSelect() == 2 ? "> 1面道中ボス　スペカ1"						: "1面道中ボス　スペカ1"), GetColor(255, 255, 255));
+		DrawString(230, 240, (PracticeMenu.GetSelect() == 3 ? "> 1面道中　　　後半"							: "1面道中　　　後半"), GetColor(255, 255, 255));
+		DrawString(230, 270, (PracticeMenu.GetSelect() == 4 ? "> 1面　　ボス　通1"							: "1面　　ボス　通1"), GetColor(255, 255, 255));
+		DrawString(230, 300, (PracticeMenu.GetSelect() == 5 ? "> 1面　　ボス　スペカ1"						: "1面　　ボス　スペカ1"), GetColor(255, 255, 255));
+		DrawString(230, 330, (PracticeMenu.GetSelect() == 6 ? "> 1面　　ボス　通2"							: "1面　　ボス　通2"), GetColor(255, 255, 255));
+		DrawString(230, 360, (PracticeMenu.GetSelect() == 7 ? "> 1面　　ボス　天上天下の照國(笑)"			: "1面　　ボス　天上天下の照國(笑)"), GetColor(255, 255, 255));
+		DrawString(230, 390, (PracticeMenu.GetSelect() == 8 ? "> 1面　　ボス　フィットフルナイトメア(笑)"	: "1面　　ボス　フィットフルナイトメア(笑)"), GetColor(255, 255, 255));
+		DrawString(230, 420, (PracticeMenu.GetSelect() == 9 ? "> 1面　　ボス　ラスペ"						: "1面　　ボス　ラスペ"), GetColor(255, 255, 255));
 		break;
 
 
