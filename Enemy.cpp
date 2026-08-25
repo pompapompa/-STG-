@@ -17,9 +17,10 @@ void Enemy::Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy
 	vy = in_vy;
 	hp = in_hp;
 	m_shotConf = conf;
-	flag = true;				
+	flag = true;
 	clearOnDeath = in_clear;
 	ShotTimer = 0;								//再利用時に弾発射タイマが不正な値になる不具合防止
+	shotAccumulator = 0;						//妖精出現時にアキュムレータ0クリア
 	for (int i = 0; i < DROP_TYPE_MAX; i++) {
 		if (in_dropCounts != nullptr) {
 			m_dropCounts[i] = in_dropCounts[i];
@@ -36,11 +37,30 @@ void Enemy::Update(const Player& player, BulletManager* bm) {	//playerからはパラ
 	y += vy;
 	if (Left - r > x || Right + r<x || Top - r>y || Bottom + r < y) flag = false;		//画面外に行ったら消える
 
-	if (ShotTimer != 0 && ShotTimer % m_shotConf.interval == 0) {
-		BulletPattern::ExecShot(x, y, m_shotConf, player, bm);
+	int currentInterval = m_shotConf.interval.Get(ShotTimer);			//妖精のShotTimerに応じた現在の動的発射間隔(interval)を取得
+	bool shouldShoot = false;											//当該フレームで弾を発射するかのフラグ
+	if (currentInterval > 0) {		//intervalが0以下(不正な値)時のゼロ除算、無限射出の防止
+		if (m_shotConf.interval.IsDynamic()) {		//intervalの動的変化フラグが真の場合はアキュムレータ方式で発射判定を行う
+			shotAccumulator++;															//妖精用のアキュムレータをインクリメント
+			if (ShotTimer == 0 || shotAccumulator >= currentInterval) {		//出現直後、又は蓄積値が現在intervalに達した場合に発射判定
+				if (ShotTimer == 0) shotAccumulator = 0;	//出現直後はアキュムレータを0クリア
+				else shotAccumulator -= currentInterval;	//発射時に現在のinterval分を減算消費し、超過蓄積フレームを次回発射周期へ持ち越し
+				shouldShoot = true;														//発射フラグをセット
+			}
+		}
+		else {		//intervalが動的変化しない静的パラメータの場合はアキュムレータでなく、今までの剰余計算で判定
+			if (ShotTimer != 0 && ShotTimer % currentInterval == 0) {
+				shouldShoot = true;
+			}
+		}
+	}
+
+	if (shouldShoot) {		//発射フラグが立っている場合のみ射出処理実行
+		BulletPattern::ExecShot(x, y, m_shotConf, player, bm, ShotTimer);
 	}
 	ShotTimer++;
 }
+
 
 void Enemy::Draw() {
 	if (flag) {
@@ -50,7 +70,7 @@ void Enemy::Draw() {
 
 bool Enemy::CheckCollision(Player& player, BulletManager* bm) {
 	if (!flag) return false;											//フラグの立ってない敵は当たらない
-	
+
 	for (int i = 0; i < bm->GetPlayerBulletMax(); i++) {
 		Bullet& b = bm->GetPlayerBullet(i);								//自機弾各々が持つ検体番号を格納
 		if (!b.GetFlag()) continue;										//自機フラグが立っていない時飛ばす

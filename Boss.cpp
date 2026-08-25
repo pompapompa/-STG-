@@ -19,7 +19,7 @@ Boss::Boss() : hp(0.0f), state(BossState::WAITING) {
 
 void Boss::Spawn(float in_x, float in_y, const BossPhase* phaseTable, int phaseCount, int startPhase, int in_endIdx) {
 	if (phaseTable == nullptr || phaseCount <= 0) return;		//テーブルが不正な場合の早期return
-	
+
 	BulletPattern::ShotConfig dummyConf;
 	Encount(in_x, in_y, para.r, 0.0f, 0.0f, 0, dummyConf, false);							//hpの引数はボスの場合hpロジックが独自の為ダミーの0を入力している。その後上書きされる為何でも良い。
 
@@ -38,6 +38,7 @@ void Boss::Spawn(float in_x, float in_y, const BossPhase* phaseTable, int phaseC
 	this->waitTimer = 0;
 	this->chargeTimer = 0;
 
+	for (int i = 0; i < BOSS_SHOT_CONFIG_MAX; i++) shotTimers[i] = 0;	//ボス出現時に個別発射タイマ(アキュムレータ)配列を0クリア
 }
 
 
@@ -57,13 +58,32 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 		for (int i = 0; i < p.shotCount; i++) {
 			const auto& conf = p.shots[i];
 
-			if (phaseTimer % conf.interval == 0) {
+			int currentInterval = conf.interval.Get(phaseTimer);		
+			float currentSpeed = conf.speed.Get(phaseTimer);			//phaseTimerに応じた現在の動的発射間隔(interval)と動的弾速(speed)を取得
+
+			bool shouldShoot = false;	//当該フレームで弾を発射するかのフラグ
+			if (currentInterval > 0) {		//intervalが0以下(不正な値)時のゼロ除算、無限射出の防止
+				if (conf.interval.IsDynamic()) {	//intervalの動的変化フラグが真の場合はアキュムレータ方式で発射判定を行う
+					shotTimers[i]++;													//当該弾幕用の蓄積フレームのカウンタをインクリメント
+					if (phaseTimer == 1 || shotTimers[i] >= currentInterval) {		//フェーズ開始の初回のフレーム(phaseTimer==1)、又は蓄積値が現在のintervalに達した場合に発射判定を行う
+						if (phaseTimer == 1)shotTimers[i] = 0;		//フェーズ開始の初回フレームの発射時にはアキュムレータを0クリア
+						else shotTimers[i] -= currentInterval;		//発射時に現在のinterval分を減算消費し、超過蓄積フレームを次回発射周期へ持ち越し
+						shouldShoot = true;							//発射フラグセット
+					}
+				}
+				else {		//intervalが動的変化しない静的パラメータの場合はアキュムレータでなく、今までの剰余計算で判定
+					if (phaseTimer % currentInterval == 0) {
+						shouldShoot = true;
+					}
+				}
+			}
+			if (shouldShoot) {			//発射フラグが立っている場合のみ射出処理実行
 				if (conf.type == PT::RotateAll) {
 					float baseAngleDeg = conf.baseAngle + (timer * conf.rotSpeed) * 180.0f / DX_PI_F;
-					BulletPattern::NWayShot(x, y, conf.radius, conf.speed, conf.way, conf.totalAngle, baseAngleDeg, bm, conf.graphicType);
+					BulletPattern::NWayShot(x, y, conf.radius, currentSpeed, conf.way, conf.totalAngle, baseAngleDeg, bm, conf.graphicType);	//動的弾速を渡して全方位弾生成
 				}
 				else {
-					BulletPattern::ExecShot(x, y, conf, player, bm);
+					BulletPattern::ExecShot(x, y, conf, player, bm, phaseTimer);	//動的弾速計算の為、phaseTimerを渡して弾幕振り分けを実行
 				}
 			}
 		}
@@ -85,7 +105,7 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 			}
 
 			currentIdx++;															//現在のフェーズを次の段階へ
-			if (currentIdx <=endIdx && currentIdx<m_phaseMax) {							//endIdx以下且つ、フェーズが最大まで終わっていない場合
+			if (currentIdx <= endIdx && currentIdx < m_phaseMax) {							//endIdx以下且つ、フェーズが最大まで終わっていない場合
 				state = BossState::WAITING;									//待機状態遷移
 				waitTimer = 0;												//待機時間タイマを初期化
 
@@ -110,11 +130,12 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 	}
 	else if (state == BossState::CHARGING) {
 		chargeTimer++;
-		this->hp= this->phaseMaxHp * ((float)chargeTimer / PHASE_CHARGE_FRAME);	//hpチャージ演出(0からphaseMaxHpまで、PHASE_CHARGE_FRAMEをかけて線形補間で増加させる)
+		this->hp = this->phaseMaxHp * ((float)chargeTimer / PHASE_CHARGE_FRAME);	//hpチャージ演出(0からphaseMaxHpまで、PHASE_CHARGE_FRAMEをかけて線形補間で増加させる)
 
 		if (chargeTimer >= PHASE_CHARGE_FRAME) {
 			this->hp = this->phaseMaxHp;										//hpに確実に最大値を格納
-			this->phaseTimer = 0;												//フェーズタイマーの初期化
+			this->phaseTimer = 0;												//フェーズタイマの初期化
+			for (int i = 0; i < BOSS_SHOT_CONFIG_MAX; i++) shotTimers[i] = 0;	//個別発射タイマ(アキュムレータ)配列を再初期化
 			state = BossState::ACTIVE;											//戦闘状態へ遷移
 		}
 	}
@@ -171,7 +192,7 @@ void Boss::Draw() {
 		int remainingFrames = GetRemainingPhaseTimer();			//そのフェーズの制限時間(整数)を格納
 		int targetFPS = FPSManager::GetTargetFPS();				//1秒間のフレーム数(整数)を取得
 		int seconds = remainingFrames / targetFPS;				//[s]=[F]/[F/s]
-		
+
 		if (seconds > 99) {
 			seconds = 99;
 		}
@@ -193,7 +214,7 @@ bool Boss::CheckCollision(Player& player, BulletManager& bm) {
 		if (Collision::CheckCircle(x, y, r, b.x, b.y, b.r)) {		//ボスのx,y,rと自機弾のx,y,rを引数とする
 			if (state == BossState::ACTIVE) {
 				SetDamage(1.0f);										//1弾あたりのダメージ量
-				
+
 				player.AddScore(10);
 
 			}
@@ -213,7 +234,7 @@ int Boss::GetRemainingPhaseTimer() const {		//外部から残り時間を取得するゲッタ関
 	int maxFrames = (int)(m_phases[currentIdx].limitTimeSeconds * FPSManager::GetTargetFPS());	//制限時間[F]=制限時間[s]*FPS[F/s]
 	int remain = maxFrames - phaseTimer;														//そのフェーズの制限時間 - そのフェーズが開始してからの時間
 	return (remain < 0) ? 0 : remain;															//制限時間よりも経過時間が大きくなったらremain<0より0を返し、そうでなければその差分の時間を返す
-}		
+}
 
 void Boss::JumpToPhase(int phaseIdx) {
 	if (m_phases == nullptr || phaseIdx < 0 || phaseIdx >= m_phaseMax) return;		//最大フェーズ配列数を越えない対策

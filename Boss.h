@@ -56,6 +56,8 @@ private:
 	float hp;											//現在の体力
 	int timer = 0;
 
+	int shotTimers[BOSS_SHOT_CONFIG_MAX] = { 0 };				//動的発射間隔における剰余計算スキップ(弾づまり)対策の為の個別発射タイマ(アキュムレータ)配列
+
 public:
 
 	Boss();
@@ -84,6 +86,8 @@ public:
 		currentIdx = 0;
 		m_phases = nullptr;		//ポインタ初期化
 		m_phaseMax = 0;			//要素数初期化
+
+		for (int i = 0; i < BOSS_SHOT_CONFIG_MAX; i++) shotTimers[i] = 0;			//定数を用いた個別発射タイマ(アキュムレータ)配列の0クリア
 	}
 
 	void JumpToPhase(int phaseIdx);

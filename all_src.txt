@@ -1617,6 +1617,7 @@ void Enemy::Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy
 	m_shotConf = conf;
 	flag = true;				
 	clearOnDeath = in_clear;
+	ShotTimer = 0;								//再利用時に弾発射タイマが不正な値になる不具合防止
 	for (int i = 0; i < DROP_TYPE_MAX; i++) {
 		if (in_dropCounts != nullptr) {
 			m_dropCounts[i] = in_dropCounts[i];
@@ -3063,7 +3064,7 @@ SceneManager::SceneManager(BulletManager* bm, ScoreManager* sm, StageManager* st
 	m_stageManager(stm),
 	m_hud(hud),
 	TitleMenu(5),
-	PracticeMenu(7),
+	PracticeMenu(10),
 	PauseMenu(3),
 	QuitMenu(2),
 	GameOverMenu(2),												//引数が必要なクラスなのでインスタンスにも引数を与える
@@ -3429,13 +3430,16 @@ void SceneManager::Draw() {
 
 	case SCENE_PRACTICE:
 		DrawString(170, 100, "～～～ スペルプラクティスモード ～～～", GetColor(0, 255, 0));
-		DrawString(230, 150, (PracticeMenu.GetSelect() == 0 ? "> 1面道中" : "1面道中"), GetColor(255, 255, 255));
-		DrawString(230, 180, (PracticeMenu.GetSelect() == 1 ? "> 1ボス　通1" : "1ボス　通1"), GetColor(255, 255, 255));
-		DrawString(230, 210, (PracticeMenu.GetSelect() == 2 ? "> 1ボス　スペカ1" : "1ボス　スペカ1"), GetColor(255, 255, 255));
-		DrawString(230, 240, (PracticeMenu.GetSelect() == 3 ? "> 1ボス　通2" : "1ボス　通2"), GetColor(255, 255, 255));
-		DrawString(230, 270, (PracticeMenu.GetSelect() == 4 ? "> 1ボス　天上天下の照國(笑)" : "1ボス　天上天下の照國(笑)"), GetColor(255, 255, 255));
-		DrawString(230, 300, (PracticeMenu.GetSelect() == 5 ? "> 1ボス　フィットフルナイトメア(笑)" : "フィットフルナイトメア(笑)"), GetColor(255, 255, 255));
-		DrawString(230, 330, (PracticeMenu.GetSelect() == 6 ? "> 1ボスラスペ" : "1ボスラスペ"), GetColor(255, 255, 255));
+		DrawString(230, 150, (PracticeMenu.GetSelect() == 0 ? "> 1面道中　　　前半"							: "1面道中　　　前半"), GetColor(255, 255, 255));
+		DrawString(230, 180, (PracticeMenu.GetSelect() == 1 ? "> 1面道中ボス　通1"							: "1面道中ボス　通1"), GetColor(255, 255, 255));
+		DrawString(230, 210, (PracticeMenu.GetSelect() == 2 ? "> 1面道中ボス　スペカ1"						: "1面道中ボス　スペカ1"), GetColor(255, 255, 255));
+		DrawString(230, 240, (PracticeMenu.GetSelect() == 3 ? "> 1面道中　　　後半"							: "1面道中　　　後半"), GetColor(255, 255, 255));
+		DrawString(230, 270, (PracticeMenu.GetSelect() == 4 ? "> 1面　　ボス　通1"							: "1面　　ボス　通1"), GetColor(255, 255, 255));
+		DrawString(230, 300, (PracticeMenu.GetSelect() == 5 ? "> 1面　　ボス　スペカ1"						: "1面　　ボス　スペカ1"), GetColor(255, 255, 255));
+		DrawString(230, 330, (PracticeMenu.GetSelect() == 6 ? "> 1面　　ボス　通2"							: "1面　　ボス　通2"), GetColor(255, 255, 255));
+		DrawString(230, 360, (PracticeMenu.GetSelect() == 7 ? "> 1面　　ボス　天上天下の照國(笑)"			: "1面　　ボス　天上天下の照國(笑)"), GetColor(255, 255, 255));
+		DrawString(230, 390, (PracticeMenu.GetSelect() == 8 ? "> 1面　　ボス　フィットフルナイトメア(笑)"	: "1面　　ボス　フィットフルナイトメア(笑)"), GetColor(255, 255, 255));
+		DrawString(230, 420, (PracticeMenu.GetSelect() == 9 ? "> 1面　　ボス　ラスペ"						: "1面　　ボス　ラスペ"), GetColor(255, 255, 255));
 		break;
 
 
@@ -3842,47 +3846,30 @@ public:
 #include "Boss.h"
 #include "StageManager.h"
 
-/*
-				--- RotateAllの回転速度(rotSpeed)算出メモ ---
-1回の発射で進む角度をΔθ[deg]としたとき、
-全方位弾の隙間(step=360/way)に対してΔθが整数倍に近いとほぼ重なって回転してしまう。
-前の弾の隙間の真ん中に配置して最もバラけさせるには、
-	Δθ=step*(k+1/2) (k=0,1,2⋯)
-となるようにrotSpeedを定めれば良い。
-	rotSpeed=(Δθ/(si*180/π))
-			=(Δθ*π)/(si*180)
-綺麗にバラけるΔθの選び方は、、
-	step=360.0f/way
-であり、Δθ=step*0.5f(半周期ズレ)やstep*1.5f, step*2.5f等がある。
-
-計算例
-(si=20,way=36で(1/3 + 2)周期ズレの場合)
-・step=360.0f/36=10.0f
-1/3周期ズレより1/3 step=10/3≒3.33で、回転感を出すために適当なk=2周期を加えると、Δθ=(1/3 +2)step≒10*2.33=23.3f
-	rotSpeed=(23.3f*3.14f)/(20*180)=0.0203227778≒0.0203f
-
-(si=10,way=12で(1/3 + 1)周期ズレの場合)
-・step=360.0f/12=30.0f
-・Δθ=30.0f*(1/3 +1)=30.0f(4/3)=40.0f
-	rotSpeed=(40.0f*3.14f)/(10*180)=0.069033333≒0.0690f
-*/
 
 namespace Stage1Data {
+
+	static constexpr int MID_BOSS_SPAWN_FRAME = 700;		//道中ボス出現フレーム
+	static constexpr int LATE_STAGE_SPAWN_FRAME = 3000;		//道中後半開始の(道中ボス撃破後)最初の妖精出現フレーム
+	static constexpr int BOSS_SPAWN_FRAME = 4000;			//ボス出現フレーム
+	static constexpr int MID_BOSS_PRAC_OFFSET_1 = 1000;		//practiceにおける中ボスの1段階目に加算するフレーム
+	static constexpr int MID_BOSS_PRAC_OFFSET_2 = 1500;		//2段階目に加算するフレーム
+
 	static constexpr BossPhase MidBossPhases[] = {
 	
-/*  {phaseNum, hpLimit, limitTime[s],弾幕数,{{type,			sr,							ss,		si,		way,	広角,		回転速度,	基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム,大パワー}}　*/
+/*  {phaseNum, hpLimit, limitTime[s],弾幕数,{{type,			sr,							ss,		si,		way,	広角,		回転速度,									基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム,大パワー}}　*/
 
 		/* 中ボス通1 */
 		{ 0,	1000.0f,		30.0f,	2,		{
-								{PT::RotateAll,		BulletDefaultRadius::ZAYAKU,		3.0f,	5,		12,		360.0f,		0.25f,		90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::SILVER)},
-								{PT::NWay,			BulletDefaultRadius::LIGHT,			5.0f,	15,		3,		60.0f,		0.25f,		90,			GetBulletID(BulletShape::LIGHT,BulletColor::YELLOW)}
+								{PT::RotateAll,		BulletDefaultRadius::ZAYAKU,		3.0f,	5,		12,		360.0f,		0.25f,										90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::SILVER)},
+								{PT::NWay,			BulletDefaultRadius::LIGHT,			5.0f,	15,		3,		60.0f,		0.25f,										90,			GetBulletID(BulletShape::LIGHT,BulletColor::YELLOW)}
 		},true,	{0,10,0,0,0,0}},
 
 		/* 中ボススペカ1枚目 */
 		{ 1,	1200.0f,		30.0f,	3,		{
-								{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,	10,		12,		360.0f,		CalcRotateSpeed(12, 10, 1.0f / 3.0f, 1),		90,			GetBulletID(BulletShape::POIFUL,BulletColor::PURPLE)},
+								{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,	10,		12,		360.0f,		CalcRotateSpeed(12, 10, 1.0f / 3.0f, 1),	90,			GetBulletID(BulletShape::POIFUL,BulletColor::PURPLE)},
 								{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,	10,		12,		360.0f,		-CalcRotateSpeed(12, 10, 1.0f / 3.0f, 1),	90,			GetBulletID(BulletShape::POIFUL,BulletColor::PURPLE)},
-								{PT::NWay,			BulletDefaultRadius::ZAYAKU,		4.0f,	75,		10,		20.0f,		0.25f,		90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::AQUA)}
+								{PT::NWay,			BulletDefaultRadius::ZAYAKU,		4.0f,	75,		10,		20.0f,		0.25f,										90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::AQUA)}
 		},true,	{0,10,3,1,0,1}},
 	};
 	static constexpr int MID_BOSS_PHASE_MAX = sizeof(MidBossPhases) / sizeof(MidBossPhases[0]);		//中ボスの総フェーズ数算出
@@ -3891,49 +3878,49 @@ namespace Stage1Data {
 
 	static constexpr BossPhase BossPhases[] = {						//通常こうげきとスペカのデータを配列で定義
 
-/*  {phaseNum, hpLimit, limitTime[s],弾幕数,{{type,			sr,							ss,		si,		way,	広角,		回転速度,	基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム,大パワー}}　*/
+/*  {phaseNum, hpLimit, limitTime[s],弾幕数,{{type,			sr,							ss,		si,		way,	広角,		回転速度,									基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム,大パワー}}　*/
 
 		/*	通1　*/
 		{ 0,	1200.0f,		10.0f,	1,		{
-								{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		0.6f,	5,		12,		360.0f,		0.5f,		90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)}
+								{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		0.6f,	5,		12,		360.0f,		0.5f,										90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)}
 		},false,},
 
 
 		/*　通1の2段階目(発狂)　*/
 		{ 1,	1500.0f,		50.0f,	2,		{
-								{PT::RotateAll,		BulletDefaultRadius::RICE,			3.5f,	10,		18,		360.0f,		0.2f,		90,			GetBulletID(BulletShape::RICE,BulletColor::RED)},
-								{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,	48,		64,		360.0f,		0.0f,		90,			GetBulletID(BulletShape::POIFUL,BulletColor::PURPLE)}
+								{PT::RotateAll,		BulletDefaultRadius::RICE,			3.5f,	10,		18,		360.0f,		0.2f,										90,			GetBulletID(BulletShape::RICE,BulletColor::RED)},
+								{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,	48,		64,		360.0f,		0.0f,										90,			GetBulletID(BulletShape::POIFUL,BulletColor::PURPLE)}
 		},true, {0,10, 5,0,0,1}},
 
 
 		/*　通2　*/
 		{ 2,	1200.0f,		30.0f,	4,		{
-								{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		1.6f,	5,		17,		360.0f,		5.5f,		90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)},
-								{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		1.6f,	5,		17,		360.0f,		-5.5f,		90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)},
-								{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,	20,		15,		360.0f,		10.0f,		90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)},
-								{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,	20,		15,		360.0f,		-10.0f,		90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)}
-
-		},true, {0,10,8,1,0,2}},
-
-		/*　天上天下の照國(3枚目)　*/
-		{ 3,	2000.0f,		60.0f,	3,		{
-								{PT::RotateAll,		BulletDefaultRadius::UROKO,			5.0f,	8,		16,		360.0f,		2.8f,		90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
-								{PT::RotateAll,		BulletDefaultRadius::UROKO,			5.0f,	8,		16,		360.0f,		-2.8f,		90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
-								{PT::RotateAll,		BulletDefaultRadius::RICE,			2.0f,	45,		64,		360.0f,		0.008f,		90,			GetBulletID(BulletShape::RICE, BulletColor::BLUE)}
+								{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		1.6f,	5,		17,		360.0f,		5.5f,										90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)},
+								{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		1.6f,	5,		17,		360.0f,		-5.5f,										90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)},
+								{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,	20,		15,		360.0f,		10.0f,										90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)},
+								{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,	20,		15,		360.0f,		-10.0f,										90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)}
+																																							
+		},true, {0,10,8,1,0,2}},																															
+																																							
+		/*　天上天下の照國(3枚目)　*/																														 
+		{ 3,	2000.0f,		60.0f,	3,		{																											
+								{PT::RotateAll,		BulletDefaultRadius::UROKO,			5.0f,	8,		16,		360.0f,		2.8f,										90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
+								{PT::RotateAll,		BulletDefaultRadius::UROKO,			5.0f,	8,		16,		360.0f,		-2.8f,										90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
+								{PT::RotateAll,		BulletDefaultRadius::RICE,			2.0f,	45,		64,		360.0f,		0.008f,										90,			GetBulletID(BulletShape::RICE, BulletColor::BLUE)}
 		},true, {0,15,5,0,1,3}},
 
 		/*　フィットフルナイトメア　*/
 		{ 4,	750.0f,		60.0f,	1,		{
-								{PT::RotateAll,		BulletDefaultRadius::KNIFE,			8.0f,	5,		45,		360.0f,		0.191,		90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)}
+								{PT::RotateAll,		BulletDefaultRadius::KNIFE,			8.0f,	5,		45,		360.0f,		0.191,										90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)}
 		},true, {0,30,8,0,0,2}},
 
 		/*　ラストスペル　*/
 		{ 5,	2500.0f,		110.0f,	5,		{
-								{PT::NWay,			BulletDefaultRadius::KNIFE,			15.0f,	3,		12,		180.0f,		10.0f,		90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)},
+								{PT::NWay,			BulletDefaultRadius::KNIFE,			15.0f,	3,		12,		180.0f,		10.0f,										90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)},
 								{PT::RotateAll,		BulletDefaultRadius::LIGHT,			2.0f,	20,		36,		360.0f,		CalcRotateSpeed(36, 20, 1.0f / 3.0f, 2),	90,			GetBulletID(BulletShape::LIGHT,BulletColor::RED)},
 								{PT::RotateAll,		BulletDefaultRadius::LIGHT,			2.0f,	20,		36,		360.0f,		-CalcRotateSpeed(36, 20, 1.0f / 3.0f, 2),	90,			GetBulletID(BulletShape::LIGHT,BulletColor::BLUE)},
-								{PT::RotateAll,		BulletDefaultRadius::ZAYAKU,		1.25f,	30,		24,		360.0f,		0.5f,		90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::GREEN)},
-								{PT::Aimed,			BulletDefaultRadius::BIG_CIRCLE,	1.5f,	120,	1,		0.0f,		500.0f,		90,			GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::BLUE)}
+								{PT::RotateAll,		BulletDefaultRadius::ZAYAKU,		1.25f,	30,		24,		360.0f,		0.5f,										90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::GREEN)},
+								{PT::Aimed,			BulletDefaultRadius::BIG_CIRCLE,	1.5f,	120,	1,		0.0f,		500.0f,										90,			GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::BLUE)}
 		},true, {0,50,0,0,0,0}},
 	};
 	static constexpr int BOSS_PHASE_MAX = sizeof(BossPhases) / sizeof(BossPhases[0]);
@@ -3943,37 +3930,37 @@ namespace Stage1Data {
 	
 	static constexpr int top = Top + StageManager::upMargin;			//妖精が出てくる時にプレイ領域の上からどれくらい開けて出現するか
 	static constexpr EnemySpawn Timeline[] = {
-		/*	{	frame,	x,		y,		vx,		vy,		r,		hp,		count	interval,
-				{	type,			sr,										ss,				si,		way,	広がり角,	回転速度	基準角度	弾見た目(0:青/1:赤/2:青鱗/3:赤米/4:青米)},弾消しフラグ, {0：小スコア, 1：スコア, 2：パワー, 3：残機, 4：ボム, 5：大パワー}}*/
-			{	60,		Left, 	top,	4.0f,	0.0f,	15.0f,	5,		7,			20,
-				{	PT::NWay,		BulletDefaultRadius::UROKO,				8.0f,			18,		4,		10.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::UROKO, BulletColor::BLUE)},false, {0,0,1,0,0}},
+		/*	{	frame,											x,		y,		vx,		vy,		r,			hp,			count	interval,
+				{	type,			sr,										ss,		si,		way,	広がり角,	回転速度	基準角度	弾見た目(0:青/1:赤/2:青鱗/3:赤米/4:青米)},弾消しフラグ, {0：小スコア, 1：スコア, 2：パワー, 3：残機, 4：ボム, 5：大パワー}}*/
+			{	60,												Left, 	top,	4.0f,	0.0f,	15.0f,		5,			7,			20,
+				{	PT::NWay,		BulletDefaultRadius::UROKO,				8.0f,	18,		4,		10.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::UROKO, BulletColor::BLUE)},false, {0,0,1,0,0}},
 
-			{	120,	Right,  top,	-4.0f,	0.0f,	15.0f,	5,		7,			15,
-				{	PT::NWay,		BulletDefaultRadius::RICE,				16.0f,			4,		2,		3.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::RED)},false,{0,0,1,0,0}},
+			{	120,											Right,  top,	-4.0f,	0.0f,	15.0f,		5,			7,			15,
+				{	PT::NWay,		BulletDefaultRadius::RICE,				16.0f,	4,		2,		3.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::RED)},false,{0,0,1,0,0}},
 
-			{	350,	Left,	top,	3.0f,	0.0f,	15.0f,	5,		8,			15,
-				{	PT::Aimed,		BulletDefaultRadius::ZAYAKU,			6.0f,			30,		1,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::ZAYAKU,BulletColor::AQUA)}, false,{0,2,1,0,0}},
+			{	350,											Left,	top,	3.0f,	0.0f,	15.0f,		5,			8,			15,
+				{	PT::Aimed,		BulletDefaultRadius::ZAYAKU,			6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::ZAYAKU,BulletColor::AQUA)}, false,{0,2,1,0,0}},
 
-			{	350,	Right,	top,	-3.0f,	0.0f,	15.0f,	5,		8,			15,
-				{	PT::Aimed,		BulletDefaultRadius::LIGHT,				6.0f,			30,		1,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::LIGHT,BulletColor::BLUE)}, false,{0,0,2,0,0}},
+			{	350,											Right,	top,	-3.0f,	0.0f,	15.0f,		5,			8,			15,
+				{	PT::Aimed,		BulletDefaultRadius::LIGHT,				6.0f,	30,		1,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::LIGHT,BulletColor::BLUE)}, false,{0,0,2,0,0}},
 
-			{	3000,	Left,	top,	3.0f,	0.0f,	15.0f,	10,		10,			10,
-				{	PT::NWay,		BulletDefaultRadius::BIG_CIRCLE,		7.0f,			30,		12,		180.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::RED)}, false,{0,1,0,0,0}},
+			{	LATE_STAGE_SPAWN_FRAME,							Left,	top,	3.0f,	0.0f,	15.0f,		10,			10,			10,
+				{	PT::NWay,		BulletDefaultRadius::BIG_CIRCLE,		7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::RED)}, false,{0,1,0,0,0}},
 
-			{	3000,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			10,
-				{	PT::NWay,		BulletDefaultRadius::BIG_CIRCLE,		7.0f,			30,		12,		180.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::BLUE)}, false,{0,0,1,0,0}},
+			{	LATE_STAGE_SPAWN_FRAME,							Right,	top,	-3.0f,	0.0f,	15.0f,		10,			10,			10,
+				{	PT::NWay,		BulletDefaultRadius::BIG_CIRCLE,		7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::BLUE)}, false,{0,0,1,0,0}},
 
-			{	3100,	Left,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			5,
-				{	PT::NWay,		BulletDefaultRadius::UROKO,				6.0f,			30,		5,		90.0f,		5.0f,		90.0f,		GetBulletID(BulletShape::UROKO,BulletColor::RED)},	false,{0,2,0,0,0}},
+			{	3100,											Left,	top,	-3.0f,	0.0f,	15.0f,		10,			10,			5,
+				{	PT::NWay,		BulletDefaultRadius::UROKO,				6.0f,	30,		5,		90.0f,		5.0f,		90.0f,		GetBulletID(BulletShape::UROKO,BulletColor::RED)},	false,{0,2,0,0,0}},
 
-			{	3100,	Right,	top,	-3.0f,	0.0f,	15.0f,	10,		10,			5,
-				{	PT::NWay,		BulletDefaultRadius::UROKO,				6.0f,			30,		5,		90.0f,		5.0f,		90.0f,		GetBulletID(BulletShape::UROKO,BulletColor::BLUE)},	false,{0,0,2,0,0}},
+			{	3100,											Right,	top,	-3.0f,	0.0f,	15.0f,		10,			10,			5,
+				{	PT::NWay,		BulletDefaultRadius::UROKO,				6.0f,	30,		5,		90.0f,		5.0f,		90.0f,		GetBulletID(BulletShape::UROKO,BulletColor::BLUE)},	false,{0,0,2,0,0}},
 
-			{	3500,	CenterX,top,	-1.0f,	0.0f,	15.0f,	15,		10,			8,
-				{	PT::RotateAll,	BulletDefaultRadius::RICE,				3.0f,			15,		18,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::RED)}, false,{0,2,2,0,0}},
+			{	3500,											CenterX,top,	-1.0f,	0.0f,	15.0f,		15,			10,			8,
+				{	PT::RotateAll,	BulletDefaultRadius::RICE,				3.0f,	15,		18,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::RED)}, false,{0,2,2,0,0}},
 
-			{	3500,	CenterX,top,	1.0f,	0.0f,	15.0f,	15,		10,			8,
-				{	PT::RotateAll,	BulletDefaultRadius::RICE,				3.0f,			15,		18,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::BLUE)}, false,{0,3,2,0,0}}
+			{	3500,											CenterX,top,	1.0f,	0.0f,	15.0f,		15,			10,			8,
+				{	PT::RotateAll,	BulletDefaultRadius::RICE,				3.0f,	15,		18,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::BLUE)}, false,{0,3,2,0,0}}
 
 	};
 	static constexpr int SPAWN_COUNT = sizeof(Timeline) / sizeof(EnemySpawn);	//データの個数を計算
@@ -4000,10 +3987,10 @@ void StageManager::Update(BulletManager* bm) {
 	stageTimer++;								//時間を進める
 
 	if (state == StageState::DOCHU) {
-		if (stageTimer == 700) {
+		if (stageTimer == Stage1Data::MID_BOSS_SPAWN_FRAME) {
 			state = StageState::MID_BOSS_BATTLE;						//道中ボス
 			float X = Left + (Right - Left) / 2.0f;
-			float Y = Top - (Bottom - Top)  / 4.0f;
+			float Y = Top  - (Bottom - Top) / 4.0f;
 			boss.Spawn(X, Y, Stage1Data::MidBossPhases, Stage1Data::MID_BOSS_PHASE_MAX, 0, -1);										
 		}
 		
@@ -4034,10 +4021,10 @@ void StageManager::Update(BulletManager* bm) {
 		}
 
 
-		if (stageTimer >= 4000) {
+		if (stageTimer >= Stage1Data::BOSS_SPAWN_FRAME) {
 			state = StageState::BOSS_BATTLE;		//ステージ状態をボス戦へ移行
 			float X = Left + (Right - Left) / 2.0f;
-			float Y = Top + (Bottom - Top) / 4.0f;
+			float Y = Top  + (Bottom - Top) / 4.0f;
 			boss.Spawn(X, Y, Stage1Data::BossPhases, Stage1Data::BOSS_PHASE_MAX, 0, -1);				//ボスはフェーズ1から最終フェーズまで
 		}
 	}
@@ -4085,7 +4072,7 @@ void StageManager::Draw(BulletManager* bm) {		//弾とかの描画
 
 void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx, bool isPractice) {							//ステージの状態を全てリセットする関数
 	currentStageNum = stageNum;
-	
+
 	bm->ConvertEnemyBulletsToItems();
 	bm->ClearAllItems();
 
@@ -4093,26 +4080,59 @@ void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx, bool
 	boss.Reset();									//ボスフラグを折る
 
 
-	for (int i = 0; i < Enemy::EnemyMax;i++) {
+	for (int i = 0; i < Enemy::EnemyMax; i++) {
 		fairies[i].SetFlag(false);					//妖精フラグも折る
 	}
 
 	for (int i = 0; i < MAX_SPAWN_SLOT; i++) {
 		SpawnSlots[i].Reset();
 	}
-	if (startPhaseIdx > 0) {							//Practiceモードの時はボス戦までスキップ
-		stageTimer = 2000;							//ステージタイマーを1200(通常時のボスが出てくる時間)にすることで道中の雑魚が出現するのを防止
-		state = StageState::BOSS_BATTLE;			//状態をボス戦へ
 
-		float X = Left + (Right - Left) / 2.0f;
-		float Y = Top + (Bottom - Top) / 4.0f;
-		boss.Spawn(X, Y, Stage1Data::BossPhases, Stage1Data::BOSS_PHASE_MAX, startPhaseIdx - 1, - 1);				//画面中央にボスを出現させ、指定フェーズへジャンプ
-	}
-	else {
+	float bossSpawnX = Left + (Right - Left) / 2.0f;
+	float bossSpawnY = Top + (Bottom - Top) / 4.0f;
+
+
+	switch (startPhaseIdx) {
+	case 0:							//1面道中前半
 		stageTimer = 0;
 		state = StageState::DOCHU;
+		break;
+
+	case 1:							//1面倒中ボス 通1
+		stageTimer = Stage1Data::MID_BOSS_SPAWN_FRAME + Stage1Data::MID_BOSS_PRAC_OFFSET_1;
+		state = StageState::MID_BOSS_BATTLE;
+		boss.Spawn(bossSpawnX, bossSpawnY, Stage1Data::MidBossPhases, Stage1Data::MID_BOSS_PHASE_MAX, 0, -1);
+		break;
+
+	case 2:							//1面道中ボス　スペカ1
+		stageTimer = Stage1Data::MID_BOSS_SPAWN_FRAME + Stage1Data::MID_BOSS_PRAC_OFFSET_2;
+		state = StageState::MID_BOSS_BATTLE;
+		boss.Spawn(bossSpawnX, bossSpawnY, Stage1Data::MidBossPhases, Stage1Data::MID_BOSS_PHASE_MAX, 1, -1);
+		break;
+
+	case 3:							//1面道中後半
+		stageTimer = Stage1Data::LATE_STAGE_SPAWN_FRAME - 1;		//妖精出現の1フレーム前から開始して安定化
+		state = StageState::DOCHU;
+		break;
+
+	case 4:		//1ボス 通1
+	case 5:		//1ボス 通1(2段階目)
+	case 6:		//1ボス 通2
+	case 7:		//1ボス 天上天下の照國
+	case 8:		//1ボス	フィットフルナイトメア
+	case 9:		//1ボス ラストスペル
+		stageTimer = Stage1Data::BOSS_SPAWN_FRAME;
+		state = StageState::BOSS_BATTLE;
+		boss.Spawn(bossSpawnX, bossSpawnY, Stage1Data::BossPhases, Stage1Data::BOSS_PHASE_MAX, startPhaseIdx - 4, -1);
+		break;
+
+	default:
+		stageTimer = 0;
+		state = StageState::DOCHU;
+		break;
 	}
 }
+
 // === File: StageManager.h ===
 
 #pragma once

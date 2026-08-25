@@ -14,70 +14,71 @@ namespace Stage1Data {
 
 	static constexpr BossPhase MidBossPhases[] = {
 	
-/*  {phaseNum, hpLimit, limitTime[s],弾幕数,{{type,			sr,							ss,		si,		way,	広角,		回転速度,									基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム,大パワー}}　*/
+/*  {phaseNum, hpLimit, limitTime[s],弾幕数,{{type,			sr,							ss,		si,														way,	広角,		回転速度,									基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム,大パワー}}　*/
 
 		/* 中ボス通1 */
 		{ 0,	1000.0f,		30.0f,	2,		{
-								{PT::RotateAll,		BulletDefaultRadius::ZAYAKU,		3.0f,	5,		12,		360.0f,		0.25f,										90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::SILVER)},
-								{PT::NWay,			BulletDefaultRadius::LIGHT,			5.0f,	15,		3,		60.0f,		0.25f,										90,			GetBulletID(BulletShape::LIGHT,BulletColor::YELLOW)}
+								{PT::RotateAll,		BulletDefaultRadius::ZAYAKU,		3.0f,	5,														12,		360.0f,		0.25f,										90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::SILVER)},
+								{PT::NWay,			BulletDefaultRadius::LIGHT,			5.0f,	15,														3,		60.0f,		0.25f,										90,			GetBulletID(BulletShape::LIGHT,BulletColor::YELLOW)}
 		},true,	{0,10,0,0,0,0}},
 
 		/* 中ボススペカ1枚目 */
 		{ 1,	1200.0f,		30.0f,	3,		{
-								{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,	10,		12,		360.0f,		CalcRotateSpeed(12, 10, 1.0f / 3.0f, 1),	90,			GetBulletID(BulletShape::POIFUL,BulletColor::PURPLE)},
-								{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,	10,		12,		360.0f,		-CalcRotateSpeed(12, 10, 1.0f / 3.0f, 1),	90,			GetBulletID(BulletShape::POIFUL,BulletColor::PURPLE)},
-								{PT::NWay,			BulletDefaultRadius::ZAYAKU,		4.0f,	75,		10,		20.0f,		0.25f,										90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::AQUA)}
+								{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,	10,														12,		360.0f,		CalcRotateSpeed(12, 10, 1.0f / 3.0f, 1),	90,			GetBulletID(BulletShape::POIFUL,BulletColor::PURPLE)},
+								{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,	10,														12,		360.0f,		-CalcRotateSpeed(12, 10, 1.0f / 3.0f, 1),	90,			GetBulletID(BulletShape::POIFUL,BulletColor::GREEN)},
+								{PT::NWay,			BulletDefaultRadius::ZAYAKU,		4.0f,	{90, 60, 600, BulletPattern::EaseType::EaseInQuad},		10,		20.0f,		0.25f,										90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::AQUA)}
 		},true,	{0,10,3,1,0,1}},
 	};
 	static constexpr int MID_BOSS_PHASE_MAX = sizeof(MidBossPhases) / sizeof(MidBossPhases[0]);		//中ボスの総フェーズ数算出
 
 
 
+
 	static constexpr BossPhase BossPhases[] = {						//通常こうげきとスペカのデータを配列で定義
 
-/*  {phaseNum, hpLimit, limitTime[s],弾幕数,{{type,			sr,							ss,		si,		way,	広角,		回転速度,									基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム,大パワー}}　*/
+/*  {phaseNum, hpLimit, limitTime[s],弾幕数,{{type,			sr,							ss,		si,														way,	広角,		回転速度,									基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム,大パワー}}　*/
 
 		/*	通1　*/
 		{ 0,	1200.0f,		10.0f,	1,		{
-								{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		0.6f,	5,		12,		360.0f,		0.5f,										90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)}
+								{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		0.6f,	5,														12,		360.0f,		0.5f,										90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)}
 		},false,},
 
 
 		/*　通1の2段階目(発狂)　*/
 		{ 1,	1500.0f,		50.0f,	2,		{
-								{PT::RotateAll,		BulletDefaultRadius::RICE,			3.5f,	10,		18,		360.0f,		0.2f,										90,			GetBulletID(BulletShape::RICE,BulletColor::RED)},
-								{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,	48,		64,		360.0f,		0.0f,										90,			GetBulletID(BulletShape::POIFUL,BulletColor::PURPLE)}
+								{PT::RotateAll,		BulletDefaultRadius::RICE,			3.5f,	10,														18,		360.0f,		0.2f,										90,			GetBulletID(BulletShape::RICE,BulletColor::RED)},
+								{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,	{50, 30, 600, BulletPattern::EaseType::EaseInQuad},		64,		360.0f,		0.0f,										90,			GetBulletID(BulletShape::POIFUL,BulletColor::PURPLE)}
 		},true, {0,10, 5,0,0,1}},
 
 
 		/*　通2　*/
 		{ 2,	1200.0f,		30.0f,	4,		{
-								{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		1.6f,	5,		17,		360.0f,		5.5f,										90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)},
-								{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		1.6f,	5,		17,		360.0f,		-5.5f,										90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)},
-								{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,	20,		15,		360.0f,		10.0f,										90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)},
-								{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,	20,		15,		360.0f,		-10.0f,										90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)}
-																																							
-		},true, {0,10,8,1,0,2}},																															
-																																							
-		/*　天上天下の照國(3枚目)　*/																														 
-		{ 3,	2000.0f,		60.0f,	3,		{																											
-								{PT::RotateAll,		BulletDefaultRadius::UROKO,			5.0f,	8,		16,		360.0f,		2.8f,										90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
-								{PT::RotateAll,		BulletDefaultRadius::UROKO,			5.0f,	8,		16,		360.0f,		-2.8f,										90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
-								{PT::RotateAll,		BulletDefaultRadius::RICE,			2.0f,	45,		64,		360.0f,		0.008f,										90,			GetBulletID(BulletShape::RICE, BulletColor::BLUE)}
+								{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		1.6f,	5,														17,		360.0f,		5.5f,										90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)},
+								{PT::RotateAll,		BulletDefaultRadius::CIRCLE,		1.6f,	5,														17,		360.0f,		-5.5f,										90,			GetBulletID(BulletShape::CIRCLE,BulletColor::BLUE)},
+								{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,	20,														15,		360.0f,		10.0f,										90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)},
+								{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,	20,														15,		360.0f,		-10.0f,										90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)}
+																																																			
+		},true, {0,10,8,1,0,2}},																																											
+																																																			
+		/*　天上天下の照國(3枚目)　*/																																										 
+		{ 3,	2500.0f,		60.0f,	3,		{																																							
+								{PT::RotateAll,		BulletDefaultRadius::UROKO,			5.0f,	8,														16,		360.0f,		2.8f,										90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
+								{PT::RotateAll,		BulletDefaultRadius::UROKO,			5.0f,	8,														16,		360.0f,		-2.8f,										90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
+								{PT::RotateAll,		BulletDefaultRadius::RICE,			2.0f,	{70, 40, 600, BulletPattern::EaseType::EaseInQuad},		64,		360.0f,		0.008f,										90,			GetBulletID(BulletShape::RICE, BulletColor::YELLOW)}
 		},true, {0,15,5,0,1,3}},
 
 		/*　フィットフルナイトメア　*/
 		{ 4,	750.0f,		60.0f,	1,		{
-								{PT::RotateAll,		BulletDefaultRadius::KNIFE,			8.0f,	5,		45,		360.0f,		0.191,										90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)}
+								{PT::RotateAll,		BulletDefaultRadius::KNIFE,			8.0f,	5,														45,		360.0f,		0.191,										90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)}
 		},true, {0,30,8,0,0,2}},
 
 		/*　ラストスペル　*/
 		{ 5,	2500.0f,		110.0f,	5,		{
-								{PT::NWay,			BulletDefaultRadius::KNIFE,			15.0f,	3,		12,		180.0f,		10.0f,										90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)},
-								{PT::RotateAll,		BulletDefaultRadius::LIGHT,			2.0f,	20,		36,		360.0f,		CalcRotateSpeed(36, 20, 1.0f / 3.0f, 2),	90,			GetBulletID(BulletShape::LIGHT,BulletColor::RED)},
-								{PT::RotateAll,		BulletDefaultRadius::LIGHT,			2.0f,	20,		36,		360.0f,		-CalcRotateSpeed(36, 20, 1.0f / 3.0f, 2),	90,			GetBulletID(BulletShape::LIGHT,BulletColor::BLUE)},
-								{PT::RotateAll,		BulletDefaultRadius::ZAYAKU,		1.25f,	30,		24,		360.0f,		0.5f,										90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::GREEN)},
-								{PT::Aimed,			BulletDefaultRadius::BIG_CIRCLE,	1.5f,	120,	1,		0.0f,		500.0f,										90,			GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::BLUE)}
+								{PT::NWay,			BulletDefaultRadius::KNIFE,			15.0f,	3,														12,		180.0f,		10.0f,										90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)},
+								{PT::RotateAll,		BulletDefaultRadius::LIGHT,			2.0f,	20,														36,		360.0f,		CalcRotateSpeed(36, 20, 1.0f / 3.0f, 2),	90,			GetBulletID(BulletShape::LIGHT,BulletColor::RED)},
+								{PT::RotateAll,		BulletDefaultRadius::LIGHT,			2.0f,	20,														36,		360.0f,		-CalcRotateSpeed(36, 20, 1.0f / 3.0f, 2),	90,			GetBulletID(BulletShape::LIGHT,BulletColor::BLUE)},
+								{PT::RotateAll,		BulletDefaultRadius::ZAYAKU,		1.25f,	30,														24,		360.0f,		0.5f,										90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::GREEN)},
+								{PT::Aimed,			BulletDefaultRadius::BIG_CIRCLE,	1.5f,	120,													1,		0.0f,		500.0f,										90,			GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::BLUE)}
 		},true, {0,50,0,0,0,0}},
 	};
 	static constexpr int BOSS_PHASE_MAX = sizeof(BossPhases) / sizeof(BossPhases[0]);

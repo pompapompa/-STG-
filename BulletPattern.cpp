@@ -43,10 +43,12 @@ namespace BulletPattern {
 	}
 
 
-	void ExecShot(float ex, float ey, const ShotConfig& conf, const Player& player, BulletManager* bm) {
+	void ExecShot(float ex, float ey, const ShotConfig& conf, const Player& player, BulletManager* bm, int timer) {
+		float currentSpeed = conf.speed.Get(timer);			//経過時間(timer)に応じた現在の弾速ssの動的パラメータをParamScalingより取得
+		
 		switch (conf.type) {
 		case PT::Aimed:
-			AimedShot(ex, ey, conf.radius, conf.speed, player, bm, conf.graphicType);
+			AimedShot(ex, ey, conf.radius, currentSpeed, player, bm, conf.graphicType);
 			break;
 
 		case PT::NWay:
@@ -55,12 +57,12 @@ namespace BulletPattern {
 			float dy = player.GetY() - ey;
 			float aimAngleDeg = atan2f(dy, dx) * 180.0f / DX_PI_F;
 
-			NWayShot(ex, ey, conf.radius, conf.speed, conf.way, conf.totalAngle, aimAngleDeg, bm, conf.graphicType);
+			NWayShot(ex, ey, conf.radius, currentSpeed, conf.way, conf.totalAngle, aimAngleDeg, bm, conf.graphicType);
 			break;
 		}
 
 		case PT::RotateAll:
-			NWayShot(ex, ey, conf.radius, conf.speed, conf.way, 360.0f, conf.baseAngle, bm, conf.graphicType);
+			NWayShot(ex, ey, conf.radius, currentSpeed, conf.way, 360.0f, conf.baseAngle, bm, conf.graphicType);
 			break;
 		}
 	}

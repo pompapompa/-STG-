@@ -64,13 +64,14 @@ struct HomingShotData {
 	float turn;							//旋回性能(PlayerHomingPowerに相当)
 };
 
-static constexpr int DROP_TYPE_MAX = 6;	//アイテム全種類数
+static constexpr int DROP_TYPE_MAX = 6;					//アイテム全種類数
+static constexpr int BOSS_SHOT_CONFIG_MAX = 5;			//1フェーズに定義可能な最大弾幕パターン数
 struct BossPhase {
 	int		phaseNum;					//0:通常1,1:スペカ1枚目,2:通常2,3:スペカ2枚目…のようにする
 	float	hpLimit;					//そのフェーズのHP
 	float	limitTimeSeconds;			//そのフェーズの制限時間[s]
 	int shotCount;
-	BulletPattern::ShotConfig shots[5];	//弾パラメータ
+	BulletPattern::ShotConfig shots[BOSS_SHOT_CONFIG_MAX];	//弾パラメータ
 	bool clearOnEnd;					//Phase終了時に弾消しを行うか
 	int dropCounts[DROP_TYPE_MAX];					//ボスがドロップするアイテムの各個数(0：小スコア,　1：スコア,　2：パワー,　3：残機,　4：ボム, 5：大パワー)
 };
@@ -135,7 +136,7 @@ enum class BulletColor {			//弾の色を列挙型で定義
 namespace BulletDefaultRadius {							//弾種ごとのデフォルト半径
 	static constexpr float CIRCLE = 5.0f;		//通常円
 	static constexpr float UROKO = 4.0f;		//鱗
-	static constexpr float RICE = 4.0f;			//米弾
+	static constexpr float RICE = 15.0f;			//米弾
 	static constexpr float BIG_CIRCLE = 32.0f;	//大玉
 	static constexpr float KNIFE = 4.0f;		//ナイフ
 	static constexpr float POIFUL = 4.0f;		//ポイフル
@@ -146,7 +147,7 @@ namespace BulletDefaultRadius {							//弾種ごとのデフォルト半径
 static constexpr float BULLET_HIT_RATE[] = {		//弾種ごとの見た目半径に対する当たり判定の比率
 	0.40f,		// CIRCLE:		通常円(40%)
 	0.40f,		// UROKO:		鱗
-	0.35f,		// RICE:		米弾
+	0.20f,		// RICE:		米弾
 	0.50f,		// BIG_CIRCLE:	大玉
 	0.35f,		// KNIFE:		ナイフ
 	0.40f,		// POIFUL:		ポイフル
@@ -157,7 +158,7 @@ static constexpr float BULLET_HIT_RATE[] = {		//弾種ごとの見た目半径に対する当た
 static constexpr float BULLET_BASE_RADIUS[] = {		//弾種ごとの基準解像度半径
 	1.0f,		//CIRCLE:		通常円
 	18.0f,		//UROKO:		鱗		(r/18.0f )
-	64.0f,		//RICE:			米弾	(r/64.0f )
+	48.0f,		//RICE:			米弾	(r/64.0f )
 	128.0f,		//BIG_CIRCLE:	大玉	(r/128.0f)
 	8.0f,		//KNIFE:		ナイフ	(r/8.0f  )
 	18.0f,		//POIFUL:		ポイフル(r/18.0f )
