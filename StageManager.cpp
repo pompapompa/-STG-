@@ -21,7 +21,7 @@ void StageManager::Update(BulletManager* bm) {
 		if (stageTimer == Stage1Data::MID_BOSS_SPAWN_FRAME) {
 			state = StageState::MID_BOSS_BATTLE;						//道中ボス
 			float X = Left + (Right - Left) / 2.0f;
-			float Y = Top  - (Bottom - Top) / 4.0f;
+			float Y = Top  + (Bottom - Top) / 4.0f;
 			boss.Spawn(X, Y, Stage1Data::MidBossPhases, Stage1Data::MID_BOSS_PHASE_MAX, 0, -1);										
 		}
 		

@@ -20,7 +20,7 @@ namespace Stage1Data {
 		{ 0,	1000.0f,		30.0f,	2,		{
 								{PT::RotateAll,		BulletDefaultRadius::ZAYAKU,		3.0f,	5,														12,		360.0f,		0.25f,										90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::SILVER)},
 								{PT::NWay,			BulletDefaultRadius::LIGHT,			5.0f,	15,														3,		60.0f,		0.25f,										90,			GetBulletID(BulletShape::LIGHT,BulletColor::YELLOW)}
-		},true,	{0,10,0,0,0,0}},
+		},true,	{0,10,0,0,0,0}, BMT::PlayerTrackX},
 
 		/* 中ボススペカ1枚目 */
 		{ 1,	1200.0f,		30.0f,	3,		{
@@ -58,7 +58,7 @@ namespace Stage1Data {
 								{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,	20,														15,		360.0f,		10.0f,										90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)},
 								{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,	20,														15,		360.0f,		-10.0f,										90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)}
 																																																			
-		},true, {0,10,8,1,0,2}},																																											
+		},true, {0,10,8,1,0,2}, BMT::PlayerEscapeX},																																											
 																																																			
 		/*　天上天下の照國(3枚目)　*/																																										 
 		{ 3,	2500.0f,		60.0f,	3,		{																																							
@@ -68,9 +68,9 @@ namespace Stage1Data {
 		},true, {0,15,5,0,1,3}},
 
 		/*　フィットフルナイトメア　*/
-		{ 4,	750.0f,		60.0f,	1,		{
+		{ 4,	1100.0f,		60.0f,	1,		{
 								{PT::RotateAll,		BulletDefaultRadius::KNIFE,			8.0f,	5,														45,		360.0f,		0.191,										90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)}
-		},true, {0,30,8,0,0,2}},
+		},true, {0,30,8,0,0,2},BMT::Center_Fixed},
 
 		/*　ラストスペル　*/
 		{ 5,	2500.0f,		110.0f,	5,		{
@@ -79,7 +79,7 @@ namespace Stage1Data {
 								{PT::RotateAll,		BulletDefaultRadius::LIGHT,			2.0f,	20,														36,		360.0f,		-CalcRotateSpeed(36, 20, 1.0f / 3.0f, 2),	90,			GetBulletID(BulletShape::LIGHT,BulletColor::BLUE)},
 								{PT::RotateAll,		BulletDefaultRadius::ZAYAKU,		1.25f,	30,														24,		360.0f,		0.5f,										90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::GREEN)},
 								{PT::Aimed,			BulletDefaultRadius::BIG_CIRCLE,	1.5f,	120,													1,		0.0f,		500.0f,										90,			GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::BLUE)}
-		},true, {0,50,0,0,0,0}},
+		},true, {0,50,0,0,0,0}, BMT::SinWaveX},
 	};
 	static constexpr int BOSS_PHASE_MAX = sizeof(BossPhases) / sizeof(BossPhases[0]);
 

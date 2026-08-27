@@ -39,6 +39,7 @@ void Boss::Spawn(float in_x, float in_y, const BossPhase* phaseTable, int phaseC
 	this->chargeTimer = 0;
 
 	for (int i = 0; i < BOSS_SHOT_CONFIG_MAX; i++) shotTimers[i] = 0;	//ボス出現時に個別発射タイマ(アキュムレータ)配列を0クリア
+	moving.Init(x, y);													//スポーン時の初期座標で移動クラスの初期化
 }
 
 
@@ -50,10 +51,8 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 		timer++;
 		phaseTimer++;
 
-
-		x = PlayArea::DefaultBossX;
-		y = PlayArea::FitfullBossY;
-		const BossPhase& p = m_phases[currentIdx];
+		const BossPhase& p = m_phases[currentIdx];					//フェーズの情報を取得
+		moving.Update(x, y, p.moveConf, player, phaseTimer);		//フェーズごとのMoveConfigに基づきBossMovingでx,y座標の更新を行う
 
 		for (int i = 0; i < p.shotCount; i++) {
 			const auto& conf = p.shots[i];

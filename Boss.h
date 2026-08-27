@@ -2,6 +2,7 @@
 #include "Enemy.h"
 #include "DxLib.h"
 #include "Common.h"
+#include "BossMoving.h"
 
 using namespace BulletPattern;
 
@@ -53,10 +54,11 @@ private:
 	int chargeTimer = 0;										//チャージ演出の経過時間をカウントするタイマ
 	int BossGraphs[20];											//画像番号を格納する箱
 
-	float hp;											//現在の体力
+	float hp;													//現在の体力
 	int timer = 0;
 
 	int shotTimers[BOSS_SHOT_CONFIG_MAX] = { 0 };				//動的発射間隔における剰余計算スキップ(弾づまり)対策の為の個別発射タイマ(アキュムレータ)配列
+	BossMoving moving;											//ボス移動制御用インスタンス
 
 public:
 
@@ -88,6 +90,7 @@ public:
 		m_phaseMax = 0;			//要素数初期化
 
 		for (int i = 0; i < BOSS_SHOT_CONFIG_MAX; i++) shotTimers[i] = 0;			//定数を用いた個別発射タイマ(アキュムレータ)配列の0クリア
+		moving.Init((float)PlayArea::DefaultBossX, (float)PlayArea::DefaultBossY);	//移動制御クラスの初期化
 	}
 
 	void JumpToPhase(int phaseIdx);

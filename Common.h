@@ -4,6 +4,7 @@
 #include "math.h"
 
 
+
 namespace PlayArea {						//structだと呼び出しで毎回PlayArea::と書かねばならないが、これだと使用する関数内でusing namespace PlayArea;と一度宣言すればその関数内限定で使えるようになるので便利である
 	static constexpr int Left = 32;					      //！因みにconstexprだと実行する前からすでに分かっている定数ということらしい。constは引数とか実行時に取得するような定数らしい
 	static constexpr int Right = 416;			//32+384で384=128*3
@@ -46,6 +47,31 @@ namespace MyMath {
 	}
 }
 
+namespace BMT {	//BMT(BossMoveType)
+	enum Type : int {
+		Fixed,          //定位置固定
+		Center_Fixed,	//プレイ領域中央固定
+		SinWaveX,       //横方向の単振動
+		SinWaveY,       //縦方向の単振動
+		Circle,         //媒介変数表示による円・楕円運動
+		PlayerTrackX,   //自機のX座標追従
+		PlayerEscapeX,	//自機のX座標離脱
+	};
+}
+
+struct BossMoveConfig {
+	BMT::Type type = BMT::Fixed;			//移動タイプ(初期値:定位置固定)
+	float baseCenterX = (float)PlayArea::CenterX;		//基準中心X
+	float baseCenterY = (float)PlayArea::DefaultBossY;	//基準中心Y
+	float ampX = 50.0f;				//X振幅
+	float ampY = 50.0f;				//Y振幅
+	float speed = 0.03f;			//角速度・移動速度
+	int   interval = 240;			//目標地点の再選定間隔(フレーム)
+	int   moveDuration = 60;		//1回の移動に要するフレーム数
+};
+
+
+
 struct StraightShotData {
 	int L;								//1セット内の総発射弾数
 	int LI;								//セット内の1発ごとの発射間隔のフレーム数
@@ -73,7 +99,8 @@ struct BossPhase {
 	int shotCount;
 	BulletPattern::ShotConfig shots[BOSS_SHOT_CONFIG_MAX];	//弾パラメータ
 	bool clearOnEnd;					//Phase終了時に弾消しを行うか
-	int dropCounts[DROP_TYPE_MAX];					//ボスがドロップするアイテムの各個数(0：小スコア,　1：スコア,　2：パワー,　3：残機,　4：ボム, 5：大パワー)
+	int dropCounts[DROP_TYPE_MAX];		//ボスがドロップするアイテムの各個数(0：小スコア,　1：スコア,　2：パワー,　3：残機,　4：ボム, 5：大パワー)
+	BossMoveConfig moveConf;		//そのフェーズのボスの移動設定パラメータ
 };
 
 
