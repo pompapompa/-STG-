@@ -371,3 +371,6 @@ x64/
 *.aps
 *.ipch
 /Log.txt
+/all_src.txt
+素材集/
+
