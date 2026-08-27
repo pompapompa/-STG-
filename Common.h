@@ -63,8 +63,8 @@ struct BossMoveConfig {
 	BMT::Type type = BMT::Fixed;			//移動タイプ(初期値:定位置固定)
 	float baseCenterX = (float)PlayArea::CenterX;		//基準中心X
 	float baseCenterY = (float)PlayArea::DefaultBossY;	//基準中心Y
-	float ampX = 50.0f;				//X振幅
-	float ampY = 50.0f;				//Y振幅
+	float ampX = 100.0f;				//X振幅
+	float ampY = 100.0f;				//Y振幅
 	float speed = 0.03f;			//角速度・移動速度
 	int   interval = 240;			//目標地点の再選定間隔(フレーム)
 	int   moveDuration = 60;		//1回の移動に要するフレーム数

@@ -2,6 +2,7 @@
 #include "Boss.h"
 #include "Common.h"
 #include "BossMoving.h"
+#include "Easing.h"
 #include "Player.h"
 #include "BulletManager.h"
 #include "Collision.h"
@@ -37,6 +38,19 @@ void Boss::Spawn(float in_x, float in_y, const BossPhase* phaseTable, int phaseC
 	this->state = BossState::WAITING;									//スポーン時は待機状態として初期化
 	this->waitTimer = 0;
 	this->chargeTimer = 0;
+
+	transitionStartX = in_x;
+	transitionStartY = in_y;											//スポーン時の待機イージング始点座標として出現位置を設定
+
+	const auto& firstMove = m_phases[currentIdx].moveConf;				//初期フェーズの移動設定(move.conf)の参照を取得
+	if (firstMove.type == BMT::Center_Fixed) {				//プレイ領域中央固定の場合
+		transitionTargetX = (float)PlayArea::CenterX;			
+		transitionTargetY = (float)PlayArea::CenterY;				//移動先座標を画面中央座標とする
+	}
+	else {													//それ以外の場合
+		transitionTargetX = firstMove.baseCenterX;
+		transitionTargetY = firstMove.baseCenterY;					//移動先座標をボスの標準の中心座標とする
+	}
 
 	for (int i = 0; i < BOSS_SHOT_CONFIG_MAX; i++) shotTimers[i] = 0;	//ボス出現時に個別発射タイマ(アキュムレータ)配列を0クリア
 	moving.Init(x, y);													//スポーン時の初期座標で移動クラスの初期化
@@ -87,44 +101,64 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 			}
 		}
 
-		int maxFrames = (int)(p.limitTimeSeconds * FPSManager::GetTargetFPS());		//maxFrames[F]=制限時間[s]*FPS[F/s]
+		int maxFrames = (int)(p.limitTimeSeconds * FPSManager::GetTargetFPS());	//maxFrames[F]=制限時間[s]*FPS[F/s]
 
-		if (hp <= 0 || phaseTimer >= maxFrames) {							//フェーズのhpがなくなるか、limitTimer(制限時間)を越えた場合
+		if (hp <= 0 || phaseTimer >= maxFrames) {								//フェーズのhpがなくなるか、limitTimer(制限時間)を越えた場合
 
-			for (int typeIdx = 0; typeIdx < DROP_TYPE_MAX; typeIdx++) {					//アイテム全種類のループ
-				int count = m_phases[currentIdx].dropCounts[typeIdx];				//静的配列から値を取得して格納			
-				if (count > 0) {												//1以上の時
-					ItemType iType = static_cast<ItemType>(typeIdx);		//アイテムの種類を格納
-					bm->LaunchItem(x, y, iType, count, 35.0f);				//ボス座標から半径35.0f以内にランダムに散布してドロップ
+			for (int typeIdx = 0; typeIdx < DROP_TYPE_MAX; typeIdx++) {			//アイテム全種類のループ
+				int count = m_phases[currentIdx].dropCounts[typeIdx];			//静的配列から値を取得して格納			
+				if (count > 0) {									//1以上の時
+					ItemType iType = static_cast<ItemType>(typeIdx);			//アイテムの種類を格納
+					bm->LaunchItem(x, y, iType, count, 35.0f);					//ボス座標から半径35.0f以内にランダムに散布してドロップ
 				}
 			}
 
 			if (m_phases[currentIdx].clearOnEnd) {
-				bm->ConvertEnemyBulletsToItems();												//現在のphaseでclearOnEndフラグが立っているならbmに弾消し申請
+				bm->ConvertEnemyBulletsToItems();								//現在のphaseでclearOnEndフラグが立っているならbmに弾消し申請
 			}
 
-			currentIdx++;															//現在のフェーズを次の段階へ
-			if (currentIdx <= endIdx && currentIdx < m_phaseMax) {							//endIdx以下且つ、フェーズが最大まで終わっていない場合
-				state = BossState::WAITING;									//待機状態遷移
-				waitTimer = 0;												//待機時間タイマを初期化
+			currentIdx++;														//現在のフェーズを次の段階へ
+			if (currentIdx <= endIdx && currentIdx < m_phaseMax) {	//endIdx以下且つ、フェーズが最大まで終わっていない場合
+				state = BossState::WAITING;										//待機状態遷移
+				waitTimer = 0;													//待機時間タイマを初期化
+
+				transitionStartX = x;
+				transitionStartY = y;											//待機中のイージングの始点として現在のボス座標を保存
+
+				const auto& nextMove = m_phases[currentIdx].moveConf;			//次フェーズの移動設定(moveConf)の参照を取得
+				if (nextMove.type == BMT::Center_Fixed) {			//プレイ領域中央固定の場合
+					transitionTargetX = (float)PlayArea::CenterX;	
+					transitionTargetY = (float)PlayArea::CenterY;				//移動先座標を画面中央座標とする
+				}
+				else {												//それ以外の場合
+					transitionTargetX = nextMove.baseCenterX;
+					transitionTargetY = nextMove.baseCenterY;					//移動先座標をボスの標準の中心座標とする
+				}
 
 				this->phaseMaxHp = m_phases[currentIdx].hpLimit;				//フェーズの最大hp変数にそのフェーズの最大hpを格納
-				this->hp = 0.0f;											//hpチャージ演出の起点とするため,hp=0.0fとしておく
+				this->hp = 0.0f;												//hpチャージ演出の起点とするため,hp=0.0fとしておく
 			}
 			else {
-				bm->ConvertEnemyBulletsToItems();									//全スペカ終了で弾全消し
-				flag = false;														//全スペカ終了でボスフラグを消す
+				bm->ConvertEnemyBulletsToItems();								//全スペカ終了で弾全消し
+				flag = false;													//全スペカ終了でボスフラグを消す
 			}
 		}
 	}
 	else if (state == BossState::WAITING) {		//待機状態
 		waitTimer++;															//待機時間タイマのカウントアップ開始
 
+		float t = (float)waitTimer / (float)PHASE_WAIT_FRAME;					//待機時間の経過割合t(0.0f~1.0f)を算出
+		if (t > 1.0f) t = 1.0f;			//上限クランプ
+		float ease = Easing::Calculate(t, EaseType::EaseInOutQuad);				//Easing::Calculate()より、2次加減速(EaseInOutQuad)の変化率を取得
+		x = transitionStartX + (transitionTargetX - transitionStartX) * ease;	//
+		y = transitionStartY + (transitionTargetY - transitionStartY) * ease;	//イージング変化率に基づき、ボスの座標を線形補間して更新
+
 		this->hp = 0;
 
 		if (waitTimer >= PHASE_WAIT_FRAME) {	//待機時間タイマのカウントがフェーズの待機フレーム以上に成った場合
-			state = BossState::CHARGING;						//待機状態が終わったらチャージ状態へ遷移
-			chargeTimer = 0;								//チャージタイマをリセット
+			state = BossState::CHARGING;										//待機状態が終わったらチャージ状態へ遷移
+			chargeTimer = 0;													//チャージタイマをリセット
+			moving.Init(x, y);													//待機移動完了後の位置でBossMoving内部座標を再初期化
 		}
 	}
 	else if (state == BossState::CHARGING) {

@@ -35,7 +35,7 @@ private:
 		0.25f													//SpawnRate_Y：プレイ領域Y軸の上端を0、下端を1とした時の比率
 	};
 
-	static constexpr int PHASE_WAIT_FRAME = 120;				//フェーズ間の待機フレーム数
+	static constexpr int PHASE_WAIT_FRAME = 150;				//フェーズ間の待機フレーム数
 	static constexpr int PHASE_CHARGE_FRAME = 60;				//体力ゲージが溜まるチャージ演出にかかるフレーム数
 	static constexpr int PhaseTimerColorChangeSeconds = 5;		//フェーズタイマの色の変化が起こる残り秒数
 
@@ -53,6 +53,11 @@ private:
 
 	int chargeTimer = 0;										//チャージ演出の経過時間をカウントするタイマ
 	int BossGraphs[20];											//画像番号を格納する箱
+
+	float transitionStartX = 0.0f;								
+	float transitionStartY = 0.0f;								//フェーズ終了時のボス始点X,Y座標
+	float transitionTargetX = 0.0f;								
+	float transitionTargetY = 0.0f;								//次フェーズの目標基準X,Y座標
 
 	float hp;													//現在の体力
 	int timer = 0;

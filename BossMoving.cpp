@@ -99,9 +99,9 @@ void BossMoving::Update(float& bossX, float& bossY, const BossMoveConfig& cfg, c
 				isMoving = false;	//目標到達の為、移動完了
 			}
 			
-			float ease = Easing::Calculate(t,EaseType::EaseInOutQuad);										//2次イージングによる加減速係数(前半加速、後半減速)をEasing::Calculate()より取得
+			float ease = Easing::Calculate(t,EaseType::EaseInOutQuad);	//イージング(2次加減速)係数をEasing::Calculate()より取得
 			bossX = startX + (targetX - startX) * ease;
-			bossY = startY + (targetY - startY) * ease;														//イージング係数(ease)で、ボスのX,Y座標を線形結合補間
+			bossY = startY + (targetY - startY) * ease;					//イージング係数(ease)で、ボスのX,Y座標を線形結合補間
 		}
 	}
 	break;
