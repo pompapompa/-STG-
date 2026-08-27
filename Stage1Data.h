@@ -58,7 +58,7 @@ namespace Stage1Data {
 								{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,	20,														15,		360.0f,		10.0f,										90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)},
 								{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,	20,														15,		360.0f,		-10.0f,										90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)}
 																																																			
-		},true, {0,10,8,1,0,2}, BMT::PlayerEscapeX},																																											
+		},true, {0,10,8,1,0,2}, BMT::PlayerTrackX},																																											
 																																																			
 		/*　天上天下の照國(3枚目)　*/																																										 
 		{ 3,	2500.0f,		60.0f,	3,		{																																							

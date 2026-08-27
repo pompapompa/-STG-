@@ -142,6 +142,7 @@
     <ClCompile Include="BulletManager.cpp" />
     <ClCompile Include="BulletPattern.cpp" />
     <ClCompile Include="BulletTestScene.cpp" />
+    <ClCompile Include="Easing.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="FpsManager.cpp" />
     <ClCompile Include="HUD.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="Collision.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="Distance.h" />
+    <ClInclude Include="Easing.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="FpsManager.h" />
     <ClInclude Include="HUD.h" />

@@ -1,19 +1,13 @@
 #pragma once
-
+#include "Easing.h"
 
 class BulletManager;
 class Player;					//前方宣言
 
 
 namespace BulletPattern {
-
-	enum class EaseType {
-		Linear,				//1次(線形)
-		EaseInQuad,			//2次
-		EaseInCubic,		//3次
-		EaseOutQuad,		//減速
-	};
-
+	using EaseType = ::EaseType;			//既存のStage1Data等の記述とのご飯を維持する為のエイリアス定義
+	
 
 	template<typename T>	//si(ShotInterval)の場合はフレーム数故にint型であるが、ss(ShotSpeed)の場合はfloat型となるため、Tとしておく。
 	struct ParamScaling {			//テンプレート引数Tによりデータ型に依存せず時間変化を扱える構造体
@@ -35,14 +29,7 @@ namespace BulletPattern {
 			float t = static_cast<float>(timer) / static_cast<float>(duration);				//t(進行度割合) = timer(現在の経過フレーム) / duration(変化が起こる全体フレーム)
 			if (t > 1.0f) t = 1.0f;					//進行度割合が1.0fを超過した場合は1.0fにクランプ
 
-			float rate = 0.0f;						//各イージング適用後の変化率(0.0f~1.0f)を格納する変数
-			switch (ease) {
-			case EaseType::Linear:      rate = t; break;									//1次(線形)
-			case EaseType::EaseInQuad:  rate = t * t; break;								//2次加速(始点変化率0、終点へ向けて加速)
-			case EaseType::EaseInCubic: rate = t * t * t; break;							//3次加速(始点変化率0、終点へ向けて2次よりも急に加速)
-			case EaseType::EaseOutQuad: rate = 1.0f - (1.0f - t) * (1.0f - t); break;		//2次減速(始点最大変化率、終点変化率0)
-			}
-			return static_cast<T>(startVal + (endVal - startVal) * rate);		//開始地点に総変化量(end-start)*rateを加算し、型Tにキャストして返す(増減問わず同一式で内分計算)
+			return Easing::Interpolate<T>(startVal, endVal, t, ease);						//型Tの補間値を返す
 		}
 	};
 

@@ -1,6 +1,7 @@
 #include "BossMoving.h"
 #include "Player.h"
 #include "Common.h"
+#include "Easing.h"
 #include <math.h>
 #include <cfloat>
 
@@ -97,8 +98,8 @@ void BossMoving::Update(float& bossX, float& bossY, const BossMoveConfig& cfg, c
 				t = 1.0f;			//終点クランプ
 				isMoving = false;	//目標到達の為、移動完了
 			}
-			float k = 2.0f - 2.0f * t;																		//イージングの後半区間(減速)計算用の一次変数
-			float ease = (t < 0.5f) ? (2.0f * t * t) : (1.0f - (k * k) * 0.5f);								//2次イージングによる加減速係数(前半加速、後半減速)
+			
+			float ease = Easing::Calculate(t,EaseType::EaseInOutQuad);										//2次イージングによる加減速係数(前半加速、後半減速)をEasing::Calculate()より取得
 			bossX = startX + (targetX - startX) * ease;
 			bossY = startY + (targetY - startY) * ease;														//イージング係数(ease)で、ボスのX,Y座標を線形結合補間
 		}
