@@ -17,8 +17,10 @@ LRESULT CALLBACK MyWndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)		//ƒ^ƒXƒNƒ
 	switch (msg)
 	{
 	case WM_ACTIVATEAPP:					//ƒAƒvƒŠ‚ªƒAƒNƒeƒBƒu/”ñƒAƒNƒeƒBƒu‚É¬‚Á‚½uŠÔ‚ÉOS‚ª‘—‚éƒƒbƒZ[ƒW
-		if (wp == FALSE) {			//”ñƒAƒNƒeƒBƒu‰»Å¬‰»
-			ShowWindow(hWnd, SW_MINIMIZE);		//GPU’â~‘O‚ÉÅ¬‰»‚·‚éiDxLib‚ÌGetActiveFlag()‚æ‚èæ‚É“®‚­jAGetActiveFlag()‚ÍŒã‚©‚çó‘Ô‚ğ’m‚é‚Ì‚Å’x‚¢
+		if (GetWindowModeFlag() == false) {
+			if (wp == FALSE) {			//”ñƒAƒNƒeƒBƒu‰»Å¬‰»
+				ShowWindow(hWnd, SW_MINIMIZE);		//GPU’â~‘O‚ÉÅ¬‰»‚·‚éiDxLib‚ÌGetActiveFlag()‚æ‚èæ‚É“®‚­jAGetActiveFlag()‚ÍŒã‚©‚çó‘Ô‚ğ’m‚é‚Ì‚Å’x‚¢
+			}
 		}
 		break;
 	}
@@ -49,13 +51,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	StageManager stageManager;
 	HUD hud;
 	hud.Init();
-	InitCustomGraphics();		
+	InitCustomGraphics();
 
 	SceneManager sceneManager(&bm, &scoreManager, &stageManager, &hud, isScoreLoaded);		//À‘Ì‚Ìƒ|ƒCƒ“ƒ^‚ğSceneManager‚É“n‚µ‚Ä‰Šú‰»
 
 
 	while (ProcessMessage() == 0 && ClearDrawScreen() == 0) {								//ƒƒCƒ“ƒ‹[ƒv
-		Input::Update();		
+		Input::Update();
 		FPSManager::Update();																//fpsŒvZ‚ÌXV
 
 		if (sceneManager.CanToggleFullscreen() && Input::IsTrigger(KEY_INPUT_F)) {			//–¼‘O“ü—ÍƒV[ƒ“‚Å‚ÍF‚ª“ü—Ío—ˆ‚é‚æ‚¤‚ÉœŠO
@@ -68,7 +70,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			RefreshAllCustomGraphs();
 			SetDrawScreen(DX_SCREEN_BACK);
 		}
-		
+
 		sceneManager.Update();
 		sceneManager.Draw();
 
