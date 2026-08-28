@@ -43,7 +43,7 @@ void StageManager::Update(BulletManager* bm) {
 					for (int j = 0; j < Enemy::EnemyMax; j++) {
 						if (!fairies[j].GetFlag()) {
 							auto& d = Stage1Data::Timeline[dataIdx];
-							fairies[j].Encount(d.x, d.y, d.r, d.vx, d.vy, d.hp,d.shotConf,d.clearOnEnd, d.dropCounts);
+							fairies[j].Encount(d.x, d.y, d.r, d.vx, d.vy, d.hp,d.shotConf,d.clearOnEnd, d.dropCounts, d.moveConf);
 							break;
 						}
 					}

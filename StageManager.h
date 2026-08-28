@@ -28,6 +28,7 @@ struct EnemySpawn {
 	BulletPattern::ShotConfig shotConf;		//弾のパラメータ
 	bool clearOnEnd;						//弾消しフラグ
 	int dropCounts[6];						//妖精が死んだ時に落とすアイテムの種類(0：小スコア, 1：スコア, 2：パワー, 3：残機, 4：ボム, 5：大パワー)
+	EnemyMoveConfig moveConf = {};			//雑魚敵の移動挙動を指定する移動設定パラメータメンバ
 };
 
 class StageManager {

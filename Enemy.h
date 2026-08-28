@@ -10,11 +10,14 @@ class Enemy {
 protected:								//Bossから変数にアクセスできるようにする
 	float x = 0;
 	float y = 0;
+	float startX = 0.0f;
+	float startY = 0.0f;				//イージング移動計算の始点X,Y座標
 	float r = 0;
 	float vx = 0;
 	float vy = 0;
 	int hp = 0;
 	BulletPattern::ShotConfig m_shotConf;
+	EnemyMoveConfig m_moveConf;
 	bool flag = false;
 	bool clearOnDeath = false;
 	int m_dropCounts[DROP_TYPE_MAX] = {0};			//-1:ドロップなし、0:小スコア、1:スコア、2:パワー、3:残機、4:ボム
@@ -31,7 +34,7 @@ public:
 	 * @param in_hp 敵HP
 	 * @param conf 弾パラメータ
 	 */
-	virtual void Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy, int in_hp, const BulletPattern::ShotConfig& conf, bool in_clear, const int* in_dropCounts = nullptr);	//nullptrを初期値にすることでボス側で引数省略可
+	virtual void Encount(float in_x, float in_y, float in_r, float in_vx, float in_vy, int in_hp, const BulletPattern::ShotConfig& conf, bool in_clear, const int* in_dropCounts = nullptr, const EnemyMoveConfig& moveConf = {});	//nullptrを初期値にすることでボス側で引数省略可
 	virtual void Update(const Player& player, BulletManager* bm);																		//後でボスが上書きできるようにする
 	virtual void Draw();
 	void SetFlag(bool f) {flag = f;}

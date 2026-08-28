@@ -70,6 +70,26 @@ struct BossMoveConfig {
 	int   moveDuration = 60;		//1回の移動に要するフレーム数
 };
 
+namespace EMT {	//EMT(EnemyMoveType)
+	enum Type : int {
+		Straight = 0,               //従来の等速直線移動(vx, vyを加算し続ける後方互換用)
+		TopLeft_To_Bottom,          //上端左側出現→右下方向へイージング進入→真下へ降下退場
+		TopRight_To_Bottom,         //上端右側出現→左下方向へイージング進入→真下へ降下退場
+		Top_Stay_Back				//上端中央出現→指定位置で一定時間静止射撃→上部へ離脱退場
+	};
+}
+
+struct EnemyMoveConfig {
+	EMT::Type type = EMT::Straight;		//移動タイプ
+	float enterDuration = 90.0f;		//進入段階に要するフレーム数
+	float stayShortDuration = 60.0f;	//静止段階に要するフレーム数(短い版)
+	float stayLongDuration = 600.0f;	//静止段階に要するフレーム数(長い版)
+	float targetX = 0.0f;				//進入目標X座標(0.0fの場合は自動計算)
+	float targetY = 140.0f;				//進入目標Y座標
+	float exitSpeed = 1.0f;				//退場段階の移動速度
+	float TopCenter_targetY = PlayArea::Top + (PlayArea::Bottom - PlayArea::Top) / 4;	//TopCenter_Stay_Back用の侵入目標Y座標
+};
+
 
 
 struct StraightShotData {
