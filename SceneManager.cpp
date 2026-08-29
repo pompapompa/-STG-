@@ -87,7 +87,7 @@ void SceneManager::Update() {
 			if (select == 3) scene = SCENE_QUIT_CONFIRM;
 			if (select == 4) scene = SCENE_QUIT_CONFIRM;
 		}
-		if (Input::IsTrigger(KEY_INPUT_ESCAPE)) {
+		if (Input::IsTrigger(KEY_INPUT_ESCAPE) || Input::IsTrigger(KEY_INPUT_X)) {
 			TitleMenu.SetSelect(4);
 		}
 		break;
@@ -114,7 +114,7 @@ void SceneManager::Update() {
 	case SCENE_PRACTICE:
 		if (Input::IsTrigger(KEY_INPUT_UP)) PracticeMenu.Prev();
 		if (Input::IsTrigger(KEY_INPUT_DOWN)) PracticeMenu.Next();
-		if (Input::IsPress(KEY_INPUT_ESCAPE)) scene = SCENE_TITLE;
+		if (Input::IsTrigger(KEY_INPUT_ESCAPE) || Input::IsTrigger(KEY_INPUT_X)) scene = SCENE_TITLE;
 
 		if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
 			lastSelectedStage = 1;
@@ -217,6 +217,7 @@ void SceneManager::Update() {
 	case SCENE_GAMEOVER:
 		if (Input::IsTrigger(KEY_INPUT_UP)) { GameOverMenu.Prev(); }
 		if (Input::IsTrigger(KEY_INPUT_DOWN)) { GameOverMenu.Next(); }
+		if (Input::IsTrigger(KEY_INPUT_ESCAPE) || Input::IsTrigger(KEY_INPUT_X)) GameOverMenu.SetSelect(1);
 		if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
 			int select = GameOverMenu.GetSelect();
 
@@ -308,7 +309,7 @@ void SceneManager::Update() {
 
 
 	case SCENE_RANKING:
-		if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN) || Input::IsTrigger(KEY_INPUT_ESCAPE)) {
+		if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN) || Input::IsTrigger(KEY_INPUT_ESCAPE) || Input::IsTrigger(KEY_INPUT_X)) {
 			scene = SCENE_TITLE;
 		}
 		break;
