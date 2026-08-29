@@ -7,8 +7,8 @@
 namespace Stage1Data {
 
 	static constexpr int MID_BOSS_SPAWN_FRAME	= 700;		//道中ボス出現フレーム
-	static constexpr int LATE_STAGE_SPAWN_FRAME = 3000;		//道中後半開始の(道中ボス撃破後)最初の妖精出現フレーム
-	static constexpr int BOSS_SPAWN_FRAME		= 5200;		//ボス出現フレーム
+	static constexpr int LATE_STAGE_SPAWN_FRAME = 3100;		//道中後半開始の(道中ボス撃破後)最初の妖精出現フレーム
+	static constexpr int BOSS_SPAWN_FRAME		= 5600;		//ボス出現フレーム
 	static constexpr int MID_BOSS_PRAC_OFFSET_1 = 1000;		//practiceにおける中ボスの1段階目に加算するフレーム
 	static constexpr int MID_BOSS_PRAC_OFFSET_2 = 1500;		//2段階目に加算するフレーム
 
@@ -17,17 +17,17 @@ namespace Stage1Data {
 /*  {phaseNum, hpLimit, limitTime[s],弾幕数,{{type,			sr,							ss,																si,														way,	広角,		回転速度,									基準角		見た目(0:青/1:赤/........)}{}{}}},弾消しフラグ, {小スコア,スコア,パワー,残機,ボム,大パワー}}　*/
 
 		/* 中ボス通1 */
-		{ 0,	1000.0f,		30.0f,	2,		{
+		{ 0,	900.0f,		30.0f,	2,		{
 								{PT::RotateAll,		BulletDefaultRadius::ZAYAKU,		3.0f,															5,														12,		360.0f,		0.25f,										90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::SILVER)},
 								{PT::NWay,			BulletDefaultRadius::LIGHT,			5.0f,															15,														3,		60.0f,		0.25f,										90,			GetBulletID(BulletShape::LIGHT,BulletColor::YELLOW)}
 		},true,	{0,10,0,0,0,0}, BMT::PlayerTrackX},
 
 		/* 中ボススペカ1枚目 */
-		{ 1,	1200.0f,		30.0f,	3,		{
+		{ 1,	1000.0f,		30.0f,	3,		{
 								{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,															10,														12,		360.0f,		CalcRotateSpeed(12, 10, 1.0f / 3.0f, 1),	90,			GetBulletID(BulletShape::POIFUL,BulletColor::PURPLE)},
 								{PT::RotateAll,		BulletDefaultRadius::POIFUL,		2.0f,															10,														12,		360.0f,		-CalcRotateSpeed(12, 10, 1.0f / 3.0f, 1),	90,			GetBulletID(BulletShape::POIFUL,BulletColor::GREEN)},
 								{PT::NWay,			BulletDefaultRadius::ZAYAKU,		{4.0f, 4.5f, 600, BulletPattern::EaseType::EaseInQuad},			{90, 45, 600, BulletPattern::EaseType::EaseInQuad},		10,		20.0f,		0.25f,										90,			GetBulletID(BulletShape::ZAYAKU,BulletColor::AQUA)}
-		},true,	{0,10,3,1,0,1}},
+		},true,	{0,10,6,1,0,3}},
 	};
 	static constexpr int MID_BOSS_PHASE_MAX = sizeof(MidBossPhases) / sizeof(MidBossPhases[0]);		//中ボスの総フェーズ数算出
 
@@ -108,32 +108,32 @@ namespace Stage1Data {
 			{	LATE_STAGE_SPAWN_FRAME,							Right,			top,			-3.0f,		0.0f,		15.0f,		10,			10,			10,
 				{	PT::NWay,		BulletDefaultRadius::BIG_CIRCLE,		7.0f,	30,		12,		180.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::BIG_CIRCLE,BulletColor::BLUE)}, false,{0,0,1,0,0}},
 
-			{	3100,											Left,			top,			 3.0f,		0.0f,		15.0f,		10,			10,			5,
+			{	3200,											Left,			top,			 3.0f,		0.0f,		15.0f,		10,			10,			5,
 				{	PT::NWay,		BulletDefaultRadius::UROKO,				6.0f,	30,		5,		90.0f,		5.0f,		90.0f,		GetBulletID(BulletShape::UROKO,BulletColor::RED)},	false,{0,2,0,0,0}},
 
-			{	3100,											Right,			top,			-3.0f,		0.0f,		15.0f,		10,			10,			5,
+			{	3200,											Right,			top,			-3.0f,		0.0f,		15.0f,		10,			10,			5,
 				{	PT::NWay,		BulletDefaultRadius::UROKO,				6.0f,	30,		5,		90.0f,		5.0f,		90.0f,		GetBulletID(BulletShape::UROKO,BulletColor::BLUE)},	false,{0,0,2,0,0}},
 
-			{	3400,											Left + 30,		top,			0.0f,		0.0f,		15.0f,		50,			5,			120,
-				{	PT::NWay,		BulletDefaultRadius::ZAYAKU,			3.0f,	15,		4,		60.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::ZAYAKU,BulletColor::AQUA)}, false,{0,3,2,0,0}, {EMT::TopLeft_To_Bottom}},
+			{	3600,											Left + 30,		top,			0.0f,		0.0f,		15.0f,		50,			5,			120,
+				{	PT::NWay,		BulletDefaultRadius::ZAYAKU,			3.0f,	15,		4,		60.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::ZAYAKU,BulletColor::AQUA)}, false,{0,3,5,0,0}, {EMT::TopLeft_To_Bottom}},
 			
-			{	3460,											Right - 30,		top,			0.0f,		0.0f,		15.0f,		50,			5,			120,
-				{	PT::NWay,		BulletDefaultRadius::ZAYAKU,			3.0f,	15,		4,		60.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::ZAYAKU,BulletColor::AQUA)}, false,{0,3,2,0,0}, {EMT::TopRight_To_Bottom}},
+			{	3660,											Right - 30,		top,			0.0f,		0.0f,		15.0f,		50,			5,			120,
+				{	PT::NWay,		BulletDefaultRadius::ZAYAKU,			3.0f,	15,		4,		60.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::ZAYAKU,BulletColor::AQUA)}, false,{0,3,5,0,0}, {EMT::TopRight_To_Bottom}},
 			
-			{	4000,											CenterX,		top,			-1.0f,		0.0f,		15.0f,		15,			10,			8,
+			{	4400,											CenterX,		top,			-1.0f,		0.0f,		15.0f,		15,			10,			8,
 				{	PT::RotateAll,	BulletDefaultRadius::RICE,				3.0f,	15,		18,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::RED)}, false,{0,2,2,0,0}},
 
-			{	4000,											CenterX,		top,			1.0f,		0.0f,		15.0f,		15,			10,			8,
+			{	4400,											CenterX,		top,			1.0f,		0.0f,		15.0f,		15,			10,			8,
 				{	PT::RotateAll,	BulletDefaultRadius::RICE,				3.0f,	15,		18,		0.0f,		0.0f,		90.0f,		GetBulletID(BulletShape::RICE,BulletColor::BLUE)}, false,{0,3,2,0,0}},
 
-			{	4300,							Left + (Right - Left) / 4,		top,			0.0f,		0.0f,		15.0f,		200,		1,			120,
-				{	PT::RotateAll,	BulletDefaultRadius::LIGHT + 10,		2.0f,	15,		18,		360.0f,		-0.11f,		90.0f,		GetBulletID(BulletShape::LIGHT,BulletColor::AQUA)}, false,{0,12,5,0,1}, {.type = EMT::Top_Stay_Back, .targetY = (float)top + 60}},
+			{	4700,							Left + (Right - Left) / 4,		top,			0.0f,		0.0f,		15.0f,		200,		1,			120,
+				{	PT::RotateAll,	BulletDefaultRadius::LIGHT + 10,		2.0f,	15,		18,		360.0f,		-0.11f,		90.0f,		GetBulletID(BulletShape::LIGHT,BulletColor::AQUA)}, false,{0,12,7,0,1}, {.type = EMT::Top_Stay_Back, .targetY = (float)top + 60}},
 
-			{	4375,						Left + 3 * (Right - Left) / 4,		top,			0.0f,		0.0f,		15.0f,		200,		1,			120,
-				{	PT::RotateAll,	BulletDefaultRadius::LIGHT + 10,		2.0f,	15,		18,		360.0f,		0.11f,		90.0f,		GetBulletID(BulletShape::LIGHT,BulletColor::AQUA)}, false,{0,12,5,0,1}, {.type = EMT::Top_Stay_Back, .targetY=(float)top+60}},
+			{	4775,						Left + 3 * (Right - Left) / 4,		top,			0.0f,		0.0f,		15.0f,		200,		1,			120,
+				{	PT::RotateAll,	BulletDefaultRadius::LIGHT + 10,		2.0f,	15,		18,		360.0f,		0.11f,		90.0f,		GetBulletID(BulletShape::LIGHT,BulletColor::AQUA)}, false,{0,12,7,0,1}, {.type = EMT::Top_Stay_Back, .targetY=(float)top+60}},
 
-			{	4450,											CenterX,		top,			0.0f,		0.0f,		15.0f,		200,		1,			120,
-				{	PT::RotateAll,	BulletDefaultRadius::LIGHT + 10,		2.0f,	15,		18,		360.0f,		0.11f,		90.0f,		GetBulletID(BulletShape::LIGHT,BulletColor::AQUA)}, false,{0,12,5,1,0}, {.type = EMT::Top_Stay_Back, .targetY=(float)top+30}},
+			{	4850,											CenterX,		top,			0.0f,		0.0f,		15.0f,		200,		1,			120,
+				{	PT::RotateAll,	BulletDefaultRadius::LIGHT + 10,		2.0f,	15,		18,		360.0f,		0.11f,		90.0f,		GetBulletID(BulletShape::LIGHT,BulletColor::AQUA)}, false,{0,12,7,1,0}, {.type = EMT::Top_Stay_Back, .targetY=(float)top+30}},
 	};
 	static constexpr int SPAWN_COUNT = sizeof(Timeline) / sizeof(EnemySpawn);	//データの個数を計算
 }

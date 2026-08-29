@@ -113,6 +113,8 @@ private:
 	int mScore = 0;
 	int mPower = 0;
 
+	int mPrevPower = 0;						//前フレームのパワー値を保持するメンバ変数
+
 	int mDisplayScore = 0;					//HUD表示用のスコア
 	int mDisplayPower = 0;				//HUD表示用のパワー
 

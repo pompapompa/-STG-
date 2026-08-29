@@ -170,6 +170,13 @@ void Player::Update(BulletManager* bm) {
 		mDisplayPower++;										//実際のパワーが表示よりも大きいときはインクリメント
 		if (mDisplayPower > mPower) mDisplayPower = mPower;		//越えたら戻す
 	}
+
+	if (mPrevPower < POWER_MAX && mPower >= POWER_MAX) {		//パワー最大値到達時の初回の瞬間のみ敵弾を小スコアへ変換
+		if (bm != nullptr) {
+			bm->ConvertEnemyBulletsToItems();
+		}
+	}
+	mPrevPower = mPower;			//次フレームの比較用に現在のパワー値を格納
 }
 
 
@@ -196,13 +203,15 @@ void Player::Reset(bool isPractice) {
 		mScore = 0;
 		mDisplayScore = 0;
 		mPower = POWER_MAX;				//プラクティスでは最初からパワー最大
-		mDisplayPower;
+		mDisplayPower = POWER_MAX;		//プラクティスで0からロールアップしないように初期状態を最大値へ同期
+		mPrevPower = POWER_MAX;			//開始直後の前フレーム判定でたま消しフラグの誤爆するのを防止
 	}
 	else {						//通常スタート
 		mScore = 0;
 		mDisplayScore = 0;
 		mPower = 0;
 		mDisplayPower = 0;
+		mPrevPower = 0;
 	}
 }
 
