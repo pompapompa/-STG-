@@ -100,6 +100,16 @@ void Item::Update(Player& player, float collectRadius) {
 	}
 }
 
+namespace {
+	namespace ItemAssetID {			//エディタスロットに対応するアセット番号
+		constexpr int MINI_SCORE = 0;
+		constexpr int SCORE = 1;
+		constexpr int POWER = 2;
+		constexpr int ZANKI = 3;
+		constexpr int BOMB = 4;
+		constexpr int FULL_POWER = 5;
+	}
+}
 
 void Item::Draw() {
 	if (!isExist) return;			//存在しないなら描画はスキップ
@@ -107,12 +117,29 @@ void Item::Draw() {
 	int targetTypeIdx = static_cast<int>(type);
 	double scale = 1.0;
 
-	if (type == ItemType::BIG_POWER) {
-		targetTypeIdx = static_cast<int>(ItemType::POWER);
-		scale = BIG_POWER_SCALE;											//大パワーはパワーの画像を1.5倍に拡大して描画
-	}
-	else if (type == ItemType::FULL_POWER) {
-		targetTypeIdx = 5;
+	switch (type) {					//アイテム種別から描画アセットID、及びスケールへの変換
+	case ItemType::MINI_SCORE:
+		targetTypeIdx = ItemAssetID::MINI_SCORE;
+		break;
+	case ItemType::SCORE:
+		targetTypeIdx = ItemAssetID::SCORE;
+		break;
+	case ItemType::POWER:
+		targetTypeIdx = ItemAssetID::POWER;
+		break;
+	case ItemType::BIG_POWER:
+		targetTypeIdx = ItemAssetID::POWER; // 大パワーは通常パワーのテクスチャを流用
+		scale = BIG_POWER_SCALE;
+		break;
+	case ItemType::ZANKI:
+		targetTypeIdx = ItemAssetID::ZANKI;
+		break;
+	case ItemType::BOMB:
+		targetTypeIdx = ItemAssetID::BOMB;
+		break;
+	case ItemType::FULL_POWER:
+		targetTypeIdx = ItemAssetID::FULL_POWER;
+		break;
 	}
 
 	int gh = GetCustomGraphHandle(EditCategory::ITEM, targetTypeIdx);
