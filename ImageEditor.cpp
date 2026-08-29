@@ -6,8 +6,7 @@
 #include <stdio.h>
 
 
-constexpr int PLAYER_TYPE_MAX = 3;						//自機の最大スロット数
-constexpr int ITEM_TYPE_MAX = 5;						//アイテムの最大スロット数
+
 constexpr int PALETTE_COLOR_MAX = 10;					//パレットの最大色数
 static constexpr int GRID_SIZE = 16;					//16×16の格子
 static constexpr int DOT_SIZE = 25;						//キャンバス上の1ドットの大きさ
@@ -241,7 +240,7 @@ void DrawEditor() {
 
 	const char* catName = (g_CurrentCategory == EditCategory::PLAYER) ? "自機" : "アイテム";
 	const char* typeNames_Player[] = { "霊夢", "魔理沙", "咲夜" };
-	const char* typeNames_Item[] = { "小スコア", "スコア", "パワー", "1UP", "ボム" };
+	const char* typeNames_Item[] = { "小スコア", "スコア", "パワー", "1UP", "ボム", "フルパワー"};
 	const char* currentName = (g_CurrentCategory == EditCategory::PLAYER) ? typeNames_Player[g_CurrentTypeIdx] : typeNames_Item[g_CurrentTypeIdx];
 
 	DrawFormatString(UI_STATUS_TEXT_X, UI_STATUS_TEXT_Y, GetColor(255, 255, 255), "カテゴリ: %s | ID: %d (%s)", catName, g_CurrentTypeIdx, currentName);

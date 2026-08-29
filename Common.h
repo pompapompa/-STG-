@@ -102,8 +102,11 @@ struct ObjectColor {
 	}
 };
 
+constexpr int PLAYER_TYPE_MAX = 3;
+constexpr int ITEM_TYPE_MAX = 6;				//自機とアイテムが何種類か
+
 struct CustomGraphicsData {
-	unsigned int playerCanvas[3][16][16];		//自機何種で何×何グリッドか
-	unsigned int itemCanvas[5][16][16];			//アイテム何種で何×何グリッドか
+	unsigned int playerCanvas[PLAYER_TYPE_MAX][16][16];		//自機何種で何×何グリッドか
+	unsigned int itemCanvas[ITEM_TYPE_MAX][16][16];			//アイテム何種で何×何グリッドか
 };
 
