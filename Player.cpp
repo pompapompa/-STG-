@@ -140,9 +140,12 @@ void Player::Update(BulletManager* bm) {
 		if (!IsDeathTimerActive()) {					//タイマが0に成った瞬間
 			if (mLife > 0) {					//残機がある場合
 				LoseLife();								//残機を減らす				
+				DropPowerOnDeath();						//パワー減少ペナルティ
 				loadingBomb();							//基準ボム数の装填
 				SetInVincible(GetInvincibleTime());		//無敵状態遷移
-				bm->ClearEnemyBullets();				//敵弾消去
+				bm->ClearEnemyBullets();								//敵弾消去
+				bm->LaunchItem(x, y, ItemType::POWER, 5, 40.0f);		
+				bm->LaunchItem(x, y, ItemType::BIG_POWER, 1, 20.0f);	//被弾時のパワーアイテムドロップ
 			}
 			else {
 				mLife = -1;				//メインループでSCENE_GAMEOVERに移行する為にmLife=-1にしておく

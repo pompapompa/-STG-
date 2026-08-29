@@ -1,4 +1,5 @@
 #pragma once
+#include "Common.h"
 
 class Player;
 
@@ -8,7 +9,8 @@ enum class ItemType {
 	POWER,
 	ZANKI,
 	BOMB,
-	BIG_POWER
+	BIG_POWER,
+	FULL_POWER
 };
 
 class Item {
@@ -37,6 +39,7 @@ public:
 
 	static constexpr int POWER_GAIN_NORMAL = 1;				//パワーの利得
 	static constexpr int POWER_GAIN_BIG = 8;				//大パワーの利得
+	static constexpr int POWER_GAIN_FULL = POWER_MAX_VALUE;	//フルパワーの利得
 
 	static constexpr double BIG_POWER_SCALE = 1.5;			//大パワーの通常パワーに対する拡大率
 

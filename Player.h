@@ -41,7 +41,9 @@ private:
 	static constexpr int SCORE_ROLLUP_LARGE_THRESHOLD =600;	//残りの加算値が1000点以上ある場合は表示遅延を防ぐため、加算を加速させる閾値
 	static constexpr int SCORE_ROLLUP_LARGE_STEP = 400;		//加速時の単位フレームあたりのスコア加算量
 	static constexpr int SCORE_ROLLUP_SMALLSTEP = 10;		//通常時の単位フレームあたりのスコア加算量
-	static constexpr int POWER_MAX = 128;					//パワーの最大値						
+	static constexpr int POWER_MAX = POWER_MAX_VALUE;		//パワーの最大値						
+	static constexpr int POWER_LOSS_ON_DEATH = 16;			//被弾時のパワー減少値
+
 
 	static constexpr PlayerParameter para{	//ここで同時にインスタンス宣言も行っている
 		4.0f,								//vn:通常速度
@@ -133,6 +135,13 @@ public:
 	bool IsInvincible() const { return invincibleTimer > 0; }			//現在無敵かどうかの判定
 	void SetInVincible(int frame) { invincibleTimer = frame; }			//無敵時間(フレーム)をセット
 	void LoseLife() { mLife--; }				//残機を減らす関数
+
+	void DropPowerOnDeath() {					//被弾時のパワー減少と、HUD表示同期をする関数
+		mPower -= POWER_LOSS_ON_DEATH;	//自機パワーを被弾時減少分減算
+		if (mPower < 0) mPower = 0;		//自機パワーが負になったら0に直す
+		mDisplayPower = mPower;			//算出した自機パワーをHUDへ同期
+	}
+
 	void ComsumeBomb() { mBomb--; }				//ボムを消費する関数
 	void loadingLife() { mLife = stdLife; }		//基準残機数装填関数
 	void loadingBomb() { mBomb = stdBomb; }		//基準ボム数装填関数

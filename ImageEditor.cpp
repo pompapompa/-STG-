@@ -6,8 +6,6 @@
 #include <stdio.h>
 
 
-constexpr int PLAYER_TYPE_MAX = 3;						//自機の最大スロット数
-constexpr int ITEM_TYPE_MAX = 5;						//アイテムの最大スロット数
 constexpr int PALETTE_COLOR_MAX = 10;					//パレットの最大色数
 static constexpr int GRID_SIZE = 16;					//16×16の格子
 static constexpr int DOT_SIZE = 25;						//キャンバス上の1ドットの大きさ

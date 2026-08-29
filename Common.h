@@ -150,9 +150,13 @@ struct ObjectColor {
 	}
 };
 
+static constexpr int POWER_MAX_VALUE = 128;		//パワー最大値
+constexpr int PLAYER_TYPE_MAX = 3;				//自機のスロット最大数
+constexpr int ITEM_TYPE_MAX = 6;				//アイテムのスロット最大数
+
 struct CustomGraphicsData {
-	unsigned int playerCanvas[3][16][16];		//自機何種で何×何グリッドか
-	unsigned int itemCanvas[5][16][16];			//アイテム何種で何×何グリッドか
+	unsigned int playerCanvas[PLAYER_TYPE_MAX][16][16];		//自機何種で何×何グリッドか
+	unsigned int itemCanvas[ITEM_TYPE_MAX][16][16];			//アイテム何種で何×何グリッドか
 };
 
 

@@ -55,29 +55,18 @@ void Item::Update(Player& player, float collectRadius) {
 			isExist = false;
 
 			switch (type) {
-			case ItemType::MINI_SCORE:	player.AddScore(SCORE_VALUE_MINI);	break;		//小スコア： +10点
+			case ItemType::MINI_SCORE:	player.AddScore(SCORE_VALUE_MINI);		break;		//小スコア： +10点
 			case ItemType::SCORE:		player.AddScore(SCORE_VALUE_NORMAL);	break;		//　スコア： +1000点
 			case ItemType::POWER:		player.AddPower(POWER_GAIN_NORMAL);		 player.AddScore(SCORE_VALUE_POWER);		break;		
 			case ItemType::ZANKI:		player.Extend();		break;
 			case ItemType::BOMB:		player.AddBomb();		break;
 			case ItemType::BIG_POWER:	player.AddPower(POWER_GAIN_BIG);		 player.AddScore(SCORE_VALUE_POWER);		break;
+			case ItemType::FULL_POWER:	player.AddPower(POWER_GAIN_FULL);
 			}
 		}
 		else {						//距離が離れてるならすり抜けない速度(BASE_SPEED_CAP)で自機を追尾
 			x += ((playerX - x) / toPlayerDist) * BASE_SPEED_CAP;
 			y += ((playerY - y) / toPlayerDist) * BASE_SPEED_CAP;
-		}
-
-		if (Collision::CheckCircle(playerX, playerY, PLAYER_MIN_HIT_R, x, y, r)) {
-			isExist = false;
-
-			switch (type) {
-			case ItemType::MINI_SCORE:	player.AddScore(10);	break;		//小スコア： +10点
-			case ItemType::SCORE:		player.AddScore(1000);	break;		//　スコア： +1000点
-			case ItemType::POWER:		player.AddPower(1);		break;		//　パワー： +1
-			case ItemType::ZANKI:	break;
-			case ItemType::BOMB:	break;
-			}
 		}
 	}
 	else {							//回収モードではない時
@@ -122,6 +111,9 @@ void Item::Draw() {
 		targetTypeIdx = static_cast<int>(ItemType::POWER);
 		scale = BIG_POWER_SCALE;											//大パワーはパワーの画像を1.5倍に拡大して描画
 	}
+	else if (type == ItemType::FULL_POWER) {
+		targetTypeIdx = 5;
+	}
 
 	int gh = GetCustomGraphHandle(EditCategory::ITEM, targetTypeIdx);
 	if (gh != -1) {
@@ -145,6 +137,8 @@ void Item::Draw() {
 			color = ObjectColor::Get(ObjectColor::Type::GREEN);   size = 12; break;		//ボム
 		case ItemType::BIG_POWER:
 			color = ObjectColor::Get(ObjectColor::Type::GREEN);	  size = 12; break;		//大パワー
+		case ItemType::FULL_POWER:
+			color = ObjectColor::Get(ObjectColor::Type::YELLOW);  size = 14; break;		//フルパワー
 		default:
 			color = ObjectColor::Get(ObjectColor::Type::WHITE);   break;				//その他
 		}

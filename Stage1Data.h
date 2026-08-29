@@ -58,19 +58,19 @@ namespace Stage1Data {
 								{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,															20,														15,		360.0f,		10.0f,										90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)},
 								{PT::RotateAll,		BulletDefaultRadius::UROKO,			3.0f,															20,														15,		360.0f,		-10.0f,										90,			GetBulletID(BulletShape::UROKO,BulletColor::BLUE)}
 																																																																	
-		},true, {0,10,8,1,0,2}, BMT::Circle},																																																									
+		},true, {0,10,3,1,0,1}, BMT::Circle},																																																									
 																																																																	
 		/*　天上天下の照國(3枚目)　*/																																																								 
 		{ 3,	2500.0f,		60.0f,	3,		{																																																					
 								{PT::RotateAll,		BulletDefaultRadius::UROKO,			5.0f,															8,														16,		360.0f,		2.8f,										90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
 								{PT::RotateAll,		BulletDefaultRadius::UROKO,			5.0f,															8,														16,		360.0f,		-2.8f,										90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
 								{PT::RotateAll,		BulletDefaultRadius::RICE,			2.0f,															{70, 40, 600, BulletPattern::EaseType::EaseInQuad},		64,		360.0f,		0.008f,										90,			GetBulletID(BulletShape::RICE, BulletColor::YELLOW)}
-		},true, {0,15,5,0,1,3}},
+		},true, {0,15,5,0,1,0}},
 
 		/*　フィットフルナイトメア　*/
 		{ 4,	1100.0f,		60.0f,	1,		{
 								{PT::RotateAll,		BulletDefaultRadius::KNIFE,			8.0f,															5,														45,		360.0f,		0.191,										90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)}
-		},true, {0,30,8,0,0,2},BMT::Center_Fixed},
+		},true, {0,30,8,0,0,1},BMT::Center_Fixed},
 
 		/*　ラストスペル　*/
 		{ 5,	2500.0f,		110.0f,	5,		{

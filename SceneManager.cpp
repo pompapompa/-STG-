@@ -231,6 +231,9 @@ void SceneManager::Update() {
 					scene = SCENE_STAGE;
 					m_bm->ClearEnemyBullets();
 					m_stageManager->GetPlayer().Reset(playingPractice);
+					if (!playingPractice) {
+						m_bm->LaunchItem((float)PlayArea::CenterX, (float)PlayArea::Top, ItemType::FULL_POWER, 5, 50.0f);		//自機の位置からフルパワーのドロップ
+					}
 				}
 			}
 
