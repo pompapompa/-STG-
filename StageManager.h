@@ -40,21 +40,30 @@ private:
 	Boss boss;									//ボスインスタンス
 	Enemy fairies[100];							//妖精配列インスタンス
 	int currentStageNum = 1;					//現在何面をプレイしているか
+	int m_markerFont = -1;						//エネミーマーカ用の小フォントハンドル
 
 public:
 	static constexpr int upMargin = 80;			//妖精が出てくる時に上からどれくらい開けて出現するか
 	static constexpr int MAX_SPAWN_SLOT = 10;	//同時出現可能隊数
-	BurstController SpawnSlots[MAX_SPAWN_SLOT];		//出現予約スロット
+	BurstController SpawnSlots[MAX_SPAWN_SLOT];	//出現予約スロット
 
-	StageManager() : stageTimer(0),state(StageState::DOCHU){}	//コンストラクタというクラスの初期化専用関数で、クラスと同じ名前にして、戻り値の型を記述しない。クラスが生まれた瞬間stageTimerを0に、stateをDOCHUに設定する役割
+	StageManager();
+	~StageManager();
+
 
 	void Update(BulletManager* bm);			//弾を出すタイミングとかで必要になるので住所を知っておく。(&bmは場所を教える。*bmはその場所の情報を受け取る箱のようなもの)
 	void Draw(BulletManager* bm);
+	
+	void DrawEnemyMarker();		//エネミーマーカ描画用関数
 	void Init(BulletManager* bm, int stageNum = 1, int startPhaseIdx = 0, bool isPractice = false);			//ステージ数と開始段階インデックス(0:最初から, 1:中ボス, 2:ボス通常)を組み合わせる設計
 
 	void ReloadGraphic() {
-		boss.ReloadGraphic();					
+		boss.ReloadGraphic();	
+		InitFont();
 	}
+
+	void InitFont();		//フォント初期化関数
+	void ReleaseFont();		//フォント解放関数
 
 	Player& GetPlayer() { return player; }		//&は参照渡しで、privateに隔離されてるインスタンスそのものへのアクセス権を引き出している。窓口の様なもの
 	Boss& GetBoss() { return boss; }

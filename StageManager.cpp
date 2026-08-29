@@ -99,6 +99,65 @@ void StageManager::Draw(BulletManager* bm) {		//弾とかの描画
 	if (state==StageState::MID_BOSS_BATTLE || state == StageState::BOSS_BATTLE) {
 		boss.Draw();								//道中ボス・ボス戦中のボスの描画
 	}
+	DrawEnemyMarker();				//ボス戦中にエネミーマーカ描画関数を呼び出す
+}
+
+
+StageManager::StageManager() : stageTimer(0), state(StageState::DOCHU), m_markerFont(-1) {		//コンストラクタ定義。メンバ初期化子リストで各メンバの初期化
+	InitFont();			//フォントリソースを生成し、初期化
+}
+
+StageManager::~StageManager() {
+	ReleaseFont();		//リソース解放
+}
+
+namespace {
+	namespace EnemyMarkerConfig {
+		constexpr float HALF_WIDTH = 18.0f;		//楕円の横方向半径rx
+		constexpr int   RADIUS_Y = 5;			//楕円の縦方向半径ry
+		constexpr int   TRI_HALF_W = 3;			//三角矢印の底辺半幅
+		constexpr int   TRI_HEIGHT = 3;			//三角矢印の高さ
+		constexpr int   CENTER_Y_OFF = 9;		//下枠線(Bottom)からの楕円中心Yオフセット
+		constexpr int   TEXT_OFFSET_X = -13;	//楕円中心からのテキスト描画開始Xオフセット
+		constexpr int   TEXT_OFFSET_Y = 4;		//下枠線(Bottom)からのテキスト描画開始Yオフセット
+	}
+}
+
+void StageManager::InitFont() {		//エネミーマーカ描画用フォントハンドルを生成する関数
+	ReleaseFont();		//既存のフォントハンドルが存在する場合の二重生成対策として一旦解放
+	m_markerFont = CreateFontToHandle("Arial", 10, 1, DX_FONTTYPE_NORMAL);	//Arialフォントの生成をしてハンドル保持
+}
+
+void StageManager::ReleaseFont() {	//生成したフォントハンドルを安全に破棄する解放関数
+	if (m_markerFont != -1) {	//フォントハンドルが有効値(-1以外)である場合
+		DeleteFontToHandle(m_markerFont);		//フォントリソースをメモリから消去
+		m_markerFont = -1;						//再利用時の不正アクセス対策にハンドル変数を-1(無効値)へリセット
+	}
+}
+
+void StageManager::DrawEnemyMarker() {
+	using namespace PlayArea;
+	using namespace EnemyMarkerConfig;
+
+	if ((state == StageState::MID_BOSS_BATTLE || state == StageState::BOSS_BATTLE) && boss.GetFlag()) {		//中ボス戦、又はボス戦中で且つ、ボスが存在する場合のみ描画
+		float bossX = boss.GetX();			//ボスのx座標取得
+
+		if (bossX < Left + HALF_WIDTH)  bossX = Left + HALF_WIDTH;
+		if (bossX > Right - HALF_WIDTH) bossX = Right - HALF_WIDTH;		//マーカの↔左右端クランプ
+
+		int bx = (int)bossX;	
+		int baseY = Bottom;		//基準Y座標(Bottom)
+
+		unsigned int redColor = GetColor(255, 40, 40);					//マーカ背景の赤色カラー
+		unsigned int whiteColor = GetColor(255, 255, 255);				//テキスト描画用の白色
+
+		DrawTriangle(bx, baseY + 1, bx - TRI_HALF_W, baseY + 1 + TRI_HEIGHT, bx + TRI_HALF_W, baseY + 1 + TRI_HEIGHT, redColor, TRUE);	//上向き三角矢印
+		DrawOval(bx, baseY + CENTER_Y_OFF, (int)HALF_WIDTH, RADIUS_Y, redColor, TRUE);													//赤い楕円 (中心:bx, baseY+9、半径:rx=18,ry=5)
+
+		if (m_markerFont != -1) {	//フォントハンドルが有効値の場合
+			DrawStringToHandle(bx + TEXT_OFFSET_X, baseY + TEXT_OFFSET_Y, "Enemy", whiteColor, m_markerFont);	//楕円の中央位置へ白文字でEnemyを描画						//楕円の中央に白文字で「Enemy」を描画
+		}
+	}
 }
 
 void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx, bool isPractice) {							//ステージの状態を全てリセットする関数
