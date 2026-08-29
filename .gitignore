@@ -372,5 +372,4 @@ x64/
 *.ipch
 /Log.txt
 /all_src.txt
-素材集/
-
+score.dat
