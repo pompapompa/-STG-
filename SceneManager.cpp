@@ -57,6 +57,8 @@ void SceneManager::Update() {
 		if (Input::IsTrigger(KEY_INPUT_DOWN)) {
 			TitleMenu.Next();
 		}
+
+#ifdef _DEBUG				//デバッグビルド時のみTによるシミュレータ起動を許可
 		if (Input::IsTrigger(KEY_INPUT_T)) {
 			m_bm->ClearAllBullets();
 			m_bm->ClearAllItems();
@@ -64,6 +66,7 @@ void SceneManager::Update() {
 			testScene.Init();
 			scene = SCENE_BULLET_TEST;
 		}
+#endif
 
 		if (Input::IsTrigger(KEY_INPUT_Z) || Input::IsTrigger(KEY_INPUT_RETURN)) {
 			int select = TitleMenu.GetSelect();											//上で計算し終わって決定する直前のmenu_cursorを利用
