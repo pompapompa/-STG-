@@ -180,11 +180,12 @@ void SceneManager::Update() {
 		if (Input::IsTrigger(KEY_INPUT_X) && m_stageManager->GetPlayer().GetBomb() > 0) {	//X押下且つボム数が1以上の時
 			if (m_stageManager->GetPlayer().IsDeathTimerActive()) {								//deathTimerがアクティブな時
 				m_stageManager->GetPlayer().StopDeathTimer();												//deathTimerを停止(inactivate)
-				m_stageManager->GetPlayer().SetInVincible(m_stageManager->GetPlayer().GetInvincibleTime());	//無敵時間をセット
+				m_stageManager->GetPlayer().SetInVincible(BombCutin::BOMB_INVINCIBLE_FRAMES + m_stageManager->GetPlayer().GetInvincibleTime());	//ボム無敵時間+被弾時の無敵時間(喰らいボムボーナス)
 				m_stageManager->GetPlayer().ComsumeBomb();													//ボム消費
 				m_stageManager->TriggerBombCutin();															//喰らいボム発動時のカットイン演出開始
 			}
 			else if (!m_stageManager->GetPlayer().IsInvincible()) {								//無敵状態でなければ通常ボム消費	
+				m_stageManager->GetPlayer().SetInVincible(BombCutin::BOMB_INVINCIBLE_FRAMES);				//ボム無敵時間
 				m_stageManager->GetPlayer().ComsumeBomb();													//ボム消費
 				m_stageManager->TriggerBombCutin();															//通常ボム発動時のカットイン演出開始
 			}

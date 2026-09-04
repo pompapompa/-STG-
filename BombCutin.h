@@ -8,8 +8,8 @@ class BulletManager;
 class BombCutin {
 public:
 	static constexpr int PHASE1_SLIDE_FRAMES = 48;			//下から定位置へスライドインするフレーム数
-	static constexpr int PHASE2_STAY_FRAMES = 112;			//定位置で待機するフレーム数
-	static constexpr int PHASE3_FADEOUT_FRAMES = 80;		//拡大フェードアウトするフレーム数
+	static constexpr int PHASE2_STAY_FRAMES =  52;			//定位置で待機するフレーム数
+	static constexpr int PHASE3_FADEOUT_FRAMES = 40;		//拡大フェードアウトするフレーム数
 	static constexpr int TOTAL_FRAMES = PHASE1_SLIDE_FRAMES + PHASE2_STAY_FRAMES + PHASE3_FADEOUT_FRAMES;	//全所要フレーム数
 
 	static constexpr float BASE_SCALE = 0.5f;				//プレイ領域が384×448に対して768×896のイラストゆえ0.5倍が等倍描画基準となる
@@ -22,7 +22,7 @@ public:
 	static constexpr float MAX_ALPHA_F = 255.5f;			//完全不透明のアルファ値(float型)
 	static constexpr int BG_DIM_MAX_ALPHA = 128;			//背景の最大暗転アルファ値
 	
-	static constexpr int BAND_FADEIN_FRAMES = 45;										//白帯フェードイン所要フレーム数
+	static constexpr int BAND_FADEIN_FRAMES = 25;										//白帯フェードイン所要フレーム数
 	static constexpr int BAND_EXPAND_FRAMES = 25;										//白帯上下拡大所要フレーム数
 	static constexpr int BAND_TOTAL_FRAMES = BAND_FADEIN_FRAMES + BAND_EXPAND_FRAMES;	//白帯演出の総フレーム数
 	static constexpr int BAND_MAX_ALPHA = 110;											//白帯の最大アルファ値
@@ -31,6 +31,13 @@ public:
 
 	static constexpr float BAND_INIT_TOP = static_cast<float>(PlayArea::Top) + static_cast<float>(PlayArea::Bottom - PlayArea::Top) * BAND_TOP_RATE;		//白帯の基準初期上端Y座標
 	static constexpr float BAND_INIT_BOTTOM = static_cast<float>(PlayArea::Top) + static_cast<float>(PlayArea::Bottom - PlayArea::Top) * BAND_BOTTOM_RATE;	//白帯の基準初期下端Y座標
+
+	static constexpr int EXTRA_INVINCIBLE_FRAMES = 30;													//カットイン終了後の余韻無敵フレーム数
+	static constexpr int BOMB_INVINCIBLE_FRAMES = TOTAL_FRAMES + EXTRA_INVINCIBLE_FRAMES;				//ボム発動時の総無敵フレーム数
+	static constexpr int BAND_HIT_INTERVAL = 45;														//白帯ダメージの発生間隔のフレーム数
+	static constexpr float BAND_FAIRY_DAMAGE_PER_HIT = 15.0f;											//白帯の対妖精の1ヒットあたりのダメージ量
+	static constexpr float BAND_BOSS_DAMAGE_PER_HIT = 300.0f;											//白帯の対ボスの1ヒットあたりのダメージ量
+
 
 private:
 	int mGraphHandle = -1;	//カットイン画像ハンドル
@@ -55,6 +62,11 @@ public:
 	void Reset();
 
 	bool IsActive() const { return mTimer >= 0; }
+	bool CanDamageThisFrame() const {		//当該フレームで白帯ダメージを発生させるか判定
+		return (mTimer >= 0 && mTimer < BAND_TOTAL_FRAMES && (mTimer % BAND_HIT_INTERVAL == 0));	//白帯演出期間内且つ、設定インターバル周期と合致するかの判定を返す
+	}
+	float GetBandTop() const { return mCurrentBandTop; }
+	float GetBandBottom() const { return mCurrentBandBottom; }	//白帯の上下端Y座標ゲッタ
 };
 
 

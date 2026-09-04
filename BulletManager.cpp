@@ -146,7 +146,7 @@ bool BulletManager::CheckEnemyCollision(float ex, float ey, float er, Player& pl
 		if (Collision::CheckCircle(ex, ey, er, p_bullets[i].x, p_bullets[i].y, p_bullets[i].r)) {		//CollisionクラスのCheckCircle関数に自機と敵弾それぞれのx,y,r値を教える
 			p_bullets[i].flag = false;																	//当たった弾は消す
 			
-			player.AddScore(10);
+			player.AddScore(GameScore::BULLET_HIT_ENEMY);
 
 			return true;
 		}

@@ -248,7 +248,7 @@ bool Boss::CheckCollision(Player& player, BulletManager& bm) {
 			if (state == BossState::ACTIVE) {
 				SetDamage(1.0f);										//1弾あたりのダメージ量
 
-				player.AddScore(10);
+				player.AddScore(GameScore::BULLET_HIT_ENEMY);
 
 			}
 			b.flag = false;											//当たった弾フラグは消す

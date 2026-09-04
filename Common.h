@@ -47,6 +47,12 @@ namespace MyMath {
 	}
 }
 
+namespace GameScore {
+	constexpr int BULLET_HIT_ENEMY = 10;	//自機ショット命中時の加算スコア
+	constexpr int BOMB_HIT_FAIRY = 20;		//ボム白帯が雑魚妖精へ命中時の加算スコア
+	constexpr int BOMB_HIT_BOSS = 50;		//ボム白帯がボスへ命中時の加算スコア
+}
+
 namespace BMT {	//BMT(BossMoveType)
 	enum Type : int {
 		Fixed,          //定位置固定
