@@ -5,6 +5,7 @@
 #include "BulletManager.h"
 #include "BurstController.h"
 #include "BulletPattern.h"
+#include "BombCutin.h"
 
 
 enum class StageState {
@@ -39,6 +40,7 @@ private:
 	Player player;								//自機インスタンス
 	Boss boss;									//ボスインスタンス
 	Enemy fairies[100];							//妖精配列インスタンス
+	BombCutin bombCutin;						//ボムカットインインスタンス
 	int currentStageNum = 1;					//現在何面をプレイしているか
 	int m_markerFont = -1;						//エネミーマーカ用の小フォントハンドル
 
@@ -60,6 +62,7 @@ public:
 	void ReloadGraphic() {
 		boss.ReloadGraphic();	
 		InitFont();
+		bombCutin.ReloadGraphic();		
 	}
 
 	void InitFont();		//フォント初期化関数
@@ -69,5 +72,7 @@ public:
 	Boss& GetBoss() { return boss; }
 	Enemy* GetFairies() { return fairies; }
 
+	void TriggerBombCutin() { bombCutin.Trigger(); }												//ボムカットイン発動用トリガ
+	void ResetBombCutin() { bombCutin.Reset(); }													//ボムカットイン演出の強制リセット関数
 	bool IsStageClear() const { return (state == StageState::BOSS_BATTLE && boss.IsDead()); }		//ボス戦中でボスの全フェーズが終了した時にステージクリアと判定
 };

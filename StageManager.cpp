@@ -16,6 +16,7 @@ using namespace BulletPattern;								//省略名
 
 void StageManager::Update(BulletManager* bm) {
 	stageTimer++;								//時間を進める
+	bombCutin.Update();							//ボムカットイン演出のタイマ更新
 
 	if (state == StageState::DOCHU) {
 		if (stageTimer == Stage1Data::MID_BOSS_SPAWN_FRAME) {
@@ -82,9 +83,6 @@ void StageManager::Update(BulletManager* bm) {
 }
 
 void StageManager::Draw(BulletManager* bm) {		//弾とかの描画
-	player.Draw();									//自機の描画
-
-
 	for (int i = 0; i < Enemy::EnemyMax; i++) {
 		if (fairies[i].GetFlag()) {
 			if (fairies[i].CheckCollision(player, bm)) {
@@ -100,6 +98,16 @@ void StageManager::Draw(BulletManager* bm) {		//弾とかの描画
 		boss.Draw();								//道中ボス・ボス戦中のボスの描画
 	}
 	DrawEnemyMarker();				//ボス戦中にエネミーマーカ描画関数を呼び出す
+	
+	bombCutin.Draw();				//ボムカットイン演出の描画
+	player.Draw();				//自機描画
+	player.DrawHitBox();		//自機の次に当たり判定の描画の順にすることで当たり判定が確認しやすくなる
+
+	if (bm != nullptr) {
+		bm->DrawItems();				//アイテムの描画
+		bm->Draw();						//弾の描画
+	}
+	DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);		//プレイ領域の外枠白線描画
 }
 
 
@@ -168,7 +176,7 @@ void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx, bool
 
 	player.Reset(isPractice);
 	boss.Reset();									//ボスフラグを折る
-
+	bombCutin.Reset();								//ボムカットイン状態を初期化
 
 	for (int i = 0; i < Enemy::EnemyMax; i++) {
 		fairies[i].SetFlag(false);					//妖精フラグも折る

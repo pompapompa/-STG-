@@ -195,6 +195,7 @@ void Player::Reset(bool isPractice) {
 	needle_shot_timer = 15;
 	zabuton_shot_timer = 15;										//ショットのクールタイムも初期化
 	invincibleTimer = 0;
+	deathTimer = 0;													//被弾直後リトライ時の誤点滅防止の為、喰らいボム猶予タイマを初期化
 
 	mLife = (isPractice ? stdPracLife : stdLife);			//プラクティスモードではstdPracLife,通常モードならstdLifeを初期残機として代入
 	mBomb = stdBomb;										//初期残ボム数

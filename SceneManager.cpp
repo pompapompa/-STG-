@@ -177,23 +177,25 @@ void SceneManager::Update() {
 			GameOverMenu.SetSelect(0);							//ゲームオーバーシーンのカーソルの初期化
 			scene = SCENE_GAMEOVER;
 		}
-		if (Input::IsTrigger(KEY_INPUT_X) && m_stageManager->GetPlayer().GetBomb() > 0) {// X押下且つボム数が1以上の時
+		if (Input::IsTrigger(KEY_INPUT_X) && m_stageManager->GetPlayer().GetBomb() > 0) {	//X押下且つボム数が1以上の時
 			if (m_stageManager->GetPlayer().IsDeathTimerActive()) {								//deathTimerがアクティブな時
 				m_stageManager->GetPlayer().StopDeathTimer();												//deathTimerを停止(inactivate)
 				m_stageManager->GetPlayer().SetInVincible(m_stageManager->GetPlayer().GetInvincibleTime());	//無敵時間をセット
-				m_bm->ConvertEnemyBulletsToItems();														//敵弾を小スコアへ変換
+				m_bm->ConvertEnemyBulletsToItems();															//敵弾を小スコアへ変換
 				m_stageManager->GetPlayer().ComsumeBomb();													//ボム消費
+				m_stageManager->TriggerBombCutin();															//喰らいボム発動時のカットイン演出開始
 			}
-			else if (!m_stageManager->GetPlayer().IsInvincible()) {									//無敵状態でなければ通常ボム消費	
-				m_bm->ConvertEnemyBulletsToItems();														//敵弾を小スコアへ変換
+			else if (!m_stageManager->GetPlayer().IsInvincible()) {								//無敵状態でなければ通常ボム消費	
+				m_bm->ConvertEnemyBulletsToItems();															//敵弾を小スコアへ変換
 				m_stageManager->GetPlayer().ComsumeBomb();													//ボム消費
+				m_stageManager->TriggerBombCutin();															//通常ボム発動時のカットイン演出開始
 			}
 		}
 
 		if (m_stageManager->IsStageClear()) {											//ボスを倒したフラグが返されたらタイトルに戻る
 			while (Input::IsTrigger(KEY_INPUT_F)) ProcessMessage();		//z,enterキーを長押し状態でCLEARに遷移してきた時に離したらそのままタイトルに行くのを防ぐ為の文
 			ClearInputCharBuf();				//画面遷移前にキー入力バッファを完全クリアして、入力画面でも予約されたキー入力が起きないように対策
-			while(GetInputChar(TRUE) != 0) {}	//溜まっている文字バッファを空打ちして完全消去
+			while (GetInputChar(TRUE) != 0) {}	//溜まっている文字バッファを空打ちして完全消去
 
 			if (!playingPractice) {
 				inputName = "";
@@ -248,8 +250,8 @@ void SceneManager::Update() {
 				}
 				else if (!playingPractice) {					//通常プレイの時のみ名前入力
 					ClearInputCharBuf();
-					while(GetInputChar(TRUE) != 0) {}
-					
+					while (GetInputChar(TRUE) != 0) {}
+
 					inputName = "";
 					backspaceHoldCount = 0;
 					scene = SCENE_NAME_ENTRY;
@@ -411,16 +413,16 @@ void SceneManager::Draw() {
 
 	case SCENE_PRACTICE:
 		DrawString(170, 100, "～～～ スペルプラクティスモード ～～～", GetColor(0, 255, 0));
-		DrawString(230, 150, (PracticeMenu.GetSelect() == 0 ? "> 1面道中　　　前半"							: "1面道中　　　前半"), GetColor(255, 255, 255));
-		DrawString(230, 180, (PracticeMenu.GetSelect() == 1 ? "> 1面道中ボス　通1"							: "1面道中ボス　通1"), GetColor(255, 255, 255));
-		DrawString(230, 210, (PracticeMenu.GetSelect() == 2 ? "> 1面道中ボス　スペカ1"						: "1面道中ボス　スペカ1"), GetColor(255, 255, 255));
-		DrawString(230, 240, (PracticeMenu.GetSelect() == 3 ? "> 1面道中　　　後半"							: "1面道中　　　後半"), GetColor(255, 255, 255));
-		DrawString(230, 270, (PracticeMenu.GetSelect() == 4 ? "> 1面　　ボス　通1"							: "1面　　ボス　通1"), GetColor(255, 255, 255));
-		DrawString(230, 300, (PracticeMenu.GetSelect() == 5 ? "> 1面　　ボス　スペカ1"						: "1面　　ボス　スペカ1"), GetColor(255, 255, 255));
-		DrawString(230, 330, (PracticeMenu.GetSelect() == 6 ? "> 1面　　ボス　通2"							: "1面　　ボス　通2"), GetColor(255, 255, 255));
-		DrawString(230, 360, (PracticeMenu.GetSelect() == 7 ? "> 1面　　ボス　天上天下の照國(笑)"			: "1面　　ボス　天上天下の照國(笑)"), GetColor(255, 255, 255));
-		DrawString(230, 390, (PracticeMenu.GetSelect() == 8 ? "> 1面　　ボス　フィットフルナイトメア(笑)"	: "1面　　ボス　フィットフルナイトメア(笑)"), GetColor(255, 255, 255));
-		DrawString(230, 420, (PracticeMenu.GetSelect() == 9 ? "> 1面　　ボス　ラスペ"						: "1面　　ボス　ラスペ"), GetColor(255, 255, 255));
+		DrawString(230, 150, (PracticeMenu.GetSelect() == 0 ? "> 1面道中　　　前半" : "1面道中　　　前半"), GetColor(255, 255, 255));
+		DrawString(230, 180, (PracticeMenu.GetSelect() == 1 ? "> 1面道中ボス　通1" : "1面道中ボス　通1"), GetColor(255, 255, 255));
+		DrawString(230, 210, (PracticeMenu.GetSelect() == 2 ? "> 1面道中ボス　スペカ1" : "1面道中ボス　スペカ1"), GetColor(255, 255, 255));
+		DrawString(230, 240, (PracticeMenu.GetSelect() == 3 ? "> 1面道中　　　後半" : "1面道中　　　後半"), GetColor(255, 255, 255));
+		DrawString(230, 270, (PracticeMenu.GetSelect() == 4 ? "> 1面　　ボス　通1" : "1面　　ボス　通1"), GetColor(255, 255, 255));
+		DrawString(230, 300, (PracticeMenu.GetSelect() == 5 ? "> 1面　　ボス　スペカ1" : "1面　　ボス　スペカ1"), GetColor(255, 255, 255));
+		DrawString(230, 330, (PracticeMenu.GetSelect() == 6 ? "> 1面　　ボス　通2" : "1面　　ボス　通2"), GetColor(255, 255, 255));
+		DrawString(230, 360, (PracticeMenu.GetSelect() == 7 ? "> 1面　　ボス　天上天下の照國(笑)" : "1面　　ボス　天上天下の照國(笑)"), GetColor(255, 255, 255));
+		DrawString(230, 390, (PracticeMenu.GetSelect() == 8 ? "> 1面　　ボス　フィットフルナイトメア(笑)" : "1面　　ボス　フィットフルナイトメア(笑)"), GetColor(255, 255, 255));
+		DrawString(230, 420, (PracticeMenu.GetSelect() == 9 ? "> 1面　　ボス　ラスペ" : "1面　　ボス　ラスペ"), GetColor(255, 255, 255));
 		break;
 
 
@@ -433,14 +435,8 @@ void SceneManager::Draw() {
 
 	case SCENE_STAGE:
 	{
-		using namespace PlayArea;											//これによりnamespaceのPlayArea内で定義したものがこの関数内限定で使用できるようになる
-		m_bm->DrawItems();
 		m_stageManager->Draw(m_bm);					//敵や自機本体の描画
-		m_bm->Draw();								//弾の描画
-		m_stageManager->GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
 		m_hud->Draw(&m_stageManager->GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
-
-		DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
 	}
 	break;
 
@@ -451,12 +447,8 @@ void SceneManager::Draw() {
 	{
 		using namespace PlayArea;
 
-		m_bm->DrawItems();
 		m_stageManager->Draw(m_bm);					//敵や自機本体の描画
-		m_bm->Draw();								//弾の描画
-		m_stageManager->GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
 		m_hud->Draw(&m_stageManager->GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
-		DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);	//プレイ領域描画
 
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 120);
 		DrawBox(Left - Margin, Top - Margin, Right + Margin, Bottom + Margin, GetColor(0, 0, 0), true);
@@ -482,19 +474,14 @@ void SceneManager::Draw() {
 
 	case(SCENE_PAUSE):
 	{
-		using namespace PlayArea;
+
+		m_stageManager->Draw(m_bm);					//敵や自機本体の描画
+		m_hud->Draw(&m_stageManager->GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
+
 		DrawString(470, 220, "一時停止", GetColor(0, 255, 255));
 		DrawString(470, 270, (PauseMenu.GetSelect() == 0 ? "> 続ける" : "続ける"), GetColor(255, 255, 255));
 		DrawString(470, 300, (PauseMenu.GetSelect() == 1 ? "> タイトルに戻る" : "タイトルに戻る"), GetColor(255, 255, 255));
 		DrawString(470, 330, (PauseMenu.GetSelect() == 2 ? "> やり直す" : "やり直す"), GetColor(255, 255, 255));
-
-		DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);
-
-		m_bm->DrawItems();
-		m_stageManager->Draw(m_bm);					//敵や自機本体の描画
-		m_bm->Draw();								//弾の描画
-		m_stageManager->GetPlayer().DrawHitBox();	//自機当たり判定の描画の順にすることで当たり判定が確認しやすくなる
-		m_hud->Draw(&m_stageManager->GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
 	}
 	break;
 
