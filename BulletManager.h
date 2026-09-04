@@ -80,7 +80,13 @@ public:
 		ClearEnemyBullets();
 	}
 
-	void ConvertEnemyBulletsToItems();
+	void ConvertEnemyBulletsToItems(
+		float left = static_cast<float>(PlayArea::Left),
+		float top = static_cast<float>(PlayArea::Top),
+		float right = static_cast<float>(PlayArea::Right),
+		float bottom = static_cast<float>(PlayArea::Bottom)
+	);
+
 	void ClearAllItems() {
 		for (int i = 0; i < MAX_ITEMS; i++) {
 			items[i].isExist = false;

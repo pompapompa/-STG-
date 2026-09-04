@@ -3,6 +3,8 @@
 #include "Common.h"
 
 
+class BulletManager;
+
 class BombCutin {
 public:
 	static constexpr int PHASE1_SLIDE_FRAMES = 48;			//下から定位置へスライドインするフレーム数
@@ -20,11 +22,23 @@ public:
 	static constexpr float MAX_ALPHA_F = 255.5f;			//完全不透明のアルファ値(float型)
 	static constexpr int BG_DIM_MAX_ALPHA = 128;			//背景の最大暗転アルファ値
 	
+	static constexpr int BAND_FADEIN_FRAMES = 45;										//白帯フェードイン所要フレーム数
+	static constexpr int BAND_EXPAND_FRAMES = 25;										//白帯上下拡大所要フレーム数
+	static constexpr int BAND_TOTAL_FRAMES = BAND_FADEIN_FRAMES + BAND_EXPAND_FRAMES;	//白帯演出の総フレーム数
+	static constexpr int BAND_MAX_ALPHA = 110;											//白帯の最大アルファ値
+	static constexpr float BAND_TOP_RATE = 0.3f;										//プレイ領域高さに対する白帯の初期上端Y座標比率
+	static constexpr float BAND_BOTTOM_RATE = 0.75f;										//プレイ領域高さに対する白帯の初期下端Y座標比率
 
+	static constexpr float BAND_INIT_TOP = static_cast<float>(PlayArea::Top) + static_cast<float>(PlayArea::Bottom - PlayArea::Top) * BAND_TOP_RATE;		//白帯の基準初期上端Y座標
+	static constexpr float BAND_INIT_BOTTOM = static_cast<float>(PlayArea::Top) + static_cast<float>(PlayArea::Bottom - PlayArea::Top) * BAND_BOTTOM_RATE;	//白帯の基準初期下端Y座標
 
 private:
 	int mGraphHandle = -1;	//カットイン画像ハンドル
 	int mTimer = -1;		//演出の進行度を管理するタイマ変数
+
+	float mCurrentBandTop = 0.0f;		//白帯の現在の描画上端Y座標
+	float mCurrentBandBottom = 0.0f;	//白帯の現在の描画下端Y座標
+	int mCurrentBandAlpha = 0;			//白帯の現在のアルファ値
 
 public:
 	BombCutin();
@@ -34,9 +48,10 @@ public:
 	void Release();
 	void ReloadGraphic();
 
-	void Trigger();			//ボム発動時に呼ぶ
-	void Update();			//毎フレームの更新
-	void Draw() const;		//描画
+	void Trigger();										//ボム発動時に呼ぶ
+	void Update(BulletManager* bm = nullptr);			//毎フレームの更新
+	void Draw() const;									//描画
+	void DrawBand() const;								//白帯の独立描画
 	void Reset();
 
 	bool IsActive() const { return mTimer >= 0; }

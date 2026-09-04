@@ -171,10 +171,12 @@ bool BulletManager::CheckPlayerCollision(float px, float py, float pr) {
 }
 
 
-void BulletManager::ConvertEnemyBulletsToItems() {
+void BulletManager::ConvertEnemyBulletsToItems(float left, float top, float right, float bottom) {
 	for (int i = 0; i < EnemyBMax; i++) {
-		if (e_bullets[i].GetFlag()) {
+		if (!e_bullets[i].GetFlag()) continue;
 
+		if (e_bullets[i].x >= left && e_bullets[i].x <= right &&
+			e_bullets[i].y >= top && e_bullets[i].y <= bottom) {		//’e‚ªŽw’è‹éŒ`“à‚É‘¶Ý‚µ‚Ä‚¢‚éê‡
 			float bx = e_bullets[i].x;
 			float by = e_bullets[i].y;			//Á‚·‘O‚É“G’eÀ•W‘Þ”ð
 

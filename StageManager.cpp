@@ -16,7 +16,7 @@ using namespace BulletPattern;								//省略名
 
 void StageManager::Update(BulletManager* bm) {
 	stageTimer++;								//時間を進める
-	bombCutin.Update();							//ボムカットイン演出のタイマ更新
+	bombCutin.Update(bm);							//ボムカットイン演出のタイマ更新
 
 	if (state == StageState::DOCHU) {
 		if (stageTimer == Stage1Data::MID_BOSS_SPAWN_FRAME) {
@@ -97,11 +97,12 @@ void StageManager::Draw(BulletManager* bm) {		//弾とかの描画
 	if (state==StageState::MID_BOSS_BATTLE || state == StageState::BOSS_BATTLE) {
 		boss.Draw();								//道中ボス・ボス戦中のボスの描画
 	}
-	DrawEnemyMarker();				//ボス戦中にエネミーマーカ描画関数を呼び出す
 	
+	bombCutin.DrawBand();			//ボムの白帯描画
 	bombCutin.Draw();				//ボムカットイン演出の描画
 	player.Draw();				//自機描画
 	player.DrawHitBox();		//自機の次に当たり判定の描画の順にすることで当たり判定が確認しやすくなる
+	DrawEnemyMarker();				//エネミーマーカ描画
 
 	if (bm != nullptr) {
 		bm->DrawItems();				//アイテムの描画

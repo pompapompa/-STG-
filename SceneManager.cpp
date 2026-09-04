@@ -181,12 +181,10 @@ void SceneManager::Update() {
 			if (m_stageManager->GetPlayer().IsDeathTimerActive()) {								//deathTimerがアクティブな時
 				m_stageManager->GetPlayer().StopDeathTimer();												//deathTimerを停止(inactivate)
 				m_stageManager->GetPlayer().SetInVincible(m_stageManager->GetPlayer().GetInvincibleTime());	//無敵時間をセット
-				m_bm->ConvertEnemyBulletsToItems();															//敵弾を小スコアへ変換
 				m_stageManager->GetPlayer().ComsumeBomb();													//ボム消費
 				m_stageManager->TriggerBombCutin();															//喰らいボム発動時のカットイン演出開始
 			}
 			else if (!m_stageManager->GetPlayer().IsInvincible()) {								//無敵状態でなければ通常ボム消費	
-				m_bm->ConvertEnemyBulletsToItems();															//敵弾を小スコアへ変換
 				m_stageManager->GetPlayer().ComsumeBomb();													//ボム消費
 				m_stageManager->TriggerBombCutin();															//通常ボム発動時のカットイン演出開始
 			}
