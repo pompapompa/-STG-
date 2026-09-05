@@ -168,6 +168,9 @@ void SceneManager::Update() {
 				m_stageManager->GetPlayer().GetHitR()
 			);
 		}
+		else {
+			m_bm->EraseBulletsOnInvincible(m_stageManager->GetPlayer().GetX(), m_stageManager->GetPlayer().GetY(), m_stageManager->GetPlayer().GetHitR());
+		}
 
 		if (isPlayerHit && !m_stageManager->GetPlayer().IsDeathTimerActive()) {	//被弾且つdeathTimerがアクティブではない時
 			m_stageManager->GetPlayer().StartDeathTimer();								//deathTimerを始動(アクティベート)

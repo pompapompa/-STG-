@@ -26,7 +26,7 @@ public:
 	static constexpr int BAND_EXPAND_FRAMES = 25;										//白帯上下拡大所要フレーム数
 	static constexpr int BAND_TOTAL_FRAMES = BAND_FADEIN_FRAMES + BAND_EXPAND_FRAMES;	//白帯演出の総フレーム数
 	static constexpr int BAND_MAX_ALPHA = 110;											//白帯の最大アルファ値
-	static constexpr float BAND_TOP_RATE = 0.3f;										//プレイ領域高さに対する白帯の初期上端Y座標比率
+	static constexpr float BAND_TOP_RATE = 0.35f;										//プレイ領域高さに対する白帯の初期上端Y座標比率
 	static constexpr float BAND_BOTTOM_RATE = 0.75f;										//プレイ領域高さに対する白帯の初期下端Y座標比率
 
 	static constexpr float BAND_INIT_TOP = static_cast<float>(PlayArea::Top) + static_cast<float>(PlayArea::Bottom - PlayArea::Top) * BAND_TOP_RATE;		//白帯の基準初期上端Y座標

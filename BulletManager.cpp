@@ -192,6 +192,22 @@ void BulletManager::ConvertEnemyBulletsToItems(float left, float top, float righ
 	}
 }
 
+
+void BulletManager::EraseBulletsOnInvincible(float px, float py, float pr) {	//–³“GŠÔ’†‚ÌÚG’eÁ‹
+	for (int i = 0; i < EnemyBMax; i++) {
+		if (!e_bullets[i].GetFlag()) continue;
+
+		BulletShape shape = GetBulletShape(e_bullets[i].type);		//’eID‚©‚çŒ`ó‚ğæ“¾
+		float hitRate = BULLET_HIT_RATE[static_cast<int>(shape)];	//Œ`ó‚Ì”¼Œa‚É‘Î‚·‚é“–‚½‚è”»’è”¼Œa”ä—¦‚Ìæ“¾
+		float enemyHitR = e_bullets[i].r * hitRate;					//hitRate‚ğl—¶‚µ‚½ÀÛ‚Ì“–‚½‚è”»’è”¼Œa‚ÌŒvZ
+
+		if (Collision::CheckCircle(px, py, pr, e_bullets[i].x, e_bullets[i].y, enemyHitR)) {
+			e_bullets[i].flag = false;
+		}
+	}
+}
+
+
 void BulletManager::LaunchItem(float x, float y, ItemType type, int count, float scatterRadius) {
 	for (int i = 0; i < count; i++) {
 		for (int j = 0; j < MAX_ITEMS; j++) {

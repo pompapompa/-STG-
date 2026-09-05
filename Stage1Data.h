@@ -65,7 +65,7 @@ namespace Stage1Data {
 								{PT::RotateAll,		BulletDefaultRadius::UROKO,			5.0f,															8,														16,		360.0f,		2.8f,										90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
 								{PT::RotateAll,		BulletDefaultRadius::UROKO,			5.0f,															8,														16,		360.0f,		-2.8f,										90,			GetBulletID(BulletShape::UROKO, BulletColor::YELLOW)},
 								{PT::RotateAll,		BulletDefaultRadius::RICE,			2.0f,															{70, 40, 600, BulletPattern::EaseType::EaseInQuad},		64,		360.0f,		0.008f,										90,			GetBulletID(BulletShape::RICE, BulletColor::YELLOW)}
-		},true, {0,15,5,0,1,0}},
+		},true, {0,15,5,0,0,0}},
 
 		/*　フィットフルナイトメア　*/
 		{ 4,	1100.0f,		60.0f,	1,		{

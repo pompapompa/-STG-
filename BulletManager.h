@@ -93,6 +93,7 @@ public:
 		}
 	}
 
+	void EraseBulletsOnInvincible(float px, float py, float pr);
 	void LaunchItem(float x, float y, ItemType type, int count, float scatterRadius);			
 	void UpdateItems(Player& player, float collectRadius, bool isAutoCollect);		//アイテムの更新を行う関数		
 	void DrawItems();																				//アイテムの描画を司令する関数
