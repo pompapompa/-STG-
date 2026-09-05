@@ -74,6 +74,11 @@ void StageManager::Update(BulletManager* bm) {
 		if (fairies[i].GetFlag()) {
 			fairies[i].Update(player, bm);					//フラグが立っている妖精を見つけたら更新して動かす
 
+			if (fairies[i].CheckCollision(player, bm)) {
+				if (fairies[i].IsClearOnDeath()) {
+					bm->ConvertEnemyBulletsToItems();
+				}
+			}
 		}
 	}
 
@@ -100,7 +105,7 @@ void StageManager::Update(BulletManager* bm) {
 			float ey = fairies[i].GetY();
 			float er = fairies[i].GetR();
 			if (ey + er >= bandTop && ey - er <= bandBottom) {		//妖精の円領域が白帯の上下範囲内か判定
-				fairies[i].SetDamage(BombCutin::BAND_FAIRY_DAMAGE_PER_HIT, bm);	//SetDamageでダメージを与える
+				fairies[i].SetDamage(BombCutin::BAND_FAIRY_DAMAGE_PER_HIT, bm);	//白帯ダメージ撃破時にもアイテムドロップ・弾消しが発生するようbmを確実に渡してダメージ付与
 				player.AddScore(GameScore::BOMB_HIT_FAIRY);	
 
 			}
@@ -112,11 +117,6 @@ void StageManager::Update(BulletManager* bm) {
 void StageManager::Draw(BulletManager* bm) {		//弾とかの描画
 	for (int i = 0; i < Enemy::EnemyMax; i++) {
 		if (fairies[i].GetFlag()) {
-			if (fairies[i].CheckCollision(player, bm)) {
-				if (fairies[i].IsClearOnDeath()) {
-					bm->ConvertEnemyBulletsToItems();
-				}
-			}
 			fairies[i].Draw();						//フラグが立っている妖精を描画
 		}
 	}

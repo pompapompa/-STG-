@@ -143,7 +143,7 @@ void Player::Update(BulletManager* bm) {
 				DropPowerOnDeath();						//パワー減少ペナルティ
 				loadingBomb();							//基準ボム数の装填
 				SetInVincible(GetInvincibleTime());		//無敵状態遷移
-				bm->ClearEnemyBullets();								//敵弾消去
+				bm->EraseAllEnemyBullets();				//消去アニメーションで全敵弾消去
 				bm->LaunchItem(x, y, ItemType::POWER, 5, 40.0f);		
 				bm->LaunchItem(x, y, ItemType::BIG_POWER, 1, 20.0f);	//被弾時のパワーアイテムドロップ
 			}

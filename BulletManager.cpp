@@ -65,7 +65,7 @@ void BulletManager::ReloadGraphic() {
 
 void BulletManager::LaunchPlayerBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming, float turnSpeed) {
 	for (int i = 0; i < PlayerBMax; i++) {
-		if (!p_bullets[i].GetFlag()) {
+		if (!p_bullets[i].GetFlag() && !p_bullets[i].IsEraseAnimActive()) {
 			p_bullets[i].Shoot(x, y, sr, ssx, ssy, isHoming, Bullet::OwnerType::PLAYER, turnSpeed);
 			break;
 		}
@@ -74,7 +74,7 @@ void BulletManager::LaunchPlayerBullet(float x, float y, float sr, float ssx, fl
 
 void BulletManager::LaunchEnemyBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming, float turnSpeed, int in_type) {
 	for (int i = 0; i < EnemyBMax; i++) {
-		if (!e_bullets[i].GetFlag()) {
+		if (!e_bullets[i].GetFlag() && !e_bullets[i].IsEraseAnimActive()) {
 			e_bullets[i].Shoot(x, y, sr, ssx, ssy, isHoming, Bullet::OwnerType::ENEMY, turnSpeed, in_type);
 			break;
 		}
@@ -129,8 +129,8 @@ void BulletManager::Update(float playerX, float playerY, float bossX, float boss
 		p_bullets[i].Update();
 	}
 	for (int i = 0; i < EnemyBMax; i++) {
-		if (!e_bullets[i].GetFlag()) continue;									//ƒtƒ‰ƒO‚ª—§‚Á‚Ä‚È‚¢ê‡”ò‚Î‚·
-		if (e_bullets[i].isHoming) {											//“G’e‚ªƒz[ƒ~ƒ“ƒO‚·‚éê‡
+		if (!e_bullets[i].GetFlag() && !e_bullets[i].IsEraseAnimActive()) continue;		//ƒtƒ‰ƒO‚ª—§‚Á‚Ä‚È‚¢AŠŽ‚ÂÁ–ÅƒAƒjƒ[ƒVƒ‡ƒ“’†‚Å‚È‚¢ê‡”ò‚Î‚·
+		if (e_bullets[i].isHoming) {													//“G’e‚ªƒz[ƒ~ƒ“ƒO‚·‚éê‡
 			e_bullets[i].Guide(playerX, playerY, e_bullets[i].turnSpeed);
 		}
 		e_bullets[i].Update();
@@ -202,7 +202,15 @@ void BulletManager::EraseBulletsOnInvincible(float px, float py, float pr) {	//–
 		float enemyHitR = e_bullets[i].r * hitRate;					//hitRate‚ðl—¶‚µ‚½ŽÀÛ‚Ì“–‚½‚è”»’è”¼Œa‚ÌŒvŽZ
 
 		if (Collision::CheckCircle(px, py, pr, e_bullets[i].x, e_bullets[i].y, enemyHitR)) {
-			e_bullets[i].flag = false;
+			e_bullets[i].Erase();			//Á–ÅƒAƒjƒ[ƒVƒ‡ƒ“ŠJŽn
+		}
+	}
+}
+
+void BulletManager::EraseAllEnemyBullets() {
+	for (int i = 0; i < EnemyBMax; i++) {
+		if (e_bullets[i].GetFlag()) {
+			e_bullets[i].Erase();
 		}
 	}
 }
@@ -248,7 +256,7 @@ void BulletManager::Draw() {
 		}
 	}
 	for (int i = 0; i < EnemyBMax; i++) {
-		if (!e_bullets[i].GetFlag()) continue;
+		if (!e_bullets[i].GetFlag() && !e_bullets[i].IsEraseAnimActive()) continue;
 
 		e_bullets[i].Draw(bulletGraphs[e_bullets[i].type]);
 	}

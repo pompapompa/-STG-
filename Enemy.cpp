@@ -98,16 +98,14 @@ bool Enemy::CheckCollision(Player& player, BulletManager* bm) {
 		Bullet& b = bm->GetPlayerBullet(i);								//Ž©‹@’eŠeX‚ªŽ‚ÂŒŸ‘Ì”Ô†‚ðŠi”[
 		if (!b.GetFlag()) continue;										//Ž©‹@ƒtƒ‰ƒO‚ª—§‚Á‚Ä‚¢‚È‚¢Žž”ò‚Î‚·
 
-		if (Collision::CheckCircle(x, y, r, b.x, b.y, b.r)) {			//
-			hp -= 1;								//hp‚ðƒfƒNƒŠƒƒ“ƒg
-			b.SetFlag(false);						//’e‚ðÁ‚·
+		if (Collision::CheckCircle(x, y, r, b.x, b.y, b.r)) {
+			b.SetFlag(false);											//“G‚É‚ ‚½‚Á‚½Ž©‹@’e‚Ìƒtƒ‰ƒO‚ðÜ‚é
 
-			if (bm->CheckEnemyCollision(x, y, r, player)) {}
+			player.AddScore(GameScore::BULLET_HIT_ENEMY);				
 
 			SetDamage(1, bm);
-			if(!flag){
-				return true;
-			}
+
+			if (!flag) return true;
 		}
 	}
 	return false;

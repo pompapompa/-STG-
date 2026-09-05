@@ -65,19 +65,24 @@ public:
 	
 	void ClearPlayerBullets() {
 		for (int i = 0; i < PlayerBMax; i++) {
-			p_bullets[i].SetFlag(false);
+			p_bullets[i].Init();					//自機弾クリア時にパラメータを初期化
 		}
 	}
 
 	void ClearEnemyBullets() {
 		for (int i = 0; i < EnemyBMax; i++) {
-			e_bullets[i].SetFlag(false);
+			e_bullets[i].Init();					//敵弾クリア時にパラメータを初期化
 		}
 	}
 
 	void ClearAllBullets(){
 		ClearPlayerBullets();
 		ClearEnemyBullets();
+	}
+
+	void Init() {				//全弾、全アイテムの一括初期化
+		ClearAllBullets();
+		ClearAllItems();
 	}
 
 	void ConvertEnemyBulletsToItems(
@@ -94,6 +99,7 @@ public:
 	}
 
 	void EraseBulletsOnInvincible(float px, float py, float pr);
+	void EraseAllEnemyBullets();		
 	void LaunchItem(float x, float y, ItemType type, int count, float scatterRadius);			
 	void UpdateItems(Player& player, float collectRadius, bool isAutoCollect);		//アイテムの更新を行う関数		
 	void DrawItems();																				//アイテムの描画を司令する関数
