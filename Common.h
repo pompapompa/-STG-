@@ -81,6 +81,7 @@ namespace EMT {	//EMT(EnemyMoveType)
 		Straight = 0,               //従来の等速直線移動(vx, vyを加算し続ける後方互換用)
 		TopLeft_To_Bottom,          //上端左側出現→右下方向へイージング進入→真下へ降下退場
 		TopRight_To_Bottom,         //上端右側出現→左下方向へイージング進入→真下へ降下退場
+		TopAlternate_To_Bottom,     //上部から左右交互に出現して真下へ降下退場
 		Top_Stay_Back				//上端中央出現→指定位置で一定時間静止射撃→上部へ離脱退場
 	};
 }
@@ -95,6 +96,13 @@ struct EnemyMoveConfig {
 	float exitSpeed = 1.0f;				//退場段階の移動速度
 	float TopCenter_targetY = PlayArea::Top + (PlayArea::Bottom - PlayArea::Top) / 4;	//TopCenter_Stay_Back用の侵入目標Y座標
 };
+
+namespace EnemySpawnConfig {
+	static constexpr float ALTERNATE_BASE_OFFSET_X = 10.0f;		//画面端基準オフセット
+	static constexpr float ALTERNATE_TARGET_OFFSET_X = 50.0f;	//進入目標地点の画面端基準オフセット
+	static constexpr float ALTERNATE_STEP_SHIFT_X = 15.0f;		//1ペア(左右1回ずつ)経過ごとのX座標変位量
+	static constexpr int ALTERNATE_PAIR_DIVISOR = 2;			//偶奇判定用
+}
 
 
 

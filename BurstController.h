@@ -30,6 +30,7 @@ public:
 	}
 
 	bool IsActive() const { return remain > 0; }
+	int GetRemain() const { return remain; }		//隊列内の現在の残り数の取得ゲッタ
 	int GetDataIdx() const { return dataIdx; }
 	int GetElapsed() const { return elapsed; }		//スロット起動からの経過フレーム取得ゲッタ
 	void Reset() { remain = 0; timer = 0; }

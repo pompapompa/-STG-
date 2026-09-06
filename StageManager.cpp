@@ -42,10 +42,31 @@ void StageManager::Update(BulletManager* bm) {
 
 				int currentInterval = Stage1Data::Timeline[dataIdx].interval.Get(SpawnSlots[s].GetElapsed());	//スロット経過時間に応じた動的intervalを取得
 				if (currentInterval < 1)currentInterval = 1;	//下限クランプ
+				
 				if (SpawnSlots[s].Tick(currentInterval)) {
 					for (int j = 0; j < Enemy::EnemyMax; j++) {
 						if (!fairies[j].GetFlag()) {
-							auto& d = Stage1Data::Timeline[dataIdx];
+							auto d = Stage1Data::Timeline[dataIdx];
+							if (d.moveConf.type == EMT::TopAlternate_To_Bottom) {
+								using namespace EnemySpawnConfig;
+								int spawnIndex = d.count - SpawnSlots[s].GetRemain() - 1;						//何体目か
+								bool isRight = (spawnIndex % ALTERNATE_PAIR_DIVISOR != 0);						//左右判定
+								int pairIndex = spawnIndex / ALTERNATE_PAIR_DIVISOR;							//何ペア目か
+								float shiftX = static_cast<float>(pairIndex) * ALTERNATE_STEP_SHIFT_X;		//ペアごとのX変位量
+								
+								if (isRight) {
+									d.x = (static_cast<float>(PlayArea::Right) - ALTERNATE_BASE_OFFSET_X) - shiftX;
+									d.moveConf.type = EMT::TopRight_To_Bottom;
+
+									d.moveConf.targetX = (static_cast<float>(PlayArea::Right) - ALTERNATE_TARGET_OFFSET_X) - shiftX;
+								}
+								else {
+									d.x = (static_cast<float>(PlayArea::Left) + ALTERNATE_BASE_OFFSET_X) + shiftX;
+									d.moveConf.type = EMT::TopLeft_To_Bottom;
+
+									d.moveConf.targetX = (static_cast<float>(PlayArea::Left) + ALTERNATE_TARGET_OFFSET_X) + shiftX;
+								}
+							}
 							fairies[j].Encount(d.x, d.y, d.r, d.vx, d.vy, d.hp, d.shotConf, d.clearOnEnd, d.dropCounts, d.moveConf);
 							break;
 						}
