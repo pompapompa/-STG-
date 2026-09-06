@@ -480,10 +480,10 @@ void SceneManager::Draw() {
 		m_stageManager->Draw(m_bm);					//敵や自機本体の描画
 		m_hud->Draw(&m_stageManager->GetPlayer());	//Playerクラスのメンバにアクセス(readonly)できるStageManagerからGetPlayer()を取得
 
-		DrawString(470, 220, "一時停止", GetColor(0, 255, 255));
-		DrawString(470, 270, (PauseMenu.GetSelect() == 0 ? "> 続ける" : "続ける"), GetColor(255, 255, 255));
-		DrawString(470, 300, (PauseMenu.GetSelect() == 1 ? "> タイトルに戻る" : "タイトルに戻る"), GetColor(255, 255, 255));
-		DrawString(470, 330, (PauseMenu.GetSelect() == 2 ? "> やり直す" : "やり直す"), GetColor(255, 255, 255));
+		DrawString(470, 270, "一時停止", GetColor(0, 255, 255));
+		DrawString(470, 320, (PauseMenu.GetSelect() == 0 ? "> 続ける" : "続ける"), GetColor(255, 255, 255));
+		DrawString(470, 350, (PauseMenu.GetSelect() == 1 ? "> タイトルに戻る" : "タイトルに戻る"), GetColor(255, 255, 255));
+		DrawString(470, 380, (PauseMenu.GetSelect() == 2 ? "> やり直す" : "やり直す"), GetColor(255, 255, 255));
 	}
 	break;
 

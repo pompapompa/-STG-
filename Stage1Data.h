@@ -70,7 +70,7 @@ namespace Stage1Data {
 		/*　フィットフルナイトメア　*/
 		{ 4,	4500.0f,		60.0f,	1,		{
 								{PT::RotateAll,		BulletDefaultRadius::KNIFE,			{ 2.0f,/*8.0f*/ 8.0f, 600, BulletPattern::EaseType::EaseInCubic},		{15, 5, 600, BulletPattern::EaseType::EaseInCubic},	{1, 45, 600, BulletPattern::EaseType::EaseInCubic},		360.0f,		0.191,										90,			GetBulletID(BulletShape::KNIFE,BulletColor::RED)}
-		},true, {0,30,8,0,0,1},BMT::Center_Fixed},
+		},true, {0,30,8,0,0,1}, BMT::Fixed,(float)PlayArea::CenterX, (float)PlayArea::FitfullBossY},
 
 		/*　ラストスペル　*/
 		{ 5,	2500.0f,		110.0f,	5,		{
