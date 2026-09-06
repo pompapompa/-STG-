@@ -93,7 +93,8 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 			if (shouldShoot) {			//”­Ëƒtƒ‰ƒO‚ª—§‚Á‚Ä‚¢‚éê‡‚Ì‚İËoˆ—Às
 				if (conf.type == PT::RotateAll) {
 					float baseAngleDeg = conf.baseAngle + (timer * conf.rotSpeed) * 180.0f / DX_PI_F;
-					BulletPattern::NWayShot(x, y, conf.radius, currentSpeed, conf.way, conf.totalAngle, baseAngleDeg, bm, conf.graphicType);	//“®“I’e‘¬‚ğ“n‚µ‚Ä‘S•ûˆÊ’e¶¬
+					int currentWay = conf.way.Get(phaseTimer);
+					BulletPattern::NWayShot(x, y, conf.radius, currentSpeed, currentWay, conf.totalAngle, baseAngleDeg, bm, conf.graphicType);	//“®“I’e‘¬‚ğ“n‚µ‚Ä‘S•ûˆÊ’e¶¬
 				}
 				else {
 					BulletPattern::ExecShot(x, y, conf, player, bm, phaseTimer);	//“®“I’e‘¬ŒvZ‚Ìˆ×AphaseTimer‚ğ“n‚µ‚Ä’e–‹U‚è•ª‚¯‚ğÀs

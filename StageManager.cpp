@@ -40,7 +40,9 @@ void StageManager::Update(BulletManager* bm) {
 			if (SpawnSlots[s].IsActive()) {
 				int dataIdx = SpawnSlots[s].GetDataIdx();
 
-				if (SpawnSlots[s].Tick(Stage1Data::Timeline[dataIdx].interval)) {
+				int currentInterval = Stage1Data::Timeline[dataIdx].interval.Get(SpawnSlots[s].GetElapsed());	//スロット経過時間に応じた動的intervalを取得
+				if (currentInterval < 1)currentInterval = 1;	//下限クランプ
+				if (SpawnSlots[s].Tick(currentInterval)) {
 					for (int j = 0; j < Enemy::EnemyMax; j++) {
 						if (!fairies[j].GetFlag()) {
 							auto& d = Stage1Data::Timeline[dataIdx];
