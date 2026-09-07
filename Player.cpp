@@ -5,16 +5,43 @@
 #include "ReimuB_Weapon.h"
 #include "ImageEditor.h"	//使う部品
 #include "Common.h"			//共通設定
+#include <cstdio>			
 #include <math.h>			//システムという順番が良いらしい
+
 
 
 
 Player::Player() {
 	mCurrentWeapon = new ReimuB_Weapon();			//Playerのコンストラクタを明示し、初期のウェポンを生成
+	InitGraphics();									//グラフィックの読み込み
 }
 
 Player::~Player() {
 	delete mCurrentWeapon;							//Playerのデストラクタを明示し、動的に確保したウェポンクラスのメモリを解放
+	ReleaseGraphics();								//メモリリーク対策
+}
+
+
+void Player::InitGraphics() {
+	ReleaseGraphics();
+
+	int charIdx = static_cast<int>(mCharType);
+	const auto& def = CHARACTER_GRAPHIC_TABLE[charIdx];
+
+	for (int p = 0; p < static_cast<int>(PlayerPose::MAX_POSES); ++p) {
+		char fullPath[256];
+		std::snprintf(fullPath, sizeof(fullPath), "%s%s", def.rootPath, def.fileNames[p]);
+		mGraphs[p] = LoadGraph(fullPath);
+	}
+}
+
+void Player::ReleaseGraphics() {
+	for (int p = 0; p < static_cast<int>(PlayerPose::MAX_POSES); ++p) {
+		if (mGraphs[p] != -1) {
+			DeleteGraph(mGraphs[p]);
+			mGraphs[p] = -1;
+		}
+	}
 }
 
 void Player::ActivateWeapon(BurstController* slots, int count) {
@@ -46,6 +73,16 @@ void Player::Update(BulletManager* bm) {
 
 	x += vx * speed;
 	y += vy * speed;
+
+	if (vx < 0) {
+		mCurrentPose = PlayerPose::LEFT;
+	}
+	else if (vx > 0) {
+		mCurrentPose = PlayerPose::RIGHT;
+	}
+	else {
+		mCurrentPose = PlayerPose::DEFAULT;
+	}
 
 	if (x < Left + para.areaW) x = Left + para.areaW;			//x - para.areaW < Leftの左辺をxのみにするために移項した
 	if (x > Right - para.areaW) x = Right - para.areaW;
@@ -222,8 +259,19 @@ void Player::Draw() {
 		return;												//無敵判定がtrue且つ無敵時間全体を周期で割ってそれがblinkThresholdよりも小さい時に描画処理をreturnでスキップすることで点滅させる
 	}
 
-	int drawHandle = GetCustomGraphHandle(EditCategory::PLAYER, 0);
-	DrawRotaGraph((int)x, (int)y, para.drawScale, 0.0f, drawHandle, TRUE);
+	int handle = mGraphs[static_cast<int>(mCurrentPose)];	//現在の移動ポーズを格納
+	if (handle != -1) {		//自機のPNGイラストがある場合
+		DrawRotaGraph(static_cast<int>(x), static_cast<int>(y), PLAYER_DRAW_SCALE, 0.0f, handle, TRUE);
+	}
+	else {					
+		int drawHandle = GetCustomGraphHandle(EditCategory::PLAYER, 0);	//CustomGraphics.datより取得した自機ドット絵を格納
+		if (drawHandle != -1) {			//自機ドット絵がある場合
+			DrawRotaGraph(static_cast<int>(x), static_cast<int>(y), para.drawScale, 0.0f, drawHandle, TRUE);
+		}
+		else {							//見つからなかった場合
+			DrawCircle(static_cast<int>(x), static_cast<int>(y), static_cast<int>(para.r), GetColor(0, 255, 0), TRUE);
+		}
+	}
 }
 
 void Player::DrawHitBox(){

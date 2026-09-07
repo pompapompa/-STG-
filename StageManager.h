@@ -61,6 +61,7 @@ public:
 
 	void ReloadGraphic() {
 		boss.ReloadGraphic();	
+		player.ReloadGraphic();
 		InitFont();
 		bombCutin.ReloadGraphic();		
 	}

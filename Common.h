@@ -275,3 +275,30 @@ constexpr float CalcRotateSpeed(int way, int si, float phaseShift = (1.0f / 3.0f
 	return (deltaTheta * 3.14159265f) / (static_cast<float>(si) * 180.0f);
 }
 
+enum class PlayerPose {
+	DEFAULT = 0,	//ê≥ñ 
+	LEFT,			//ç∂à⁄ìÆ
+	RIGHT,			//âEà⁄ìÆ
+	MAX_POSES
+};
+
+enum class CharacterType {
+	REIMU = 0,					//åªèÛÇÕóÏñ≤ÇÃÇ›
+	MAX_CHARACTERS
+};
+
+struct CharacterGraphicDef {
+	const char* rootPath;
+	const char* fileNames[static_cast<int>(PlayerPose::MAX_POSES)];
+};
+
+static constexpr CharacterGraphicDef CHARACTER_GRAPHIC_TABLE[] = {
+	{
+		"ëfçﬁèW/é©ã@/óÏñ≤/",
+		{
+		"Default.png",
+		"MovingLeft.png",
+		"MovingRight.png"
+		}
+	}
+};
