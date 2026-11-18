@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BombCutin.cpp" />
     <ClCompile Include="Boss.cpp" />
     <ClCompile Include="BossMoving.cpp" />
     <ClCompile Include="Bullet.cpp" />
@@ -163,6 +164,7 @@
     <ClCompile Include="StageManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BombCutin.h" />
     <ClInclude Include="Boss.h" />
     <ClInclude Include="BossMoving.h" />
     <ClInclude Include="Bullet.h" />

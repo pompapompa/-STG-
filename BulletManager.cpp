@@ -65,7 +65,7 @@ void BulletManager::ReloadGraphic() {
 
 void BulletManager::LaunchPlayerBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming, float turnSpeed) {
 	for (int i = 0; i < PlayerBMax; i++) {
-		if (!p_bullets[i].GetFlag()) {
+		if (!p_bullets[i].GetFlag() && !p_bullets[i].IsEraseAnimActive()) {
 			p_bullets[i].Shoot(x, y, sr, ssx, ssy, isHoming, Bullet::OwnerType::PLAYER, turnSpeed);
 			break;
 		}
@@ -74,7 +74,7 @@ void BulletManager::LaunchPlayerBullet(float x, float y, float sr, float ssx, fl
 
 void BulletManager::LaunchEnemyBullet(float x, float y, float sr, float ssx, float ssy, bool isHoming, float turnSpeed, int in_type) {
 	for (int i = 0; i < EnemyBMax; i++) {
-		if (!e_bullets[i].GetFlag()) {
+		if (!e_bullets[i].GetFlag() && !e_bullets[i].IsEraseAnimActive()) {
 			e_bullets[i].Shoot(x, y, sr, ssx, ssy, isHoming, Bullet::OwnerType::ENEMY, turnSpeed, in_type);
 			break;
 		}
@@ -129,8 +129,8 @@ void BulletManager::Update(float playerX, float playerY, float bossX, float boss
 		p_bullets[i].Update();
 	}
 	for (int i = 0; i < EnemyBMax; i++) {
-		if (!e_bullets[i].GetFlag()) continue;									//フラグが立ってない場合飛ばす
-		if (e_bullets[i].isHoming) {											//敵弾がホーミングする場合
+		if (!e_bullets[i].GetFlag() && !e_bullets[i].IsEraseAnimActive()) continue;		//フラグが立ってない、且つ消滅アニメーション中でない場合飛ばす
+		if (e_bullets[i].isHoming) {													//敵弾がホーミングする場合
 			e_bullets[i].Guide(playerX, playerY, e_bullets[i].turnSpeed);
 		}
 		e_bullets[i].Update();
@@ -146,7 +146,7 @@ bool BulletManager::CheckEnemyCollision(float ex, float ey, float er, Player& pl
 		if (Collision::CheckCircle(ex, ey, er, p_bullets[i].x, p_bullets[i].y, p_bullets[i].r)) {		//CollisionクラスのCheckCircle関数に自機と敵弾それぞれのx,y,r値を教える
 			p_bullets[i].flag = false;																	//当たった弾は消す
 			
-			player.AddScore(10);
+			player.AddScore(GameScore::BULLET_HIT_ENEMY);
 
 			return true;
 		}
@@ -171,10 +171,12 @@ bool BulletManager::CheckPlayerCollision(float px, float py, float pr) {
 }
 
 
-void BulletManager::ConvertEnemyBulletsToItems() {
+void BulletManager::ConvertEnemyBulletsToItems(float left, float top, float right, float bottom) {
 	for (int i = 0; i < EnemyBMax; i++) {
-		if (e_bullets[i].GetFlag()) {
+		if (!e_bullets[i].GetFlag()) continue;
 
+		if (e_bullets[i].x >= left && e_bullets[i].x <= right &&
+			e_bullets[i].y >= top && e_bullets[i].y <= bottom) {		//弾が指定矩形内に存在している場合
 			float bx = e_bullets[i].x;
 			float by = e_bullets[i].y;			//消す前に敵弾座標退避
 
@@ -189,6 +191,30 @@ void BulletManager::ConvertEnemyBulletsToItems() {
 		}
 	}
 }
+
+
+void BulletManager::EraseBulletsOnInvincible(float px, float py, float pr) {	//無敵時間中の接触弾消去
+	for (int i = 0; i < EnemyBMax; i++) {
+		if (!e_bullets[i].GetFlag()) continue;
+
+		BulletShape shape = GetBulletShape(e_bullets[i].type);		//弾IDから形状を取得
+		float hitRate = BULLET_HIT_RATE[static_cast<int>(shape)];	//形状の半径に対する当たり判定半径比率の取得
+		float enemyHitR = e_bullets[i].r * hitRate;					//hitRateを考慮した実際の当たり判定半径の計算
+
+		if (Collision::CheckCircle(px, py, pr, e_bullets[i].x, e_bullets[i].y, enemyHitR)) {
+			e_bullets[i].Erase();			//消滅アニメーション開始
+		}
+	}
+}
+
+void BulletManager::EraseAllEnemyBullets() {
+	for (int i = 0; i < EnemyBMax; i++) {
+		if (e_bullets[i].GetFlag()) {
+			e_bullets[i].Erase();
+		}
+	}
+}
+
 
 void BulletManager::LaunchItem(float x, float y, ItemType type, int count, float scatterRadius) {
 	for (int i = 0; i < count; i++) {
@@ -230,7 +256,7 @@ void BulletManager::Draw() {
 		}
 	}
 	for (int i = 0; i < EnemyBMax; i++) {
-		if (!e_bullets[i].GetFlag()) continue;
+		if (!e_bullets[i].GetFlag() && !e_bullets[i].IsEraseAnimActive()) continue;
 
 		e_bullets[i].Draw(bulletGraphs[e_bullets[i].type]);
 	}

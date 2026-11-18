@@ -4,12 +4,15 @@
 #include <math.h>
 
 namespace BulletPattern {
-	void AimedShot(float ex, float ey, float sr, float speed, const Player& player, BulletManager* bm, int graphicType) {
+	
+	inline float GetAngleToPlayerDeg(float ex, float ey, const Player& player) {	//敵と自機の相対角度(度数法)を算出
 		float dx = player.GetX() - ex;
 		float dy = player.GetY() - ey;									//敵から自機への相対位置ベクトル(dx,dy)を算出
-
-		float angleRad = atan2f(dy, dx);								//敵から自機の角度[rad]を算出
-		float angleDeg = angleRad * 180.0f / DX_PI_F;					//弧度法→度数法変換
+		return atan2f(dy, dx) * 180.0f / DX_PI_F;						//敵から自機の角度(度数法)を算出して返す
+	}
+	
+	void AimedShot(float ex, float ey, float sr, float speed, const Player& player, BulletManager* bm, int graphicType) {
+		float angleDeg = GetAngleToPlayerDeg(ex, ey, player);							//敵と自機の相対角度取得
 		NWayShot(ex, ey, sr, speed, 1, 0.0f, angleDeg, bm, graphicType);				//NWayShot関数へ処理を任せる
 	}
 
@@ -45,24 +48,28 @@ namespace BulletPattern {
 
 	void ExecShot(float ex, float ey, const ShotConfig& conf, const Player& player, BulletManager* bm, int timer) {
 		float currentSpeed = conf.speed.Get(timer);			//経過時間(timer)に応じた現在の弾速ssの動的パラメータをParamScalingより取得
-		
+		int currentWay = conf.way.Get(timer);				//経過時間に応じた現在のway数の動的パラメータ
+
 		switch (conf.type) {
 		case PT::Aimed:
-			AimedShot(ex, ey, conf.radius, currentSpeed, player, bm, conf.graphicType);
+			if (currentWay <= 1) {
+				AimedShot(ex, ey, conf.radius, currentSpeed, player, bm, conf.graphicType);
+			}
+			else {
+				float aimAngleDeg = GetAngleToPlayerDeg(ex, ey, player);
+				NWayShot(ex, ey, conf.radius, currentSpeed, currentWay, conf.totalAngle, aimAngleDeg, bm, conf.graphicType);
+			}
 			break;
 
 		case PT::NWay:
 		{
-			float dx = player.GetX() - ex;
-			float dy = player.GetY() - ey;
-			float aimAngleDeg = atan2f(dy, dx) * 180.0f / DX_PI_F;
-
-			NWayShot(ex, ey, conf.radius, currentSpeed, conf.way, conf.totalAngle, aimAngleDeg, bm, conf.graphicType);
+			float aimAngleDeg = GetAngleToPlayerDeg(ex, ey, player);
+			NWayShot(ex, ey, conf.radius, currentSpeed, currentWay, conf.totalAngle, aimAngleDeg, bm, conf.graphicType);
 			break;
 		}
 
 		case PT::RotateAll:
-			NWayShot(ex, ey, conf.radius, currentSpeed, conf.way, 360.0f, conf.baseAngle, bm, conf.graphicType);
+			NWayShot(ex, ey, conf.radius, currentSpeed, currentWay, 360.0f, conf.baseAngle, bm, conf.graphicType);
 			break;
 		}
 	}

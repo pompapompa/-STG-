@@ -38,12 +38,15 @@ private:
 	static constexpr int stdBomb = 3;							//StandardBomb(基準ボム数)
 	static constexpr int stdPracLife = 8;						//StandardPracticeLife(プラクティスモードでの基準残機数)
 	
-	static constexpr int SCORE_ROLLUP_LARGE_THRESHOLD =600;	//残りの加算値が1000点以上ある場合は表示遅延を防ぐため、加算を加速させる閾値
-	static constexpr int SCORE_ROLLUP_LARGE_STEP = 400;		//加速時の単位フレームあたりのスコア加算量
-	static constexpr int SCORE_ROLLUP_SMALLSTEP = 10;		//通常時の単位フレームあたりのスコア加算量
-	static constexpr int POWER_MAX = POWER_MAX_VALUE;		//パワーの最大値						
-	static constexpr int POWER_LOSS_ON_DEATH = 16;			//被弾時のパワー減少値
+	static constexpr int SCORE_ROLLUP_LARGE_THRESHOLD =600;		//残りの加算値が1000点以上ある場合は表示遅延を防ぐため、加算を加速させる閾値
+	static constexpr int SCORE_ROLLUP_LARGE_STEP = 400;			//加速時の単位フレームあたりのスコア加算量
+	static constexpr int SCORE_ROLLUP_SMALLSTEP = 10;			//通常時の単位フレームあたりのスコア加算量
+	static constexpr int POWER_MAX = POWER_MAX_VALUE;			//パワーの最大値						
+	static constexpr int POWER_LOSS_ON_DEATH = 16;				//被弾時のパワー減少値
 
+	int mGraphs[static_cast<int>(PlayerPose::MAX_POSES)] = { -1,-1,-1 };
+	PlayerPose mCurrentPose = PlayerPose::DEFAULT;
+	CharacterType mCharType = CharacterType::REIMU;
 
 	static constexpr PlayerParameter para{	//ここで同時にインスタンス宣言も行っている
 		4.0f,								//vn:通常速度
@@ -94,7 +97,12 @@ private:
 
 	*/
 
-	Weapon* mCurrentWeapon = nullptr;		//機体別ウェ本の動的切り替えに対応する為のポインタ
+	Weapon* mCurrentWeapon = nullptr;		//機体別ウェポンの動的切り替えに対応する為のポインタ
+
+
+	static constexpr float GRAPHIC_BASE_SIZE = 128.0f;												//素材の元画像解像度
+	static constexpr float VISUAL_SIZE_RATIO = 2.0f * 1.3f;											//直径(×2.0)とグラフィック余裕度(×1.3)
+	static constexpr float PLAYER_DRAW_SCALE = (para.r * VISUAL_SIZE_RATIO) / GRAPHIC_BASE_SIZE;	//描画スケール
 
 	float x = PlayArea::DefaultPlayerX;
 	float y = PlayArea::DefaultPlayerY;
@@ -159,6 +167,10 @@ public:
 	}				
 	void Extend() { mLife++; if (mLife > 8) mLife = 8; }	//エクステンド関数
 	void AddBomb() { mBomb++; if (mBomb > 8) mBomb = 8; }	//ボム追加関数
+
+	void InitGraphics();
+	void ReleaseGraphics();
+	void ReloadGraphic() { InitGraphics(); }
 
 	/*　　↓はprivateに書いた物を安全に読み込み専用でインスタンスから値のみ取得する　　*/
 	float GetX() const { return x; }								//ホーミング用にx座標を取得する

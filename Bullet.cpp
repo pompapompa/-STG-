@@ -29,13 +29,24 @@ void Bullet::Guide(float tx, float ty, float turnSpeed) {
 
 
 void Bullet::Draw(int scaleGraph) {
-	if (!flag) return;
+	if (!flag && eraseTimer < 0) return;
 
 	if (owner == OwnerType::PLAYER) {																//自機弾の色
 		DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::RED), true);
 		DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::WHITE), false);
 	}
 	else {
+		float animScaleMult = 1.0f;		//アニメーション時の描画スケール拡大率の初期値設定
+		int drawAlpha = MAX_ALPHA;		//不透明度の初期値設定
+
+		if (eraseTimer >= 0) {
+			float t = static_cast<float>(eraseTimer) / static_cast<float>(ERASE_ANIM_FRAMES);	
+			float ease = Easing::Calculate(t, EaseType::EaseOutQuad);			//2次減速のイージング係数算出
+			animScaleMult = 1.0f + (ERASE_ANIM_SCALE_ADD * ease);				//描画スケールの拡大
+			drawAlpha = static_cast<int>(MAX_ALPHA_F * (1.0f - ease));			//フェードアウト
+			SetDrawBlendMode(DX_BLENDMODE_ADD, drawAlpha);						//加算ブレンドで発光消散
+		}
+
 		BulletShape shape = GetBulletShape(type);
 		BulletColor color = GetBulletColor(type);
 		
@@ -44,20 +55,22 @@ void Bullet::Draw(int scaleGraph) {
 			float drawAngle = angle - (DX_PI_F / 2.0f);                 //画像は下向き基準なので、始線(0)からの差(-π/2)する
 
 			int shapeIdx = static_cast<int>(shape);
-			float baseR = BULLET_BASE_RADIUS[shapeIdx];
-			float scale = (baseR > 0.0f) ? (r / baseR) : 1.0f;          //基準半径で割って描画倍率を判定と連動
+			float baseR = BULLET_BASE_RADIUS[shapeIdx];								//弾種ごとの基準解像度半径取得
+			float scale = ((baseR > 0.0f) ? (r / baseR) : 1.0f) * animScaleMult;	//基準解像度に対する描画倍率(r/baseR)に、消滅アニメーションの拡大演出倍率を掛けて最終スケールを算出
 
 			DrawRotaGraph((int)x, (int)y, scale, drawAngle, scaleGraph, TRUE);		//回転描画
 		}
 		else {
+			int currentR = static_cast<int>(r * animScaleMult);	//デフォルト円描画用のアニメーションの拡大率を適用した半径の算出
 			if (color == BulletColor::RED) {
-				DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::RED), true);
-				DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::WHITE), false);
+				DrawCircle((int)x, (int)y, currentR, ObjectColor::Get(ObjectColor::Type::RED), true);
+				DrawCircle((int)x, (int)y, currentR, ObjectColor::Get(ObjectColor::Type::WHITE), false);
 			}
 			else {
-				DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::WHITE), true);
-				DrawCircle((int)x, (int)y, (int)r, ObjectColor::Get(ObjectColor::Type::BLUE), false);		//通常円(CIRCLE)や画像がない場合のフォールバック描画
+				DrawCircle((int)x, (int)y, currentR, ObjectColor::Get(ObjectColor::Type::WHITE), true);
+				DrawCircle((int)x, (int)y, currentR, ObjectColor::Get(ObjectColor::Type::BLUE), false);
 			}
 		}
+		if (eraseTimer >= 0) SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);		//ブレンドモード解除
 	}
 }

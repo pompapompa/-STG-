@@ -52,9 +52,9 @@ namespace BulletPattern {
 	struct ShotConfig {
 		PT::Type type = PT::Aimed;
 		float radius = 5.0f;					//弾半径
-		ParamScaling<float> speed = 5.0f;		//float型テンプレートを用いた弾速(ss)の動的パラメータ
-		ParamScaling<int>   interval = 30;		//int型テンプレートを用いた発射間隔(si)の動的パラメータ
-		int way = 1;							//弾のway数
+		ParamScaling<float>	speed = 5.0f;		//float型テンプレートを用いた弾速(ss)の動的パラメータ
+		ParamScaling<int>	interval = 30;		//int型テンプレートを用いた発射間隔(si)の動的パラメータ
+		ParamScaling<int>	way = 1;			//int型テンプレートを用いた弾のway数の動的パラメータ
 		float totalAngle = 0.0f;				//全体の広がり角度(度数法)
 		float rotSpeed = 0.0f;					//回転速度
 		float baseAngle = 90.0f;

@@ -75,6 +75,22 @@ void Enemy::Draw() {
 	}
 }
 
+void Enemy::OnDeath(BulletManager* bm) {
+	flag = false;			//妖精フラグを折る
+	if (bm != nullptr) {//BulletManagerがnullptrでない場合
+		if (clearOnDeath) {			//死亡時全弾削除フラグがついてる妖精の場合
+			bm->ConvertEnemyBulletsToItems();	//敵弾を小スコアアイテム変換
+		}
+		for (int typeIdx = 0; typeIdx < DROP_TYPE_MAX; typeIdx++) {
+			int count = m_dropCounts[typeIdx];		//インデックスにあったアイテムのドロップ数取得
+			if (count > 0) {		//そのインデックスのアイテムのドロップ数が1以上の場合
+				ItemType iType = static_cast<ItemType>(typeIdx);
+				bm->LaunchItem(x, y, iType, count, ItemScatterRadius);		//アイテム呼び出し
+			}
+		}
+	}
+}
+
 bool Enemy::CheckCollision(Player& player, BulletManager* bm) {
 	if (!flag) return false;											//フラグの立ってない敵は当たらない
 
@@ -82,23 +98,14 @@ bool Enemy::CheckCollision(Player& player, BulletManager* bm) {
 		Bullet& b = bm->GetPlayerBullet(i);								//自機弾各々が持つ検体番号を格納
 		if (!b.GetFlag()) continue;										//自機フラグが立っていない時飛ばす
 
-		if (Collision::CheckCircle(x, y, r, b.x, b.y, b.r)) {			//
-			hp -= 1;								//hpをデクリメント
-			b.SetFlag(false);						//弾を消す
+		if (Collision::CheckCircle(x, y, r, b.x, b.y, b.r)) {
+			b.SetFlag(false);											//敵にあたった自機弾のフラグを折る
 
-			if (bm->CheckEnemyCollision(x, y, r, player)) {}
+			player.AddScore(GameScore::BULLET_HIT_ENEMY);				
 
-			if (hp <= 0) {
-				flag = false;							//妖精消す
-				for (int typeIdx = 0; typeIdx < DROP_TYPE_MAX; typeIdx++) {
-					int count = m_dropCounts[typeIdx];
-					if (count > 0) {
-						ItemType iType = static_cast<ItemType>(typeIdx);
-						bm->LaunchItem(x, y, iType, count, ItemScatterRadius);
-					}
-				}
-				return true;							//被弾判定を返す
-			}
+			SetDamage(1, bm);
+
+			if (!flag) return true;
 		}
 	}
 	return false;

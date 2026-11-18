@@ -93,7 +93,8 @@ void Boss::Update(const Player& player, BulletManager* bm) {									//BulletMan
 			if (shouldShoot) {			//発射フラグが立っている場合のみ射出処理実行
 				if (conf.type == PT::RotateAll) {
 					float baseAngleDeg = conf.baseAngle + (timer * conf.rotSpeed) * 180.0f / DX_PI_F;
-					BulletPattern::NWayShot(x, y, conf.radius, currentSpeed, conf.way, conf.totalAngle, baseAngleDeg, bm, conf.graphicType);	//動的弾速を渡して全方位弾生成
+					int currentWay = conf.way.Get(phaseTimer);
+					BulletPattern::NWayShot(x, y, conf.radius, currentSpeed, currentWay, conf.totalAngle, baseAngleDeg, bm, conf.graphicType);	//動的弾速を渡して全方位弾生成
 				}
 				else {
 					BulletPattern::ExecShot(x, y, conf, player, bm, phaseTimer);	//動的弾速計算の為、phaseTimerを渡して弾幕振り分けを実行
@@ -248,7 +249,7 @@ bool Boss::CheckCollision(Player& player, BulletManager& bm) {
 			if (state == BossState::ACTIVE) {
 				SetDamage(1.0f);										//1弾あたりのダメージ量
 
-				player.AddScore(10);
+				player.AddScore(GameScore::BULLET_HIT_ENEMY);
 
 			}
 			b.flag = false;											//当たった弾フラグは消す

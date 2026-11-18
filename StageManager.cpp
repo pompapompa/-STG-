@@ -16,15 +16,16 @@ using namespace BulletPattern;								//省略名
 
 void StageManager::Update(BulletManager* bm) {
 	stageTimer++;								//時間を進める
+	bombCutin.Update(bm);							//ボムカットイン演出のタイマ更新
 
 	if (state == StageState::DOCHU) {
 		if (stageTimer == Stage1Data::MID_BOSS_SPAWN_FRAME) {
 			state = StageState::MID_BOSS_BATTLE;						//道中ボス
 			float X = Left + (Right - Left) / 2.0f;
-			float Y = Top  + (Bottom - Top) / 4.0f;
-			boss.Spawn(X, Y, Stage1Data::MidBossPhases, Stage1Data::MID_BOSS_PHASE_MAX, 0, -1);										
+			float Y = Top + (Bottom - Top) / 4.0f;
+			boss.Spawn(X, Y, Stage1Data::MidBossPhases, Stage1Data::MID_BOSS_PHASE_MAX, 0, -1);
 		}
-		
+
 		for (int i = 0; i < Stage1Data::SPAWN_COUNT; i++) {
 			if (Stage1Data::Timeline[i].frame == stageTimer) {				//EnemySpawnのframeと経過時間が一致した場合
 				for (int s = 0; s < MAX_SPAWN_SLOT; s++) {
@@ -39,11 +40,34 @@ void StageManager::Update(BulletManager* bm) {
 			if (SpawnSlots[s].IsActive()) {
 				int dataIdx = SpawnSlots[s].GetDataIdx();
 
-				if (SpawnSlots[s].Tick(Stage1Data::Timeline[dataIdx].interval)) {
+				int currentInterval = Stage1Data::Timeline[dataIdx].interval.Get(SpawnSlots[s].GetElapsed());	//スロット経過時間に応じた動的intervalを取得
+				if (currentInterval < 1)currentInterval = 1;	//下限クランプ
+				
+				if (SpawnSlots[s].Tick(currentInterval)) {
 					for (int j = 0; j < Enemy::EnemyMax; j++) {
 						if (!fairies[j].GetFlag()) {
-							auto& d = Stage1Data::Timeline[dataIdx];
-							fairies[j].Encount(d.x, d.y, d.r, d.vx, d.vy, d.hp,d.shotConf,d.clearOnEnd, d.dropCounts, d.moveConf);
+							auto d = Stage1Data::Timeline[dataIdx];
+							if (d.moveConf.type == EMT::TopAlternate_To_Bottom) {
+								using namespace EnemySpawnConfig;
+								int spawnIndex = d.count - SpawnSlots[s].GetRemain() - 1;						//何体目か
+								bool isRight = (spawnIndex % ALTERNATE_PAIR_DIVISOR != 0);						//左右判定
+								int pairIndex = spawnIndex / ALTERNATE_PAIR_DIVISOR;							//何ペア目か
+								float shiftX = static_cast<float>(pairIndex) * ALTERNATE_STEP_SHIFT_X;		//ペアごとのX変位量
+								
+								if (isRight) {
+									d.x = (static_cast<float>(PlayArea::Right) - ALTERNATE_BASE_OFFSET_X) - shiftX;
+									d.moveConf.type = EMT::TopRight_To_Bottom;
+
+									d.moveConf.targetX = (static_cast<float>(PlayArea::Right) - ALTERNATE_TARGET_OFFSET_X) - shiftX;
+								}
+								else {
+									d.x = (static_cast<float>(PlayArea::Left) + ALTERNATE_BASE_OFFSET_X) + shiftX;
+									d.moveConf.type = EMT::TopLeft_To_Bottom;
+
+									d.moveConf.targetX = (static_cast<float>(PlayArea::Left) + ALTERNATE_TARGET_OFFSET_X) + shiftX;
+								}
+							}
+							fairies[j].Encount(d.x, d.y, d.r, d.vx, d.vy, d.hp, d.shotConf, d.clearOnEnd, d.dropCounts, d.moveConf);
 							break;
 						}
 					}
@@ -55,7 +79,7 @@ void StageManager::Update(BulletManager* bm) {
 		if (stageTimer >= Stage1Data::BOSS_SPAWN_FRAME) {
 			state = StageState::BOSS_BATTLE;		//ステージ状態をボス戦へ移行
 			float X = Left + (Right - Left) / 2.0f;
-			float Y = Top  + (Bottom - Top) / 4.0f;
+			float Y = Top + (Bottom - Top) / 4.0f;
 			boss.Spawn(X, Y, Stage1Data::BossPhases, Stage1Data::BOSS_PHASE_MAX, 0, -1);				//ボスはフェーズ1から最終フェーズまで
 		}
 	}
@@ -73,33 +97,68 @@ void StageManager::Update(BulletManager* bm) {
 		if (fairies[i].GetFlag()) {
 			fairies[i].Update(player, bm);					//フラグが立っている妖精を見つけたら更新して動かす
 
+			if (fairies[i].CheckCollision(player, bm)) {
+				if (fairies[i].IsClearOnDeath()) {
+					bm->ConvertEnemyBulletsToItems();
+				}
+			}
 		}
 	}
 
 	if (state == StageState::BOSS_BATTLE) {
 		boss.Update(player, bm);							//ボス戦中の場合、bmでボスの更新をしてボスが弾を撃てるようにする
 	}
+
+	if (bombCutin.CanDamageThisFrame()) {	//当該フレームで白帯ダメージが発生するタイミングかを判定するブロック
+		float bandTop = bombCutin.GetBandTop();
+		float bandBottom = bombCutin.GetBandBottom();	//白帯の現在の上下端Y座標取得
+
+		if ((state == StageState::MID_BOSS_BATTLE || state == StageState::BOSS_BATTLE) && boss.GetFlag()) {		//ボス戦中、且つボス生存中の場合	
+			float by = boss.GetY();											//ボスのY座標取得
+			float br = boss.GetR();											//ボスの当たり判定半径取得
+			if (by + br >= bandTop && by - br <= bandBottom) {		//ボスの円領域が白帯の上下範囲内か判定
+				boss.SetDamage(BombCutin::BAND_BOSS_DAMAGE_PER_HIT);		//ボスにボムダメージ付与
+				player.AddScore(GameScore::BOMB_HIT_BOSS);					//スコア加算
+			}
+		}
+
+		for (int i = 0; i < Enemy::EnemyMax; i++) {
+			if (!fairies[i].GetFlag()) continue;	//生存フラグの立っていない妖精はスキップ
+
+			float ey = fairies[i].GetY();
+			float er = fairies[i].GetR();
+			if (ey + er >= bandTop && ey - er <= bandBottom) {		//妖精の円領域が白帯の上下範囲内か判定
+				fairies[i].SetDamage(BombCutin::BAND_FAIRY_DAMAGE_PER_HIT, bm);	//白帯ダメージ撃破時にもアイテムドロップ・弾消しが発生するようbmを確実に渡してダメージ付与
+				player.AddScore(GameScore::BOMB_HIT_FAIRY);	
+
+			}
+		}
+	}
 }
 
+
 void StageManager::Draw(BulletManager* bm) {		//弾とかの描画
-	player.Draw();									//自機の描画
-
-
 	for (int i = 0; i < Enemy::EnemyMax; i++) {
 		if (fairies[i].GetFlag()) {
-			if (fairies[i].CheckCollision(player, bm)) {
-				if (fairies[i].IsClearOnDeath()) {
-					bm->ConvertEnemyBulletsToItems();
-				}
-			}
 			fairies[i].Draw();						//フラグが立っている妖精を描画
 		}
 	}
 
-	if (state==StageState::MID_BOSS_BATTLE || state == StageState::BOSS_BATTLE) {
+	if (state == StageState::MID_BOSS_BATTLE || state == StageState::BOSS_BATTLE) {
 		boss.Draw();								//道中ボス・ボス戦中のボスの描画
 	}
-	DrawEnemyMarker();				//ボス戦中にエネミーマーカ描画関数を呼び出す
+
+	bombCutin.DrawBand();			//ボムの白帯描画
+	bombCutin.Draw();				//ボムカットイン演出の描画
+	player.Draw();				//自機描画
+	player.DrawHitBox();		//自機の次に当たり判定の描画の順にすることで当たり判定が確認しやすくなる
+	DrawEnemyMarker();				//エネミーマーカ描画
+
+	if (bm != nullptr) {
+		bm->DrawItems();				//アイテムの描画
+		bm->Draw();						//弾の描画
+	}
+	DrawBox(Left, Top, Right, Bottom, GetColor(255, 255, 255), false);		//プレイ領域の外枠白線描画
 }
 
 
@@ -145,7 +204,7 @@ void StageManager::DrawEnemyMarker() {
 		if (bossX < Left + HALF_WIDTH)  bossX = Left + HALF_WIDTH;
 		if (bossX > Right - HALF_WIDTH) bossX = Right - HALF_WIDTH;		//マーカの↔左右端クランプ
 
-		int bx = (int)bossX;	
+		int bx = (int)bossX;
 		int baseY = Bottom;		//基準Y座標(Bottom)
 
 		unsigned int redColor = GetColor(255, 40, 40);					//マーカ背景の赤色カラー
@@ -168,7 +227,7 @@ void StageManager::Init(BulletManager* bm, int stageNum, int startPhaseIdx, bool
 
 	player.Reset(isPractice);
 	boss.Reset();									//ボスフラグを折る
-
+	bombCutin.Reset();								//ボムカットイン状態を初期化
 
 	for (int i = 0; i < Enemy::EnemyMax; i++) {
 		fairies[i].SetFlag(false);					//妖精フラグも折る

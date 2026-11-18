@@ -47,6 +47,12 @@ namespace MyMath {
 	}
 }
 
+namespace GameScore {
+	constexpr int BULLET_HIT_ENEMY = 10;	//自機ショット命中時の加算スコア
+	constexpr int BOMB_HIT_FAIRY = 20;		//ボム白帯が雑魚妖精へ命中時の加算スコア
+	constexpr int BOMB_HIT_BOSS = 50;		//ボム白帯がボスへ命中時の加算スコア
+}
+
 namespace BMT {	//BMT(BossMoveType)
 	enum Type : int {
 		Fixed,          //定位置固定
@@ -75,6 +81,7 @@ namespace EMT {	//EMT(EnemyMoveType)
 		Straight = 0,               //従来の等速直線移動(vx, vyを加算し続ける後方互換用)
 		TopLeft_To_Bottom,          //上端左側出現→右下方向へイージング進入→真下へ降下退場
 		TopRight_To_Bottom,         //上端右側出現→左下方向へイージング進入→真下へ降下退場
+		TopAlternate_To_Bottom,     //上部から左右交互に出現して真下へ降下退場
 		Top_Stay_Back				//上端中央出現→指定位置で一定時間静止射撃→上部へ離脱退場
 	};
 }
@@ -89,6 +96,13 @@ struct EnemyMoveConfig {
 	float exitSpeed = 1.0f;				//退場段階の移動速度
 	float TopCenter_targetY = PlayArea::Top + (PlayArea::Bottom - PlayArea::Top) / 4;	//TopCenter_Stay_Back用の侵入目標Y座標
 };
+
+namespace EnemySpawnConfig {
+	static constexpr float ALTERNATE_BASE_OFFSET_X = 10.0f;		//画面端基準オフセット
+	static constexpr float ALTERNATE_TARGET_OFFSET_X = 50.0f;	//進入目標地点の画面端基準オフセット
+	static constexpr float ALTERNATE_STEP_SHIFT_X = 15.0f;		//1ペア(左右1回ずつ)経過ごとのX座標変位量
+	static constexpr int ALTERNATE_PAIR_DIVISOR = 2;			//偶奇判定用
+}
 
 
 
@@ -261,3 +275,30 @@ constexpr float CalcRotateSpeed(int way, int si, float phaseShift = (1.0f / 3.0f
 	return (deltaTheta * 3.14159265f) / (static_cast<float>(si) * 180.0f);
 }
 
+enum class PlayerPose {
+	DEFAULT = 0,	//正面
+	LEFT,			//左移動
+	RIGHT,			//右移動
+	MAX_POSES
+};
+
+enum class CharacterType {
+	REIMU = 0,					//現状は霊夢のみ
+	MAX_CHARACTERS
+};
+
+struct CharacterGraphicDef {
+	const char* rootPath;
+	const char* fileNames[static_cast<int>(PlayerPose::MAX_POSES)];
+};
+
+static constexpr CharacterGraphicDef CHARACTER_GRAPHIC_TABLE[] = {
+	{
+		"素材集/自機/霊夢/",
+		{
+		"Default.png",
+		"MovingLeft.png",
+		"MovingRight.png"
+		}
+	}
+};

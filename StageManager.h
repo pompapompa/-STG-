@@ -5,6 +5,7 @@
 #include "BulletManager.h"
 #include "BurstController.h"
 #include "BulletPattern.h"
+#include "BombCutin.h"
 
 
 enum class StageState {
@@ -18,17 +19,17 @@ enum class StageState {
 };
 
 struct EnemySpawn {
-	int   frame;							//開始から何フレーム目に出すか
-	float x, y;								//出現位置
-	float vx, vy;							//移動速度
-	float r;								//半径
-	int	  hp;								//体力
-	int   count;							//隊列の数				
-	int   interval;							//出撃間隔(フレーム)
-	BulletPattern::ShotConfig shotConf;		//弾のパラメータ
-	bool clearOnEnd;						//弾消しフラグ
-	int dropCounts[6];						//妖精が死んだ時に落とすアイテムの種類(0：小スコア, 1：スコア, 2：パワー, 3：残機, 4：ボム, 5：大パワー)
-	EnemyMoveConfig moveConf = {};			//雑魚敵の移動挙動を指定する移動設定パラメータメンバ
+	int   frame;									//開始から何フレーム目に出すか
+	float x, y;										//出現位置
+	float vx, vy;									//移動速度
+	float r;										//半径
+	int	  hp;										//体力
+	int   count;									//隊列の数				
+	BulletPattern::ParamScaling<int> interval = 0;	//出撃間隔の加速等に対応させるためParamScaling<int>へ変更
+	BulletPattern::ShotConfig shotConf;				//弾のパラメータ
+	bool clearOnEnd;								//弾消しフラグ
+	int dropCounts[6];								//妖精が死んだ時に落とすアイテムの種類(0：小スコア, 1：スコア, 2：パワー, 3：残機, 4：ボム, 5：大パワー)
+	EnemyMoveConfig moveConf = {};					//雑魚敵の移動挙動を指定する移動設定パラメータメンバ
 };
 
 class StageManager {
@@ -39,6 +40,7 @@ private:
 	Player player;								//自機インスタンス
 	Boss boss;									//ボスインスタンス
 	Enemy fairies[100];							//妖精配列インスタンス
+	BombCutin bombCutin;						//ボムカットインインスタンス
 	int currentStageNum = 1;					//現在何面をプレイしているか
 	int m_markerFont = -1;						//エネミーマーカ用の小フォントハンドル
 
@@ -59,7 +61,9 @@ public:
 
 	void ReloadGraphic() {
 		boss.ReloadGraphic();	
+		player.ReloadGraphic();
 		InitFont();
+		bombCutin.ReloadGraphic();		
 	}
 
 	void InitFont();		//フォント初期化関数
@@ -69,5 +73,7 @@ public:
 	Boss& GetBoss() { return boss; }
 	Enemy* GetFairies() { return fairies; }
 
+	void TriggerBombCutin() { bombCutin.Trigger(); }												//ボムカットイン発動用トリガ
+	void ResetBombCutin() { bombCutin.Reset(); }													//ボムカットイン演出の強制リセット関数
 	bool IsStageClear() const { return (state == StageState::BOSS_BATTLE && boss.IsDead()); }		//ボス戦中でボスの全フェーズが終了した時にステージクリアと判定
 };
